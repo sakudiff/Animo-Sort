@@ -49,7 +49,7 @@ function formatRoomLabel(meeting) {
   return meeting.expandedLocation || expandLocation(meeting.location) || meeting.location;
 }
 
-function wrapTitle(title, maxChars = 28) {
+export function wrapTitle(title, maxChars = 22) {
   const words = String(title).trim().split(/\s+/).filter(Boolean);
   const lines = [];
   let line = '';
@@ -322,14 +322,16 @@ export function createScheduleSvg(schedule, options = {}) {
     parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="${colors.code}">${esc(meeting.courseCode)} <tspan font-size="10" font-weight="700" fill="${colors.meta}">${esc(meeting.section)}</tspan></text>`);
     ty += 16;
     if (showCourseTitles) {
-      for (const titleLine of wrapTitle(meeting.title)) {
+      for (const titleLine of wrapTitle(meeting.title, 22)) {
         parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="${colors.title}">${esc(titleLine)}</text>`);
         ty += 13;
       }
       ty += 2;
     }
-    parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="${colors.meta}">${esc(`Room: ${formatRoomLabel(meeting)}`)}</text>`);
-    ty += 13;
+    for (const roomLine of wrapTitle(`Room: ${formatRoomLabel(meeting)}`, 25)) {
+      parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="${colors.meta}">${esc(roomLine)}</text>`);
+      ty += 13;
+    }
     parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="${colors.meta}">${esc(`Time: ${meeting.startLabel} - ${meeting.endLabel}`)}</text>`);
   }
 
