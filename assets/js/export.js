@@ -74,11 +74,95 @@ function wrapTitle(title, maxChars = 28) {
   return lines.length ? lines : [''];
 }
 
+export const COURSE_PALETTES = [
+  {
+    id: 'emerald',
+    name: 'Emerald Green',
+    swatch: '#087830',
+    light: { bg: '#edf7f0', border: '#97d4ab', code: '#087830', title: '#154726', meta: '#2d6340' },
+    dark: { bg: '#0b2414', border: '#1e6837', code: '#4ade80', title: '#f0fdf4', meta: '#86efac' },
+  },
+  {
+    id: 'blue',
+    name: 'Ocean Blue',
+    swatch: '#1d4ed8',
+    light: { bg: '#eff6ff', border: '#93c5fd', code: '#1d4ed8', title: '#1e3a8a', meta: '#2563eb' },
+    dark: { bg: '#0c1e36', border: '#1d4ed8', code: '#60a5fa', title: '#eff6ff', meta: '#93c5fd' },
+  },
+  {
+    id: 'purple',
+    name: 'Royal Purple',
+    swatch: '#7e22ce',
+    light: { bg: '#faf5ff', border: '#d8b4fe', code: '#7e22ce', title: '#3b0764', meta: '#9333ea' },
+    dark: { bg: '#250f33', border: '#7e22ce', code: '#c084fc', title: '#faf5ff', meta: '#d8b4fe' },
+  },
+  {
+    id: 'amber',
+    name: 'Amber Orange',
+    swatch: '#c2410c',
+    light: { bg: '#fff7ed', border: '#fed7aa', code: '#c2410c', title: '#431407', meta: '#ea580c' },
+    dark: { bg: '#2d140a', border: '#c2410c', code: '#fb923c', title: '#fff7ed', meta: '#fed7aa' },
+  },
+  {
+    id: 'teal',
+    name: 'Teal Green',
+    swatch: '#0f766e',
+    light: { bg: '#f0fdfa', border: '#99f6e4', code: '#0f766e', title: '#134e4a', meta: '#0d9488' },
+    dark: { bg: '#082522', border: '#0f766e', code: '#2dd4bf', title: '#f0fdfa', meta: '#99f6e4' },
+  },
+  {
+    id: 'rose',
+    name: 'Ruby Rose',
+    swatch: '#be123c',
+    light: { bg: '#fff1f2', border: '#fecdd3', code: '#be123c', title: '#4c0519', meta: '#e11d48' },
+    dark: { bg: '#2e0a13', border: '#be123c', code: '#fb7185', title: '#fff1f2', meta: '#fecdd3' },
+  },
+  {
+    id: 'indigo',
+    name: 'Indigo Night',
+    swatch: '#4338ca',
+    light: { bg: '#eef2ff', border: '#c7d2fe', code: '#4338ca', title: '#1e1b4b', meta: '#4f46e5' },
+    dark: { bg: '#131538', border: '#4338ca', code: '#818cf8', title: '#eef2ff', meta: '#c7d2fe' },
+  },
+  {
+    id: 'cyan',
+    name: 'Sky Cyan',
+    swatch: '#0369a1',
+    light: { bg: '#f0f9ff', border: '#bae6fd', code: '#0369a1', title: '#082f49', meta: '#0284c7' },
+    dark: { bg: '#082236', border: '#0369a1', code: '#38bdf8', title: '#f0f9ff', meta: '#bae6fd' },
+  },
+  {
+    id: 'yellow',
+    name: 'Gold Ochre',
+    swatch: '#a16207',
+    light: { bg: '#fefce8', border: '#fef08a', code: '#a16207', title: '#422006', meta: '#ca8a04' },
+    dark: { bg: '#291f06', border: '#a16207', code: '#facc15', title: '#fefce8', meta: '#fef08a' },
+  },
+];
+
+export function getPaletteById(id) {
+  return COURSE_PALETTES.find((p) => p.id === id) || COURSE_PALETTES[0];
+}
+
+export function buildCourseColorMap(schedule, customColors = {}) {
+  const map = {};
+  if (!schedule || !Array.isArray(schedule.meetings)) return map;
+  const distinctCourses = [...new Set(schedule.meetings.map((m) => m.courseCode))];
+  distinctCourses.forEach((code, index) => {
+    const customId = customColors[code];
+    const palette = customId ? getPaletteById(customId) : COURSE_PALETTES[index % COURSE_PALETTES.length];
+    map[code] = palette;
+  });
+  return map;
+}
+
 export function createScheduleSvg(schedule, options = {}) {
   const showCourseTitles = options?.showCourseTitles !== false;
   if (!schedule || !Array.isArray(schedule.meetings) || schedule.meetings.length === 0) {
     throw new Error('A valid schedule is required for export');
   }
+
+  const courseColorMap = options?.courseColors || buildCourseColorMap(schedule, options?.customColors);
 
   const parts = [];
   const esc = escapeSvgText;
@@ -162,21 +246,25 @@ export function createScheduleSvg(schedule, options = {}) {
     const bottom = gridTop + ((meeting.endMinutes - canvasStart) / minutesInSpan) * gridHeight;
     const height = bottom - top;
 
-    parts.push(`<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${width.toFixed(1)}" height="${height.toFixed(1)}" rx="6" fill="#ffffff" stroke="#c2d1c7" stroke-width="1.2"/>`);
+    const palette = courseColorMap[meeting.courseCode] || COURSE_PALETTES[0];
+    const colors = palette.light;
 
-    const textX = x + 8;
-    let ty = top + 18;
-    parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="bold" fill="#087830">${esc(meeting.courseCode)}</text>`);
-    ty += 14;
+    parts.push(`<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${width.toFixed(1)}" height="${height.toFixed(1)}" rx="8" fill="${colors.bg}" stroke="${colors.border}" stroke-width="1.5"/>`);
+
+    const textX = x + 9;
+    let ty = top + 20;
+    parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="${colors.code}">${esc(meeting.courseCode)} <tspan font-size="10" font-weight="700" fill="${colors.meta}">${esc(meeting.section)}</tspan></text>`);
+    ty += 16;
     if (showCourseTitles) {
       for (const titleLine of wrapTitle(meeting.title)) {
-        parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#222222">${esc(titleLine)}</text>`);
-        ty += 12;
+        parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="${colors.title}">${esc(titleLine)}</text>`);
+        ty += 13;
       }
+      ty += 2;
     }
-    parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#555555">${esc(`Room: ${formatRoomLabel(meeting)}`)}</text>`);
-    ty += 11;
-    parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#555555">${esc(`Time: ${meeting.startLabel} - ${meeting.endLabel}`)}</text>`);
+    parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="${colors.meta}">${esc(`Room: ${formatRoomLabel(meeting)}`)}</text>`);
+    ty += 13;
+    parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="${colors.meta}">${esc(`Time: ${meeting.startLabel} - ${meeting.endLabel}`)}</text>`);
   }
 
   // Footer branding

@@ -509,6 +509,15 @@ div[id*="netlify"] {
   margin: 14px 0 12px;
 }
 
+.schedule-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 .title-toggle {
   display: inline-flex;
   align-items: center;
@@ -516,13 +525,220 @@ div[id*="netlify"] {
   color: var(--text-2);
   font-size: 0.875rem;
   font-weight: 600;
-  margin-bottom: 18px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .title-toggle input {
   width: 16px;
   height: 16px;
   accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.course-legend {
+  margin: 0 0 18px;
+  padding: 12px 16px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legend-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.legend-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+}
+
+.legend-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+.legend-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.course-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 9999px;
+  border: 1.5px solid var(--card-border, var(--border));
+  background: var(--card-bg, var(--surface));
+  color: var(--card-code, var(--text-1));
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  user-select: none;
+}
+
+.course-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.course-badge-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--card-swatch, var(--accent));
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.course-badge-section {
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.course-badge-caret {
+  font-size: 0.65rem;
+  opacity: 0.5;
+  margin-left: 2px;
+}
+
+/* Palette selection popover */
+.palette-popover {
+  position: absolute;
+  z-index: 1000;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: var(--shadow-md);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 136px;
+  animation: popoverFadeIn 0.15s ease-out;
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.palette-option-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.palette-option-btn:hover {
+  transform: scale(1.15);
+}
+
+.palette-option-btn.active {
+  border-color: var(--text-1);
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.palette-option-btn svg {
+  width: 14px;
+  height: 14px;
+  color: #ffffff;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+/* Light mode palette definitions */
+.palette-emerald {
+  --card-bg: #edf7f0;
+  --card-border: #97d4ab;
+  --card-code: #087830;
+  --card-title: #154726;
+  --card-meta: #2d6340;
+  --card-swatch: #087830;
+}
+.palette-blue {
+  --card-bg: #eff6ff;
+  --card-border: #93c5fd;
+  --card-code: #1d4ed8;
+  --card-title: #1e3a8a;
+  --card-meta: #2563eb;
+  --card-swatch: #1d4ed8;
+}
+.palette-purple {
+  --card-bg: #faf5ff;
+  --card-border: #d8b4fe;
+  --card-code: #7e22ce;
+  --card-title: #3b0764;
+  --card-meta: #9333ea;
+  --card-swatch: #7e22ce;
+}
+.palette-amber {
+  --card-bg: #fff7ed;
+  --card-border: #fed7aa;
+  --card-code: #c2410c;
+  --card-title: #431407;
+  --card-meta: #ea580c;
+  --card-swatch: #c2410c;
+}
+.palette-teal {
+  --card-bg: #f0fdfa;
+  --card-border: #99f6e4;
+  --card-code: #0f766e;
+  --card-title: #134e4a;
+  --card-meta: #0d9488;
+  --card-swatch: #0f766e;
+}
+.palette-rose {
+  --card-bg: #fff1f2;
+  --card-border: #fecdd3;
+  --card-code: #be123c;
+  --card-title: #4c0519;
+  --card-meta: #e11d48;
+  --card-swatch: #be123c;
+}
+.palette-indigo {
+  --card-bg: #eef2ff;
+  --card-border: #c7d2fe;
+  --card-code: #4338ca;
+  --card-title: #1e1b4b;
+  --card-meta: #4f46e5;
+  --card-swatch: #4338ca;
+}
+.palette-cyan {
+  --card-bg: #f0f9ff;
+  --card-border: #bae6fd;
+  --card-code: #0369a1;
+  --card-title: #082f49;
+  --card-meta: #0284c7;
+  --card-swatch: #0369a1;
+}
+.palette-yellow {
+  --card-bg: #fefce8;
+  --card-border: #fef08a;
+  --card-code: #a16207;
+  --card-title: #422006;
+  --card-meta: #ca8a04;
+  --card-swatch: #a16207;
 }
 
 .schedule-scroll {
@@ -608,43 +824,87 @@ div[id*="netlify"] {
   position: absolute;
   left: 4px;
   right: 4px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  padding: 4px 7px;
+  border: 1.5px solid var(--card-border, var(--border));
+  border-radius: 9px;
+  background: var(--card-bg, var(--surface));
+  padding: 8px 9px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  font-size: 0.78rem;
-  line-height: 1.15;
+  gap: 4px;
+  font-size: 0.8rem;
+  line-height: 1.25;
   z-index: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.meeting-block:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 3;
 }
 
 .meeting-primary {
   display: flex;
-  align-items: baseline;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: space-between;
   min-width: 0;
+  gap: 4px;
 }
 
 .meeting-code-group {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
   min-width: 0;
 }
 
 .meeting-code {
   flex: 0 0 auto;
-  font-size: 0.8rem;
-  color: var(--text-1);
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--card-code, var(--text-1));
 }
 
 .meeting-section {
-  color: var(--text-2);
+  color: var(--card-code, var(--text-2));
   font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.meeting-color-btn {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  background: var(--card-swatch, var(--accent));
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  opacity: 0.85;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.meeting-color-btn:hover {
+  opacity: 1;
+  transform: scale(1.25);
+}
+
+.meeting-title {
+  flex: 0 0 auto;
+  display: block;
+  font-size: 0.77rem;
   font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  color: var(--card-title, var(--text-1));
+  margin: 1px 0 2px;
 }
 
 .meeting-room,
@@ -653,17 +913,19 @@ div[id*="netlify"] {
   width: fit-content;
   max-width: 100%;
   overflow-wrap: anywhere;
-  color: var(--text-2);
+  color: var(--card-meta, var(--text-2));
   font-size: 0.72rem;
+  line-height: 1.3;
   white-space: normal;
 }
 
-.meeting-title {
-  flex: 0 0 auto;
-  display: block;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
-  white-space: normal;
+.meeting-room {
+  font-weight: 500;
+}
+
+.meeting-time {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.95;
 }
 
 .course-titles-hidden .meeting-title {
@@ -935,27 +1197,81 @@ div[id*="netlify"] {
   color: var(--text-3);
 }
 
-:root[data-theme="dark"] .meeting-block {
-  background: #0f1712;
-  border-color: rgba(34, 197, 94, 0.35);
+:root[data-theme="dark"] .course-legend {
+  background: #050505;
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-:root[data-theme="dark"] .meeting-block:hover {
-  background: #14231b;
-  border-color: var(--accent);
+:root[data-theme="dark"] .palette-popover {
+  background: #0a0a0a;
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
-:root[data-theme="dark"] .meeting-code {
-  color: #4ade80;
+:root[data-theme="dark"] .palette-emerald {
+  --card-bg: #0b2414;
+  --card-border: #1e6837;
+  --card-code: #4ade80;
+  --card-title: #f0fdf4;
+  --card-meta: #86efac;
 }
-
-:root[data-theme="dark"] .meeting-title {
-  color: var(--text-1);
+:root[data-theme="dark"] .palette-blue {
+  --card-bg: #0c1e36;
+  --card-border: #1d4ed8;
+  --card-code: #60a5fa;
+  --card-title: #eff6ff;
+  --card-meta: #93c5fd;
 }
-
-:root[data-theme="dark"] .meeting-room,
-:root[data-theme="dark"] .meeting-time {
-  color: var(--text-3);
+:root[data-theme="dark"] .palette-purple {
+  --card-bg: #250f33;
+  --card-border: #7e22ce;
+  --card-code: #c084fc;
+  --card-title: #faf5ff;
+  --card-meta: #d8b4fe;
+}
+:root[data-theme="dark"] .palette-amber {
+  --card-bg: #2d140a;
+  --card-border: #c2410c;
+  --card-code: #fb923c;
+  --card-title: #fff7ed;
+  --card-meta: #fed7aa;
+}
+:root[data-theme="dark"] .palette-teal {
+  --card-bg: #082522;
+  --card-border: #0f766e;
+  --card-code: #2dd4bf;
+  --card-title: #f0fdfa;
+  --card-meta: #99f6e4;
+}
+:root[data-theme="dark"] .palette-rose {
+  --card-bg: #2e0a13;
+  --card-border: #be123c;
+  --card-code: #fb7185;
+  --card-title: #fff1f2;
+  --card-meta: #fecdd3;
+}
+:root[data-theme="dark"] .palette-indigo {
+  --card-bg: #131538;
+  --card-border: #4338ca;
+  --card-code: #818cf8;
+  --card-title: #eef2ff;
+  --card-meta: #c7d2fe;
+}
+:root[data-theme="dark"] .palette-cyan {
+  --card-bg: #082236;
+  --card-border: #0369a1;
+  --card-code: #38bdf8;
+  --card-title: #f0fdfa;
+  --card-meta: #bae6fd;
+}
+:root[data-theme="dark"] .palette-yellow {
+  --card-bg: #291f06;
+  --card-border: #a16207;
+  --card-code: #facc15;
+  --card-title: #fefce8;
+  --card-meta: #fef08a;
+}
+:root[data-theme="dark"] .meeting-section {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 :root[data-theme="dark"] .btn-ghost {
@@ -1064,27 +1380,81 @@ div[id*="netlify"] {
     color: var(--text-3);
   }
 
-  :root:not([data-theme="light"]) .meeting-block {
-    background: #0f1712;
-    border-color: rgba(34, 197, 94, 0.35);
+  :root:not([data-theme="light"]) .course-legend {
+    background: #050505;
+    border-color: rgba(255, 255, 255, 0.12);
   }
 
-  :root:not([data-theme="light"]) .meeting-block:hover {
-    background: #14231b;
-    border-color: var(--accent);
+  :root:not([data-theme="light"]) .palette-popover {
+    background: #0a0a0a;
+    border-color: rgba(255, 255, 255, 0.16);
   }
 
-  :root:not([data-theme="light"]) .meeting-code {
-    color: #4ade80;
+  :root:not([data-theme="light"]) .palette-emerald {
+    --card-bg: #0b2414;
+    --card-border: #1e6837;
+    --card-code: #4ade80;
+    --card-title: #f0fdf4;
+    --card-meta: #86efac;
   }
-
-  :root:not([data-theme="light"]) .meeting-title {
-    color: var(--text-1);
+  :root:not([data-theme="light"]) .palette-blue {
+    --card-bg: #0c1e36;
+    --card-border: #1d4ed8;
+    --card-code: #60a5fa;
+    --card-title: #eff6ff;
+    --card-meta: #93c5fd;
   }
-
-  :root:not([data-theme="light"]) .meeting-room,
-  :root:not([data-theme="light"]) .meeting-time {
-    color: var(--text-3);
+  :root:not([data-theme="light"]) .palette-purple {
+    --card-bg: #250f33;
+    --card-border: #7e22ce;
+    --card-code: #c084fc;
+    --card-title: #faf5ff;
+    --card-meta: #d8b4fe;
+  }
+  :root:not([data-theme="light"]) .palette-amber {
+    --card-bg: #2d140a;
+    --card-border: #c2410c;
+    --card-code: #fb923c;
+    --card-title: #fff7ed;
+    --card-meta: #fed7aa;
+  }
+  :root:not([data-theme="light"]) .palette-teal {
+    --card-bg: #082522;
+    --card-border: #0f766e;
+    --card-code: #2dd4bf;
+    --card-title: #f0fdfa;
+    --card-meta: #99f6e4;
+  }
+  :root:not([data-theme="light"]) .palette-rose {
+    --card-bg: #2e0a13;
+    --card-border: #be123c;
+    --card-code: #fb7185;
+    --card-title: #fff1f2;
+    --card-meta: #fecdd3;
+  }
+  :root:not([data-theme="light"]) .palette-indigo {
+    --card-bg: #131538;
+    --card-border: #4338ca;
+    --card-code: #818cf8;
+    --card-title: #eef2ff;
+    --card-meta: #c7d2fe;
+  }
+  :root:not([data-theme="light"]) .palette-cyan {
+    --card-bg: #082236;
+    --card-border: #0369a1;
+    --card-code: #38bdf8;
+    --card-title: #f0f9ff;
+    --card-meta: #bae6fd;
+  }
+  :root:not([data-theme="light"]) .palette-yellow {
+    --card-bg: #291f06;
+    --card-border: #a16207;
+    --card-code: #facc15;
+    --card-title: #fefce8;
+    --card-meta: #fef08a;
+  }
+  :root:not([data-theme="light"]) .meeting-section {
+    background: rgba(255, 255, 255, 0.1);
   }
 
   :root:not([data-theme="light"]) .btn-ghost {

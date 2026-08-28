@@ -7,7 +7,12 @@ import {
   STANDARD_PERIODS,
   expandLocation,
 } from './eaf-parser.js';
-import { downloadSchedulePng } from './export.js';
+import {
+  COURSE_PALETTES,
+  buildCourseColorMap,
+  getPaletteById,
+  downloadSchedulePng,
+} from './export.js';
 
 const MAX_EAF_FILE_SIZE = 1024 * 1024;
 
@@ -16,6 +21,91 @@ let importInProgress = false;
 let importGeneration = 0;
 let activeImportGeneration = null;
 let showCourseTitles = true;
+let customCourseColors = loadCustomCourseColors();
+let activePopover = null;
+
+function loadCustomCourseColors() {
+  try {
+    const raw = localStorage.getItem('animosort_course_colors');
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveCustomCourseColor(courseCode, paletteId) {
+  customCourseColors[courseCode] = paletteId;
+  try {
+    localStorage.setItem('animosort_course_colors', JSON.stringify(customCourseColors));
+  } catch (e) {}
+}
+
+function closeActivePopover() {
+  if (activePopover) {
+    activePopover.element.remove();
+    activePopover = null;
+  }
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (event) => {
+    if (!activePopover) return;
+    if (!activePopover.element.contains(event.target) && !activePopover.anchor.contains(event.target)) {
+      closeActivePopover();
+    }
+  });
+
+  window.addEventListener('resize', closeActivePopover, { passive: true });
+}
+
+function openPalettePopover(anchor, courseCode, currentPaletteId) {
+  if (activePopover && activePopover.anchor === anchor) {
+    closeActivePopover();
+    return;
+  }
+  closeActivePopover();
+
+  const popover = document.createElement('div');
+  popover.className = 'palette-popover';
+  popover.setAttribute('role', 'dialog');
+  popover.setAttribute('aria-label', `Choose color for ${courseCode}`);
+
+  for (const palette of COURSE_PALETTES) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `palette-option-btn${palette.id === currentPaletteId ? ' active' : ''}`;
+    btn.style.background = palette.swatch;
+    btn.title = palette.name;
+    btn.setAttribute('aria-label', palette.name);
+
+    if (palette.id === currentPaletteId) {
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      saveCustomCourseColor(courseCode, palette.id);
+      closeActivePopover();
+      if (currentSchedule) renderSchedule(currentSchedule);
+    });
+
+    popover.appendChild(btn);
+  }
+
+  document.body.appendChild(popover);
+
+  const rect = anchor.getBoundingClientRect();
+  const popoverWidth = 136;
+  let left = rect.left + window.scrollX + (rect.width / 2) - (popoverWidth / 2);
+  if (left < 10) left = 10;
+  if (left + popoverWidth > window.innerWidth - 10) left = window.innerWidth - popoverWidth - 10;
+  const top = rect.bottom + window.scrollY + 6;
+
+  popover.style.left = `${Math.round(left)}px`;
+  popover.style.top = `${Math.round(top)}px`;
+
+  activePopover = { element: popover, anchor };
+}
 
 function initNavigation() {
   const nav = document.getElementById('mainNav');
@@ -121,6 +211,8 @@ const els = {
   sessionLabel: null,
   summaryLabel: null,
   scheduleCanvas: null,
+  courseLegend: null,
+  legendBadges: null,
   replaceBtn: null,
   clearBtn: null,
   downloadPngBtn: null,
@@ -139,6 +231,8 @@ function requireElements() {
     sessionLabel: 'session-label',
     summaryLabel: 'summary-label',
     scheduleCanvas: 'schedule-canvas',
+    courseLegend: 'course-legend',
+    legendBadges: 'legend-badges',
     replaceBtn: 'replace-btn',
     clearBtn: 'clear-btn',
     downloadPngBtn: 'download-png-btn',
@@ -198,11 +292,13 @@ function setImporting(isImporting) {
 }
 
 export function renderEmptyState() {
+  closeActivePopover();
   els.schedulePanel.hidden = true;
   els.emptyState.hidden = true;
   els.sessionLabel.textContent = '';
   els.summaryLabel.textContent = '';
   els.scheduleCanvas.replaceChildren();
+  if (els.legendBadges) els.legendBadges.replaceChildren();
   setStatus('');
 }
 
@@ -225,11 +321,11 @@ function createGuideEntries(guides) {
 }
 
 function fitScheduleBody(canvas, meetingBlocks, span) {
-  const baseHeight = Number.parseFloat(getComputedStyle(canvas).getPropertyValue('--day-body-height'));
-  let bodyHeight = Number.isFinite(baseHeight) ? baseHeight : 900;
+  const baseHeight = 1050;
+  let bodyHeight = baseHeight;
 
   for (const { block, duration } of meetingBlocks) {
-    const contentHeight = block.scrollHeight + (block.offsetHeight - block.clientHeight) + 2;
+    const contentHeight = block.scrollHeight + (block.offsetHeight - block.clientHeight) + 14;
     bodyHeight = Math.max(bodyHeight, (contentHeight * span) / duration);
   }
   canvas.style.setProperty('--day-body-height', `${Math.ceil(bodyHeight)}px`);
@@ -242,11 +338,62 @@ function createDayGridline(minutes, canvasStart, pixelsPerMinute, kind) {
   return line;
 }
 
+function renderCourseLegend(schedule, courseColorMap) {
+  if (!els.legendBadges) return;
+  els.legendBadges.replaceChildren();
+
+  const distinctCourses = [...new Set(schedule.meetings.map((m) => m.courseCode))];
+  if (!distinctCourses.length) {
+    if (els.courseLegend) els.courseLegend.hidden = true;
+    return;
+  }
+  if (els.courseLegend) els.courseLegend.hidden = false;
+
+  for (const code of distinctCourses) {
+    const meeting = schedule.meetings.find((m) => m.courseCode === code);
+    const palette = courseColorMap[code] || COURSE_PALETTES[0];
+
+    const badge = document.createElement('button');
+    badge.type = 'button';
+    badge.className = `course-badge palette-${palette.id}`;
+    badge.setAttribute('aria-label', `Change color for ${code}`);
+    badge.title = `Change color for ${code} (${palette.name})`;
+
+    const swatch = document.createElement('span');
+    swatch.className = 'course-badge-swatch';
+
+    const codeSpan = document.createElement('span');
+    codeSpan.className = 'course-badge-code';
+    codeSpan.textContent = code;
+
+    const sectionSpan = document.createElement('span');
+    sectionSpan.className = 'course-badge-section';
+    sectionSpan.textContent = meeting ? meeting.section : '';
+
+    const caretSpan = document.createElement('span');
+    caretSpan.className = 'course-badge-caret';
+    caretSpan.textContent = '▾';
+
+    badge.append(swatch, codeSpan, sectionSpan, caretSpan);
+
+    badge.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openPalettePopover(badge, code, palette.id);
+    });
+
+    els.legendBadges.appendChild(badge);
+  }
+}
+
 export function renderSchedule(schedule) {
   if (!schedule || !Array.isArray(schedule.meetings)) {
     throw new Error('Invalid schedule passed to renderSchedule');
   }
+  closeActivePopover();
   els.scheduleCanvas.replaceChildren();
+
+  const courseColorMap = buildCourseColorMap(schedule, customCourseColors);
+  renderCourseLegend(schedule, courseColorMap);
 
   const allMinutes = schedule.meetings.flatMap((m) => [m.startMinutes, m.endMinutes]);
   const canvasStart = Math.min(...allMinutes) - 15;
@@ -304,8 +451,9 @@ export function renderSchedule(schedule) {
       body.appendChild(empty);
     } else {
       for (const meeting of dayMeetings) {
+        const palette = courseColorMap[meeting.courseCode] || COURSE_PALETTES[0];
         const block = document.createElement('div');
-        block.className = 'meeting-block';
+        block.className = `meeting-block palette-${palette.id}`;
         block.style.top = `${meetingTop(meeting, canvasStart, pixelsPerMinute)}%`;
         block.style.height = `${meetingHeight(meeting, pixelsPerMinute)}%`;
         block.setAttribute('role', 'cell');
@@ -323,9 +471,21 @@ export function renderSchedule(schedule) {
         const codeGroup = document.createElement('span');
         codeGroup.className = 'meeting-code-group';
         codeGroup.append(code, section);
+
+        const colorBtn = document.createElement('button');
+        colorBtn.type = 'button';
+        colorBtn.className = 'meeting-color-btn';
+        colorBtn.title = `Change color for ${meeting.courseCode}`;
+        colorBtn.setAttribute('aria-label', `Change color for ${meeting.courseCode}`);
+        colorBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openPalettePopover(colorBtn, meeting.courseCode, palette.id);
+        });
+
         const primary = document.createElement('div');
         primary.className = 'meeting-primary';
-        primary.append(codeGroup);
+        primary.append(codeGroup, colorBtn);
+
         const title = document.createElement('span');
         title.className = 'meeting-title';
         title.textContent = meeting.title;
@@ -458,7 +618,8 @@ export function initApp() {
   });
   els.downloadPngBtn.addEventListener('click', () => {
     if (currentSchedule) {
-      downloadSchedulePng(currentSchedule, { showCourseTitles }).catch(() => {
+      const courseColorMap = buildCourseColorMap(currentSchedule, customCourseColors);
+      downloadSchedulePng(currentSchedule, { showCourseTitles, courseColors: courseColorMap }).catch(() => {
         setStatus('The PNG could not be generated. Please try again.', 'error');
       });
     }

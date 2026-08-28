@@ -100,10 +100,19 @@
           <button type="button" id="clear-btn" class="button btn-ghost">Clear schedule</button>
           <button type="button" id="download-png-btn" class="button btn-primary">Download PNG</button>
         </div>
-        <label class="title-toggle" for="show-course-titles">
-          <input type="checkbox" id="show-course-titles" checked>
-          <span>Show full course names</span>
-        </label>
+        <div class="schedule-controls-row">
+          <label class="title-toggle" for="show-course-titles">
+            <input type="checkbox" id="show-course-titles" checked>
+            <span>Show full course names</span>
+          </label>
+        </div>
+        <div class="course-legend" id="course-legend" aria-label="Course colors">
+          <div class="legend-header">
+            <span class="legend-title">Course Colors</span>
+            <span class="legend-subtitle">Click any course to customize its color</span>
+          </div>
+          <div class="legend-badges" id="legend-badges"></div>
+        </div>
         <div class="schedule-scroll" id="schedule-scroll" aria-label="Weekly timetable, scrollable horizontally">
           <div id="schedule-canvas" class="schedule-canvas"></div>
         </div>
