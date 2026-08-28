@@ -589,6 +589,63 @@ button {
   font-size: 0.85rem;
 }
 
+.story-panel {
+  padding: 8px 32px 24px;
+}
+
+.story-content {
+  color: var(--text-2);
+  line-height: 1.65;
+}
+
+.story-content p {
+  margin: 0 0 14px;
+}
+
+.story-quote {
+  margin: 16px 0;
+  padding: 12px 20px;
+  background: var(--accent-ghost);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-weight: 700;
+  color: var(--text-1);
+  font-style: italic;
+}
+
+.story-timeline-chaos {
+  margin: 16px 0;
+  padding: 12px 18px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace, monospace;
+  font-weight: 700;
+  color: #b91c1c;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-size: 0.95rem;
+}
+
+.story-timeline-chaos .arrow {
+  color: var(--text-3);
+  font-weight: normal;
+}
+
+.brand-accent {
+  color: var(--accent);
+}
+
+.story-punchline {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 1.05rem;
+  color: var(--accent);
+}
+
 .empty-state {
   border: 1px dashed var(--border);
   border-radius: var(--radius);
