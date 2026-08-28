@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Animo Sort — Turn your ArcherHub EAF into a week at a glance</title>
+  <meta name="description" content="Animo Sort converts your DLSU ArcherHub Enrollment Assessment Form PDF into a readable weekly timetable. Files are processed locally in your browser and never uploaded.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="print.css" media="print">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <p class="brand">Animo Sort</p>
+      <p class="privacy-note">Built for ArcherHub EAF schedules. Your EAF is processed locally in your browser and is never uploaded.</p>
+      <h1>Turn your ArcherHub EAF into a week at a glance</h1>
+    </header>
+
+    <section class="import-panel" id="import-panel" aria-labelledby="import-heading">
+      <h2 id="import-heading" class="visually-hidden">Import your EAF</h2>
+      <form id="eaf-form" novalidate>
+        <label for="eaf-file" class="file-label">
+          Choose an official ArcherHub EAF PDF
+        </label>
+        <div class="file-row">
+          <input type="file" id="eaf-file" name="eaf" accept="application/pdf" aria-describedby="import-hint">
+          <button type="button" id="browse-btn" class="button">Browse</button>
+        </div>
+        <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Drop an ArcherHub EAF PDF here or press Enter to choose a file">
+          <p class="drop-zone-text">Drop your ArcherHub EAF PDF here</p>
+        </div>
+        <p id="import-hint" class="import-hint">Only official DLSU ArcherHub EAF PDFs are supported. The file stays on this device.</p>
+        <div id="status-region" class="status-region" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+
+    <section class="schedule-panel" id="schedule-panel" hidden aria-labelledby="schedule-heading">
+      <header class="schedule-header">
+        <h2 id="schedule-heading" class="visually-hidden">Weekly timetable</h2>
+        <p id="session-label" class="session-label"></p>
+        <p id="summary-label" class="summary-label"></p>
+      </header>
+      <div class="actions" aria-label="Schedule actions">
+        <button type="button" id="replace-btn" class="button">Replace schedule</button>
+        <button type="button" id="clear-btn" class="button button-ghost">Clear schedule</button>
+        <button type="button" id="print-btn" class="button">Print / Save as PDF</button>
+        <button type="button" id="download-png-btn" class="button">Download PNG</button>
+      </div>
+      <div class="schedule-scroll" id="schedule-scroll" aria-label="Weekly timetable, scrollable horizontally">
+        <div id="schedule-canvas" class="schedule-canvas"></div>
+      </div>
+    </section>
+
+    <section class="empty-state" id="empty-state">
+      <p class="empty-title">No schedule loaded.</p>
+      <p class="empty-body">Upload an official ArcherHub EAF PDF to build the current-term timetable. The file is processed locally and is not uploaded.</p>
+    </section>
+
+    <footer class="app-footer">
+      <p>Animo Sort is not an official ArcherHub or DLSU product. This page does not upload, store, or share your EAF.</p>
+    </footer>
+  </main>
+
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

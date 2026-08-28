@@ -1,0 +1,107 @@
+/* Animo Sort print stylesheet. Prints one landscape schedule page and hides
+   all non-schedule interface content. */
+
+@page {
+  size: letter landscape;
+  margin: 12mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff;
+    color: #000000;
+    width: 100%;
+  }
+
+  .app-header,
+  .import-panel,
+  .actions,
+  .app-footer,
+  .empty-state,
+  #status-region {
+    display: none !important;
+  }
+
+  .schedule-panel {
+    display: block !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  .schedule-header {
+    margin-bottom: 10px;
+  }
+
+  .session-label {
+    font-size: 16pt;
+    font-weight: bold;
+    color: #087830;
+  }
+
+  .summary-label {
+    font-size: 11pt;
+    color: #000000;
+  }
+
+  .schedule-scroll {
+    overflow: visible;
+    border: 1px solid #999;
+    border-radius: 0;
+  }
+
+  .schedule-canvas {
+    min-width: 0;
+  }
+
+  .timetable {
+    display: grid;
+    grid-template-columns: 70px repeat(6, 1fr);
+    min-height: 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .time-gutter {
+    display: block;
+  }
+
+  .day-column,
+  .day-body {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .day-body {
+    height: 520px;
+  }
+
+  .day-header {
+    background: #ffffff;
+    border-bottom: 1px solid #000000;
+    color: #000000;
+  }
+
+  .meeting-block {
+    border: 1px solid #000000;
+    border-left: 4px solid #087830;
+    background: #ffffff;
+    color: #000000;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .meeting-code {
+    color: #000000;
+  }
+
+  .meeting-meta,
+  .meeting-time {
+    color: #000000;
+  }
+
+  .guide-label {
+    color: #000000;
+    background: #ffffff;
+  }
+}
