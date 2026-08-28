@@ -58,6 +58,50 @@ if (typeof document !== 'undefined') {
   window.addEventListener('resize', closeActivePopover, { passive: true });
 }
 
+function updateCourseCardsLive(courseCode, paletteOrHex) {
+  const palette = getPaletteById(paletteOrHex);
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+    (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const colors = isDark ? palette.dark : palette.light;
+
+  document.querySelectorAll(`.meeting-block[data-course="${courseCode}"]`).forEach((block) => {
+    for (const p of COURSE_PALETTES) {
+      block.classList.remove(`palette-${p.id}`);
+    }
+    if (!palette.isCustom) {
+      block.classList.add(`palette-${palette.id}`);
+    }
+    block.style.setProperty('--card-bg', colors.bg);
+    block.style.setProperty('--card-border', colors.border);
+    block.style.setProperty('--card-code', colors.code);
+    block.style.setProperty('--card-title', colors.title);
+    block.style.setProperty('--card-meta', colors.meta);
+    block.style.setProperty('--card-swatch', palette.swatch);
+
+    const btn = block.querySelector('.meeting-color-btn');
+    if (btn) btn.style.background = palette.swatch;
+  });
+
+  if (els.legendBadges) {
+    els.legendBadges.querySelectorAll('.course-badge').forEach((badge) => {
+      const codeSpan = badge.querySelector('.course-badge-code');
+      if (codeSpan && codeSpan.textContent === courseCode) {
+        for (const p of COURSE_PALETTES) {
+          badge.classList.remove(`palette-${p.id}`);
+        }
+        if (!palette.isCustom) {
+          badge.classList.add(`palette-${palette.id}`);
+        }
+        badge.style.setProperty('--card-border', colors.border);
+        badge.style.setProperty('--card-code', colors.code);
+        badge.style.setProperty('--card-swatch', palette.swatch);
+        const swatch = badge.querySelector('.course-badge-swatch');
+        if (swatch) swatch.style.background = palette.swatch;
+      }
+    });
+  }
+}
+
 function openPalettePopover(anchor, courseCode, currentPaletteId) {
   if (activePopover && activePopover.anchor === anchor) {
     closeActivePopover();
@@ -84,8 +128,8 @@ function openPalettePopover(anchor, courseCode, currentPaletteId) {
   plainBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     saveCustomCourseColor(courseCode, 'plain');
+    updateCourseCardsLive(courseCode, 'plain');
     closeActivePopover();
-    if (currentSchedule) renderSchedule(currentSchedule);
   });
   popover.appendChild(plainBtn);
 
@@ -107,8 +151,8 @@ function openPalettePopover(anchor, courseCode, currentPaletteId) {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       saveCustomCourseColor(courseCode, palette.id);
+      updateCourseCardsLive(courseCode, palette.id);
       closeActivePopover();
-      if (currentSchedule) renderSchedule(currentSchedule);
     });
 
     grid.appendChild(btn);
@@ -163,15 +207,15 @@ function openPalettePopover(anchor, courseCode, currentPaletteId) {
     hexInput.value = val.toUpperCase();
     hexInput.classList.remove('invalid');
     saveCustomCourseColor(courseCode, val);
-    if (currentSchedule) renderSchedule(currentSchedule);
+    updateCourseCardsLive(courseCode, val);
   });
 
   colorInput.addEventListener('change', (e) => {
     const val = e.target.value.toLowerCase();
     hexInput.value = val.toUpperCase();
+    hexInput.classList.remove('invalid');
     saveCustomCourseColor(courseCode, val);
-    closeActivePopover();
-    if (currentSchedule) renderSchedule(currentSchedule);
+    updateCourseCardsLive(courseCode, val);
   });
 
   hexInput.addEventListener('input', (e) => {
@@ -179,6 +223,8 @@ function openPalettePopover(anchor, courseCode, currentPaletteId) {
     if (valid) {
       colorInput.value = valid;
       hexInput.classList.remove('invalid');
+      saveCustomCourseColor(courseCode, valid);
+      updateCourseCardsLive(courseCode, valid);
     }
   });
 
@@ -188,8 +234,8 @@ function openPalettePopover(anchor, courseCode, currentPaletteId) {
     const valid = parseAndNormalizeHex(hexInput.value);
     if (valid) {
       saveCustomCourseColor(courseCode, valid);
+      updateCourseCardsLive(courseCode, valid);
       closeActivePopover();
-      if (currentSchedule) renderSchedule(currentSchedule);
     } else {
       hexInput.classList.add('invalid');
       hexInput.focus();
