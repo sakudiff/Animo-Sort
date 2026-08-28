@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Archives and logs
+*.zip
+*.tar.gz
+*.log
+.DS_Store
+Thumbs.db
+
+# Netlify and local builds
+.netlify/
+
+# Editor and agent workspaces
+.pi/
+.vscode/
+.idea/

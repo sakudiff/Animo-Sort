@@ -3,10 +3,5 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Animo Sort: convert an ArcherHub EAF PDF into a weekly timetable. Local-only static app.",
-  "scripts": {
-    "test:parser": "node tests/parser.test.mjs",
-    "test:browser": "node tests/run.cjs",
-    "test": "node tests/parser.test.mjs && node tests/run.cjs"
-  }
+  "description": "Animo Sort: convert an ArcherHub EAF PDF into a weekly timetable. Local-only static web app."
 }
