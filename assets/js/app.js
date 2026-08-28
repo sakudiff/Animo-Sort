@@ -377,7 +377,7 @@ export async function handleFile(file) {
   if (!file || importInProgress) return;
   if (file.size > MAX_EAF_FILE_SIZE) {
     els.fileInput.value = '';
-    setStatus('This PDF is larger than 1 MiB. Choose an ArcherHub EAF PDF under 1 MiB.', 'error');
+    setStatus('This PDF is larger than 1 MiB. Choose an Archershub EAF PDF under 1 MiB.', 'error');
     return;
   }
   const generation = ++importGeneration;
@@ -395,7 +395,7 @@ export async function handleFile(file) {
     if (err instanceof EafParseError) {
       setStatus(err.message, 'error');
     } else {
-      setStatus('Something went wrong while reading the file. Please try again with the original ArcherHub EAF PDF.', 'error');
+      setStatus('Something went wrong while reading the file. Please try again with the original Archershub EAF PDF.', 'error');
     }
   } finally {
     if (activeImportGeneration === generation) {

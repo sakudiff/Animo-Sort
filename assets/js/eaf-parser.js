@@ -1,4 +1,4 @@
-// ArcherHub EAF parser. Reads an official DLSU EAF PDF entirely in the
+// Archershub EAF parser. Reads an official DLSU EAF PDF entirely in the
 // browser, validates the structure, and returns only normalized schedule data.
 
 export const DAY_ORDER = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -313,12 +313,12 @@ function parseCourseRow(row, headerInfo) {
   const section = joinColumnWords(cols.section);
   const credits = Number.parseFloat(joinColumnWords(cols.credits));
   if (!code || !title || !section || !Number.isFinite(credits) || credits < 0) {
-    throw new EafParseError('ROW_UNREADABLE', 'The ArcherHub EAF was recognized, but one or more schedule entries could not be read reliably. No schedule was replaced. Upload the original PDF again or verify the document format.', { row: no ?? null });
+    throw new EafParseError('ROW_UNREADABLE', 'The Archershub EAF was recognized, but one or more schedule entries could not be read reliably. No schedule was replaced. Upload the original PDF again or verify the document format.', { row: no ?? null });
   }
   const scheduleText = joinColumnWords(cols.schedule);
   const segments = splitMeetingSegments(scheduleText);
   if (!segments || !segments.length) {
-    throw new EafParseError('ROW_UNREADABLE', 'The ArcherHub EAF was recognized, but one or more schedule entries could not be read reliably. No schedule was replaced. Upload the original PDF again or verify the document format.', { row: no });
+    throw new EafParseError('ROW_UNREADABLE', 'The Archershub EAF was recognized, but one or more schedule entries could not be read reliably. No schedule was replaced. Upload the original PDF again or verify the document format.', { row: no });
   }
   const courseInfo = { code, title, section, credits, row: no };
   const meetings = segments.map((raw) => normalizeMeeting(raw, courseInfo));
@@ -361,7 +361,7 @@ export function parseScheduleRows(pages, session) {
     }
   }
   if (!rows.length) {
-    throw new EafParseError('SCHEDULE_NOT_FOUND', 'The ArcherHub EAF was recognized, but no schedule table with numbered rows was found. No schedule was replaced.');
+    throw new EafParseError('SCHEDULE_NOT_FOUND', 'The Archershub EAF was recognized, but no schedule table with numbered rows was found. No schedule was replaced.');
   }
   const result = [];
   for (const row of rows) {
@@ -371,17 +371,17 @@ export function parseScheduleRows(pages, session) {
   return result;
 }
 
-export function validateArcherHubEaf(pages) {
+export function validateArchershubEaf(pages) {
   const pageTexts = (pages || []).map((items) =>
     (items || []).map((it) => it.str).join(' ')
   );
   const fullText = pageTexts.join(' ').replace(/\s+/g, ' ');
   if (!/ENROLLMENT\s+ASSESSMENT\s+FORM/i.test(fullText)) {
-    throw new EafParseError('NOT_ARCHERHUB_EAF', 'This does not look like an official ArcherHub EAF. Upload the official DLSU ArcherHub EAF PDF.');
+    throw new EafParseError('NOT_ARCHERSHUB_EAF', 'This does not look like an official Archershub EAF. Upload the official DLSU Archershub EAF PDF.');
   }
   const sessionMatch = /ACADEMIC\s+SESSION\s*:?\s*(AY\s+\d{4}-\d{4}\s+Term\s+\d+)/i.exec(fullText);
   if (!sessionMatch) {
-    throw new EafParseError('SESSION_NOT_FOUND', 'The ArcherHub EAF was recognized, but the academic session could not be found.');
+    throw new EafParseError('SESSION_NOT_FOUND', 'The Archershub EAF was recognized, but the academic session could not be found.');
   }
   return { session: sessionMatch[1] };
 }
@@ -407,20 +407,20 @@ export async function extractPdfTextItems(file) {
     return pages;
   } catch (err) {
     if (err instanceof EafParseError) throw err;
-    throw new EafParseError('PDF_READ_FAILED', 'The selected PDF could not be read. Upload the official DLSU ArcherHub EAF PDF.');
+    throw new EafParseError('PDF_READ_FAILED', 'The selected PDF could not be read. Upload the official DLSU Archershub EAF PDF.');
   }
 }
 
 export async function parseEafFile(file) {
   const isPdf = (file && file.type === 'application/pdf') || /\.pdf$/i.test((file && file.name) || '');
   if (!isPdf) {
-    throw new EafParseError('NOT_A_PDF', 'This does not look like an official ArcherHub EAF. Upload the official DLSU ArcherHub EAF PDF.');
+    throw new EafParseError('NOT_A_PDF', 'This does not look like an official Archershub EAF. Upload the official DLSU Archershub EAF PDF.');
   }
   if (!file || file.size === 0) {
-    throw new EafParseError('EMPTY_FILE', 'The selected file is empty. Upload the official DLSU ArcherHub EAF PDF.');
+    throw new EafParseError('EMPTY_FILE', 'The selected file is empty. Upload the official DLSU Archershub EAF PDF.');
   }
   const pages = await extractPdfTextItems(file);
-  const { session } = validateArcherHubEaf(pages);
+  const { session } = validateArchershubEaf(pages);
   const rows = parseScheduleRows(pages, session);
   validateNoOverlaps(rows.flatMap((row) => row.meetings));
   return sanitizeSchedule(session, rows);

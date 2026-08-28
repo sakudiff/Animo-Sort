@@ -4,11 +4,11 @@ AnimoSort is a client-side web application that converts De La Salle University 
 
 ## Why does this exist?
 
-ArcherHub has a Schedule page.
+Archershub has a Schedule page.
 
 This would normally be where the story ends.
 
-Unfortunately, ArcherHub occasionally has other plans.
+Unfortunately, Archershub occasionally has other plans.
 
 Sometimes its contribution to scheduling is:
 
@@ -36,7 +36,7 @@ For students who continue to experience time chronologically, however, this pres
 
 That's why **AnimoSort** exists.
 
-AnimoSort takes the official ArcherHub EAF, extracts the current term's class meetings, normalizes them, sorts them by actual time, and renders them as a conventional weekly timetable.
+AnimoSort takes the official Archershub EAF, extracts the current term's class meetings, normalizes them, sorts them by actual time, and renders them as a conventional weekly timetable.
 
 You know:
 
@@ -60,7 +60,7 @@ And because an EAF contains information that has absolutely no business being se
 - No tuition information displayed.
 - No pretending that 9:00 PM comes before breakfast.
 
-AnimoSort isn't affiliated with, endorsed by, or part of De La Salle University or ArcherHub.
+AnimoSort isn't affiliated with, endorsed by, or part of De La Salle University or Archershub.
 
 It was simply built by someone who opened the Schedule page one too many times.
 
@@ -78,7 +78,7 @@ It was simply built by someone who opened the Schedule page one too many times.
 
 ## Compatibility
 
-AnimoSort supports official DLSU Enrollment Assessment Forms generated from [ArchersHub](https://archershub.dlsu.edu.ph/) starting from AY 2025-2026 Term 3. Legacy documents from Animo.sys are unsupported.
+AnimoSort supports official DLSU Enrollment Assessment Forms generated from [Archershub](https://archershub.dlsu.edu.ph/) starting from AY 2025-2026 Term 3. Legacy documents from Animo.sys are unsupported.
 
 ## Quickstart
 
@@ -98,7 +98,7 @@ Open `http://localhost:8000` in your web browser to use the application.
 ## Usage
 
 1. Open AnimoSort in your browser.
-2. Select or drag your official ArchersHub EAF PDF into the upload area.
+2. Select or drag your official Archershub EAF PDF into the upload area.
 3. Review your timetable across Monday to Saturday.
 4. Toggle full course titles or download a PNG image of your schedule.
 
