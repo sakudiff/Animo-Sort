@@ -6,7 +6,7 @@ All notable changes to AnimoSort are documented here.
 
 ## v0.2.0 — 2026-08-28
 
-### 🎨 We Have Colors Now
+### We Have Colors Now
 
 Apparently chronological order wasn't enough innovation for one week.
 
@@ -29,7 +29,7 @@ Apparently chronological order wasn't enough innovation for one week.
 
 ## v0.1.0 — 2026-08-28
 
-### 🚀 The "Your Timetable Has Now Been Created" Release
+### The "Your Timetable Has Now Been Created" Release
 
 For students who continue to experience time chronologically.
 
