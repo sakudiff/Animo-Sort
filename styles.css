@@ -178,6 +178,32 @@ button {
   color: var(--accent);
 }
 
+.nav-github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: color var(--silk-dur) var(--silk), border-color var(--silk-dur) var(--silk), background var(--silk-dur) var(--silk);
+}
+
+.nav-github-link:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-ghost);
+}
+
+.nav-github-link svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
 .hero {
   padding: 148px 32px 56px;
 }
@@ -638,6 +664,18 @@ button {
   color: var(--accent);
 }
 
+.story-content a,
+.app-footer a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.story-content a:hover,
+.app-footer a:hover {
+  color: var(--accent-mid);
+}
+
 .story-punchline {
   margin-top: 20px;
   padding-top: 16px;
@@ -675,6 +713,11 @@ button {
   font-size: 0.82rem;
   color: var(--text-3);
   text-align: center;
+  line-height: 1.6;
+}
+
+.app-footer p {
+  margin: 0 0 6px;
 }
 
 /* ── Focus and motion ── */
