@@ -806,67 +806,67 @@ div[id*="netlify"] {
   --card-swatch: #94a3b8;
 }
 .palette-sage {
-  --card-bg: #f2f7f4;
-  --card-border: #bcd6c6;
-  --card-code: #2f523d;
-  --card-title: #1f3829;
-  --card-meta: #52796f;
+  --card-bg: #eaf4ee;
+  --card-border: #aed2bc;
+  --card-code: #245035;
+  --card-title: #163823;
+  --card-meta: #3d6c4f;
   --card-swatch: #52796f;
 }
 .palette-sky {
-  --card-bg: #f0f5fb;
-  --card-border: #bed4eb;
-  --card-code: #285882;
-  --card-title: #1b3b57;
-  --card-meta: #4682b4;
+  --card-bg: #e8f2fa;
+  --card-border: #b0d1ee;
+  --card-code: #1f5380;
+  --card-title: #13395b;
+  --card-meta: #3873a4;
   --card-swatch: #4682b4;
 }
 .palette-lavender {
-  --card-bg: #f6f3fb;
-  --card-border: #d5c9ec;
-  --card-code: #564287;
-  --card-title: #3a2c5c;
-  --card-meta: #7d6ba8;
+  --card-bg: #f3eef9;
+  --card-border: #cdc0ea;
+  --card-code: #503a83;
+  --card-title: #36245c;
+  --card-meta: #6e5a9c;
   --card-swatch: #7d6ba8;
 }
 .palette-peach {
-  --card-bg: #fbf4f0;
-  --card-border: #ebcfc3;
-  --card-code: #8a442b;
-  --card-title: #5e2d1c;
-  --card-meta: #ba6e54;
+  --card-bg: #f9eee8;
+  --card-border: #e7c6b7;
+  --card-code: #7f3c24;
+  --card-title: #562514;
+  --card-meta: #aa5f45;
   --card-swatch: #ba6e54;
 }
 .palette-mint {
-  --card-bg: #f0f8f7;
-  --card-border: #b7deda;
-  --card-code: #245953;
-  --card-title: #163b37;
-  --card-meta: #3f827c;
+  --card-bg: #e7f5f3;
+  --card-border: #a8dcd5;
+  --card-code: #1c554e;
+  --card-title: #103934;
+  --card-meta: #30756e;
   --card-swatch: #3f827c;
 }
 .palette-rose {
-  --card-bg: #faf1f4;
-  --card-border: #e7c3cf;
-  --card-code: #873650;
-  --card-title: #5e2235;
-  --card-meta: #b55e79;
+  --card-bg: #f9ecf0;
+  --card-border: #e6bac9;
+  --card-code: #7d2d46;
+  --card-title: #551a2c;
+  --card-meta: #a64d6a;
   --card-swatch: #b55e79;
 }
 .palette-sand {
-  --card-bg: #f9f7f2;
-  --card-border: #e0d8c4;
-  --card-code: #6e5a35;
-  --card-title: #4a3c22;
-  --card-meta: #917c56;
+  --card-bg: #f7f4ec;
+  --card-border: #ded3bc;
+  --card-code: #65512b;
+  --card-title: #443419;
+  --card-meta: #877149;
   --card-swatch: #917c56;
 }
 .palette-slate {
-  --card-bg: #f1f4f7;
-  --card-border: #c3ced9;
-  --card-code: #36495d;
-  --card-title: #22303e;
-  --card-meta: #5a6f84;
+  --card-bg: #edf2f6;
+  --card-border: #b9c7d4;
+  --card-code: #2e4154;
+  --card-title: #1b2a38;
+  --card-meta: #4f6479;
   --card-swatch: #5a6f84;
 }
 

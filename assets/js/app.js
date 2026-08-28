@@ -743,8 +743,14 @@ export function initApp() {
   });
   els.downloadPngBtn.addEventListener('click', () => {
     if (currentSchedule) {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+        (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
       const courseColorMap = buildCourseColorMap(currentSchedule, customCourseColors);
-      downloadSchedulePng(currentSchedule, { showCourseTitles, courseColors: courseColorMap }).catch(() => {
+      downloadSchedulePng(currentSchedule, {
+        showCourseTitles,
+        courseColors: courseColorMap,
+        theme: isDark ? 'dark' : 'light',
+      }).catch(() => {
         setStatus('The PNG could not be generated. Please try again.', 'error');
       });
     }
