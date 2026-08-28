@@ -180,7 +180,7 @@ export function createScheduleSvg(schedule, options = {}) {
   }
 
   // Footer branding
-  parts.push(`<text x="${SVG_WIDTH - MARGIN}" y="${SVG_HEIGHT - 16}" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#666666">made with <tspan font-weight="bold" fill="#1b2e23">Animo</tspan><tspan font-weight="bold" fill="#087830">Sort</tspan></text>`);
+  parts.push(`<a href="https://animosort.netlify.app/" target="_blank"><text x="${SVG_WIDTH - MARGIN}" y="${SVG_HEIGHT - 16}" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#666666">made with <tspan font-weight="bold" fill="#1b2e23">Animo</tspan><tspan font-weight="bold" fill="#087830">Sort</tspan> · <tspan fill="#087830" font-weight="500">https://animosort.netlify.app/</tspan></text></a>`);
 
   parts.push('</svg>');
   return parts.join('\n');
