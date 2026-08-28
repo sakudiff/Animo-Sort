@@ -555,6 +555,12 @@ div[id*="netlify"] {
   gap: 8px;
 }
 
+.legend-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .legend-title {
   font-size: 0.8rem;
   font-weight: 700;
@@ -565,6 +571,31 @@ div[id*="netlify"] {
 .legend-subtitle {
   font-size: 0.72rem;
   color: var(--text-3);
+}
+
+.legend-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-action-btn {
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  color: var(--text-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease, transform 0.12s ease;
+}
+
+.legend-action-btn:hover {
+  background: var(--surface);
+  border-color: var(--accent-border);
+  color: var(--accent);
+  transform: translateY(-0.5px);
 }
 
 .legend-badges {

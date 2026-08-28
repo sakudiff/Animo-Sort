@@ -320,6 +320,8 @@ const els = {
   scheduleCanvas: null,
   courseLegend: null,
   legendBadges: null,
+  randomizeColorsBtn: null,
+  clearColorsBtn: null,
   replaceBtn: null,
   clearBtn: null,
   downloadPngBtn: null,
@@ -340,6 +342,8 @@ function requireElements() {
     scheduleCanvas: 'schedule-canvas',
     courseLegend: 'course-legend',
     legendBadges: 'legend-badges',
+    randomizeColorsBtn: 'randomize-colors-btn',
+    clearColorsBtn: 'clear-colors-btn',
     replaceBtn: 'replace-btn',
     clearBtn: 'clear-btn',
     downloadPngBtn: 'download-png-btn',
@@ -737,6 +741,37 @@ export function initApp() {
     if (!importInProgress) els.fileInput.click();
   });
   els.clearBtn.addEventListener('click', clearSchedule);
+
+  if (els.randomizeColorsBtn) {
+    els.randomizeColorsBtn.addEventListener('click', () => {
+      if (!currentSchedule || !Array.isArray(currentSchedule.meetings)) return;
+      const distinctCourses = [...new Set(currentSchedule.meetings.map((m) => m.courseCode))];
+      const pastelIds = COURSE_PALETTES.slice(1).map((p) => p.id);
+      const shuffled = [...pastelIds].sort(() => Math.random() - 0.5);
+      distinctCourses.forEach((code, index) => {
+        customCourseColors[code] = shuffled[index % shuffled.length];
+      });
+      try {
+        localStorage.setItem('animosort_course_colors', JSON.stringify(customCourseColors));
+      } catch (e) {}
+      renderSchedule(currentSchedule);
+    });
+  }
+
+  if (els.clearColorsBtn) {
+    els.clearColorsBtn.addEventListener('click', () => {
+      if (!currentSchedule || !Array.isArray(currentSchedule.meetings)) return;
+      const distinctCourses = [...new Set(currentSchedule.meetings.map((m) => m.courseCode))];
+      distinctCourses.forEach((code) => {
+        customCourseColors[code] = 'plain';
+      });
+      try {
+        localStorage.setItem('animosort_course_colors', JSON.stringify(customCourseColors));
+      } catch (e) {}
+      renderSchedule(currentSchedule);
+    });
+  }
+
   els.showCourseTitles.addEventListener('change', () => {
     showCourseTitles = els.showCourseTitles.checked;
     if (currentSchedule) renderSchedule(currentSchedule);
