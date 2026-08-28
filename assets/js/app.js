@@ -70,7 +70,29 @@ function openPalettePopover(anchor, courseCode, currentPaletteId) {
   popover.setAttribute('role', 'dialog');
   popover.setAttribute('aria-label', `Choose color for ${courseCode}`);
 
-  for (const palette of COURSE_PALETTES) {
+  const popoverHeader = document.createElement('div');
+  popoverHeader.className = 'popover-header';
+  popoverHeader.textContent = `Color for ${courseCode}`;
+  popover.appendChild(popoverHeader);
+
+  // 1. Plain (Minimal) option
+  const plainBtn = document.createElement('button');
+  plainBtn.type = 'button';
+  plainBtn.className = `palette-plain-btn${currentPaletteId === 'plain' ? ' active' : ''}`;
+  plainBtn.innerHTML = `<span class="plain-swatch"></span><span>Plain / Neutral</span>`;
+  plainBtn.title = 'Plain minimal style with no pastel tint';
+  plainBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    saveCustomCourseColor(courseCode, 'plain');
+    closeActivePopover();
+    if (currentSchedule) renderSchedule(currentSchedule);
+  });
+  popover.appendChild(plainBtn);
+
+  // 2. Pastel presets grid
+  const grid = document.createElement('div');
+  grid.className = 'palette-presets-grid';
+  for (const palette of COURSE_PALETTES.slice(1)) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = `palette-option-btn${palette.id === currentPaletteId ? ' active' : ''}`;
@@ -89,13 +111,45 @@ function openPalettePopover(anchor, courseCode, currentPaletteId) {
       if (currentSchedule) renderSchedule(currentSchedule);
     });
 
-    popover.appendChild(btn);
+    grid.appendChild(btn);
   }
+  popover.appendChild(grid);
+
+  // 3. Custom color picker
+  const customRow = document.createElement('label');
+  customRow.className = 'palette-custom-row';
+  customRow.title = 'Choose custom color';
+
+  const colorInput = document.createElement('input');
+  colorInput.type = 'color';
+  colorInput.className = 'palette-color-input';
+  colorInput.value = typeof currentPaletteId === 'string' && currentPaletteId.startsWith('#')
+    ? currentPaletteId
+    : '#52796f';
+
+  const customLabel = document.createElement('span');
+  customLabel.className = 'palette-custom-label';
+  customLabel.textContent = 'Custom color…';
+
+  customRow.append(colorInput, customLabel);
+
+  colorInput.addEventListener('input', (e) => {
+    saveCustomCourseColor(courseCode, e.target.value);
+    if (currentSchedule) renderSchedule(currentSchedule);
+  });
+
+  colorInput.addEventListener('change', (e) => {
+    saveCustomCourseColor(courseCode, e.target.value);
+    closeActivePopover();
+    if (currentSchedule) renderSchedule(currentSchedule);
+  });
+
+  popover.appendChild(customRow);
 
   document.body.appendChild(popover);
 
   const rect = anchor.getBoundingClientRect();
-  const popoverWidth = 136;
+  const popoverWidth = 164;
   let left = rect.left + window.scrollX + (rect.width / 2) - (popoverWidth / 2);
   if (left < 10) left = 10;
   if (left + popoverWidth > window.innerWidth - 10) left = window.innerWidth - popoverWidth - 10;
@@ -355,12 +409,22 @@ function renderCourseLegend(schedule, courseColorMap) {
 
     const badge = document.createElement('button');
     badge.type = 'button';
-    badge.className = `course-badge palette-${palette.id}`;
+    badge.className = `course-badge${palette.isCustom ? '' : ` palette-${palette.id}`}`;
     badge.setAttribute('aria-label', `Change color for ${code}`);
-    badge.title = `Change color for ${code} (${palette.name})`;
+    badge.title = `Click dot to change color for ${code} (${palette.name})`;
+
+    if (palette.isCustom) {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+        (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      const colors = isDark ? palette.dark : palette.light;
+      badge.style.setProperty('--card-border', colors.border);
+      badge.style.setProperty('--card-code', colors.code);
+      badge.style.setProperty('--card-swatch', palette.swatch);
+    }
 
     const swatch = document.createElement('span');
     swatch.className = 'course-badge-swatch';
+    swatch.style.background = palette.swatch;
 
     const codeSpan = document.createElement('span');
     codeSpan.className = 'course-badge-code';
@@ -370,15 +434,11 @@ function renderCourseLegend(schedule, courseColorMap) {
     sectionSpan.className = 'course-badge-section';
     sectionSpan.textContent = meeting ? meeting.section : '';
 
-    const caretSpan = document.createElement('span');
-    caretSpan.className = 'course-badge-caret';
-    caretSpan.textContent = '▾';
-
-    badge.append(swatch, codeSpan, sectionSpan, caretSpan);
+    badge.append(swatch, codeSpan, sectionSpan);
 
     badge.addEventListener('click', (e) => {
       e.stopPropagation();
-      openPalettePopover(badge, code, palette.id);
+      openPalettePopover(badge, code, palette.id || palette.swatch);
     });
 
     els.legendBadges.appendChild(badge);
@@ -453,7 +513,18 @@ export function renderSchedule(schedule) {
       for (const meeting of dayMeetings) {
         const palette = courseColorMap[meeting.courseCode] || COURSE_PALETTES[0];
         const block = document.createElement('div');
-        block.className = `meeting-block palette-${palette.id}`;
+        block.className = `meeting-block${palette.isCustom ? '' : ` palette-${palette.id}`}`;
+        if (palette.isCustom) {
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+            (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          const colors = isDark ? palette.dark : palette.light;
+          block.style.setProperty('--card-bg', colors.bg);
+          block.style.setProperty('--card-border', colors.border);
+          block.style.setProperty('--card-code', colors.code);
+          block.style.setProperty('--card-title', colors.title);
+          block.style.setProperty('--card-meta', colors.meta);
+          block.style.setProperty('--card-swatch', palette.swatch);
+        }
         block.style.top = `${meetingTop(meeting, canvasStart, pixelsPerMinute)}%`;
         block.style.height = `${meetingHeight(meeting, pixelsPerMinute)}%`;
         block.setAttribute('role', 'cell');
@@ -475,11 +546,12 @@ export function renderSchedule(schedule) {
         const colorBtn = document.createElement('button');
         colorBtn.type = 'button';
         colorBtn.className = 'meeting-color-btn';
-        colorBtn.title = `Change color for ${meeting.courseCode}`;
-        colorBtn.setAttribute('aria-label', `Change color for ${meeting.courseCode}`);
+        colorBtn.style.background = palette.swatch;
+        colorBtn.title = `Click dot to change color for ${meeting.courseCode}`;
+        colorBtn.setAttribute('aria-label', `Click dot to change color for ${meeting.courseCode}`);
         colorBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          openPalettePopover(colorBtn, meeting.courseCode, palette.id);
+          openPalettePopover(colorBtn, meeting.courseCode, palette.id || palette.swatch);
         });
 
         const primary = document.createElement('div');

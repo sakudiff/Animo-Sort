@@ -76,81 +76,121 @@ function wrapTitle(title, maxChars = 28) {
 
 export const COURSE_PALETTES = [
   {
-    id: 'emerald',
-    name: 'Emerald Green',
-    swatch: '#087830',
-    light: { bg: '#edf7f0', border: '#97d4ab', code: '#087830', title: '#154726', meta: '#2d6340' },
-    dark: { bg: '#0b2414', border: '#1e6837', code: '#4ade80', title: '#f0fdf4', meta: '#86efac' },
+    id: 'plain',
+    name: 'Plain (Minimal)',
+    swatch: '#94a3b8',
+    light: { bg: '#ffffff', border: '#cbd5e1', code: '#1e293b', title: '#334155', meta: '#64748b' },
+    dark: { bg: '#080808', border: '#334155', code: '#f8fafc', title: '#cbd5e1', meta: '#94a3b8' },
   },
   {
-    id: 'blue',
-    name: 'Ocean Blue',
-    swatch: '#1d4ed8',
-    light: { bg: '#eff6ff', border: '#93c5fd', code: '#1d4ed8', title: '#1e3a8a', meta: '#2563eb' },
-    dark: { bg: '#0c1e36', border: '#1d4ed8', code: '#60a5fa', title: '#eff6ff', meta: '#93c5fd' },
+    id: 'sage',
+    name: 'Pastel Sage',
+    swatch: '#52796f',
+    light: { bg: '#f2f7f4', border: '#bcd6c6', code: '#2f523d', title: '#1f3829', meta: '#52796f' },
+    dark: { bg: '#0d1a14', border: '#2f523d', code: '#86efac', title: '#ecfdf5', meta: '#6ee7b7' },
   },
   {
-    id: 'purple',
-    name: 'Royal Purple',
-    swatch: '#7e22ce',
-    light: { bg: '#faf5ff', border: '#d8b4fe', code: '#7e22ce', title: '#3b0764', meta: '#9333ea' },
-    dark: { bg: '#250f33', border: '#7e22ce', code: '#c084fc', title: '#faf5ff', meta: '#d8b4fe' },
+    id: 'sky',
+    name: 'Pastel Sky',
+    swatch: '#4682b4',
+    light: { bg: '#f0f5fb', border: '#bed4eb', code: '#285882', title: '#1b3b57', meta: '#4682b4' },
+    dark: { bg: '#0c1724', border: '#285882', code: '#93c5fd', title: '#eff6ff', meta: '#60a5fa' },
   },
   {
-    id: 'amber',
-    name: 'Amber Orange',
-    swatch: '#c2410c',
-    light: { bg: '#fff7ed', border: '#fed7aa', code: '#c2410c', title: '#431407', meta: '#ea580c' },
-    dark: { bg: '#2d140a', border: '#c2410c', code: '#fb923c', title: '#fff7ed', meta: '#fed7aa' },
+    id: 'lavender',
+    name: 'Pastel Lavender',
+    swatch: '#7d6ba8',
+    light: { bg: '#f6f3fb', border: '#d5c9ec', code: '#564287', title: '#3a2c5c', meta: '#7d6ba8' },
+    dark: { bg: '#181226', border: '#564287', code: '#c4b5fd', title: '#faf5ff', meta: '#a78bfa' },
   },
   {
-    id: 'teal',
-    name: 'Teal Green',
-    swatch: '#0f766e',
-    light: { bg: '#f0fdfa', border: '#99f6e4', code: '#0f766e', title: '#134e4a', meta: '#0d9488' },
-    dark: { bg: '#082522', border: '#0f766e', code: '#2dd4bf', title: '#f0fdfa', meta: '#99f6e4' },
+    id: 'peach',
+    name: 'Pastel Peach',
+    swatch: '#ba6e54',
+    light: { bg: '#fbf4f0', border: '#ebcfc3', code: '#8a442b', title: '#5e2d1c', meta: '#ba6e54' },
+    dark: { bg: '#22120c', border: '#8a442b', code: '#fdba74', title: '#fff7ed', meta: '#fb923c' },
+  },
+  {
+    id: 'mint',
+    name: 'Pastel Mint',
+    swatch: '#3f827c',
+    light: { bg: '#f0f8f7', border: '#b7deda', code: '#245953', title: '#163b37', meta: '#3f827c' },
+    dark: { bg: '#0b1c1a', border: '#245953', code: '#5eead4', title: '#f0fdfa', meta: '#2dd4bf' },
   },
   {
     id: 'rose',
-    name: 'Ruby Rose',
-    swatch: '#be123c',
-    light: { bg: '#fff1f2', border: '#fecdd3', code: '#be123c', title: '#4c0519', meta: '#e11d48' },
-    dark: { bg: '#2e0a13', border: '#be123c', code: '#fb7185', title: '#fff1f2', meta: '#fecdd3' },
+    name: 'Pastel Rose',
+    swatch: '#b55e79',
+    light: { bg: '#faf1f4', border: '#e7c3cf', code: '#873650', title: '#5e2235', meta: '#b55e79' },
+    dark: { bg: '#230e16', border: '#873650', code: '#f472b6', title: '#fdf2f8', meta: '#f43f5e' },
   },
   {
-    id: 'indigo',
-    name: 'Indigo Night',
-    swatch: '#4338ca',
-    light: { bg: '#eef2ff', border: '#c7d2fe', code: '#4338ca', title: '#1e1b4b', meta: '#4f46e5' },
-    dark: { bg: '#131538', border: '#4338ca', code: '#818cf8', title: '#eef2ff', meta: '#c7d2fe' },
+    id: 'sand',
+    name: 'Pastel Sand',
+    swatch: '#917c56',
+    light: { bg: '#f9f7f2', border: '#e0d8c4', code: '#6e5a35', title: '#4a3c22', meta: '#917c56' },
+    dark: { bg: '#1e1910', border: '#6e5a35', code: '#fde047', title: '#fefce8', meta: '#eab308' },
   },
   {
-    id: 'cyan',
-    name: 'Sky Cyan',
-    swatch: '#0369a1',
-    light: { bg: '#f0f9ff', border: '#bae6fd', code: '#0369a1', title: '#082f49', meta: '#0284c7' },
-    dark: { bg: '#082236', border: '#0369a1', code: '#38bdf8', title: '#f0f9ff', meta: '#bae6fd' },
-  },
-  {
-    id: 'yellow',
-    name: 'Gold Ochre',
-    swatch: '#a16207',
-    light: { bg: '#fefce8', border: '#fef08a', code: '#a16207', title: '#422006', meta: '#ca8a04' },
-    dark: { bg: '#291f06', border: '#a16207', code: '#facc15', title: '#fefce8', meta: '#fef08a' },
+    id: 'slate',
+    name: 'Pastel Slate',
+    swatch: '#5a6f84',
+    light: { bg: '#f1f4f7', border: '#c3ced9', code: '#36495d', title: '#22303e', meta: '#5a6f84' },
+    dark: { bg: '#11171f', border: '#36495d', code: '#94a3b8', title: '#f8fafc', meta: '#cbd5e1' },
   },
 ];
 
-export function getPaletteById(id) {
-  return COURSE_PALETTES.find((p) => p.id === id) || COURSE_PALETTES[0];
+function hexToRgb(hex) {
+  const clean = String(hex || '').replace('#', '');
+  const bigint = parseInt(clean.length === 3 ? clean.split('').map((c) => c + c).join('') : clean, 16);
+  if (Number.isNaN(bigint)) return { r: 100, g: 116, b: 139 };
+  return {
+    r: (bigint >> 16) & 255,
+    g: (bigint >> 8) & 255,
+    b: bigint & 255,
+  };
+}
+
+export function createCustomPalette(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const lightBg = `rgb(${Math.round(r * 0.08 + 255 * 0.92)}, ${Math.round(g * 0.08 + 255 * 0.92)}, ${Math.round(b * 0.08 + 255 * 0.92)})`;
+  const lightBorder = `rgb(${Math.round(r * 0.4 + 255 * 0.6)}, ${Math.round(g * 0.4 + 255 * 0.6)}, ${Math.round(b * 0.4 + 255 * 0.6)})`;
+  const lightCode = `rgb(${Math.round(r * 0.75)}, ${Math.round(g * 0.75)}, ${Math.round(b * 0.75)})`;
+  const lightTitle = `rgb(${Math.round(r * 0.45)}, ${Math.round(g * 0.45)}, ${Math.round(b * 0.45)})`;
+  const lightMeta = `rgb(${Math.round(r * 0.65)}, ${Math.round(g * 0.65)}, ${Math.round(b * 0.65)})`;
+
+  const darkBg = `rgb(${Math.round(r * 0.12)}, ${Math.round(g * 0.12)}, ${Math.round(b * 0.12)})`;
+  const darkBorder = `rgb(${Math.round(r * 0.55 + 20)}, ${Math.round(g * 0.55 + 20)}, ${Math.round(b * 0.55 + 20)})`;
+  const darkCode = `rgb(${Math.round(r * 0.4 + 255 * 0.6)}, ${Math.round(g * 0.4 + 255 * 0.6)}, ${Math.round(b * 0.4 + 255 * 0.6)})`;
+  const darkTitle = '#f8fafc';
+  const darkMeta = `rgb(${Math.round(r * 0.5 + 255 * 0.5)}, ${Math.round(g * 0.5 + 255 * 0.5)}, ${Math.round(b * 0.5 + 255 * 0.5)})`;
+
+  return {
+    id: `custom-${hex.replace('#', '')}`,
+    name: `Custom (${hex.toUpperCase()})`,
+    swatch: hex,
+    isCustom: true,
+    light: { bg: lightBg, border: lightBorder, code: lightCode, title: lightTitle, meta: lightMeta },
+    dark: { bg: darkBg, border: darkBorder, code: darkCode, title: darkTitle, meta: darkMeta },
+  };
+}
+
+export function getPaletteById(idOrHex) {
+  if (!idOrHex) return COURSE_PALETTES[1];
+  if (typeof idOrHex === 'string' && idOrHex.startsWith('#')) {
+    return createCustomPalette(idOrHex);
+  }
+  return COURSE_PALETTES.find((p) => p.id === idOrHex) || COURSE_PALETTES[1];
 }
 
 export function buildCourseColorMap(schedule, customColors = {}) {
   const map = {};
   if (!schedule || !Array.isArray(schedule.meetings)) return map;
   const distinctCourses = [...new Set(schedule.meetings.map((m) => m.courseCode))];
+  const pastelPresets = COURSE_PALETTES.slice(1);
   distinctCourses.forEach((code, index) => {
-    const customId = customColors[code];
-    const palette = customId ? getPaletteById(customId) : COURSE_PALETTES[index % COURSE_PALETTES.length];
+    const custom = customColors[code];
+    const palette = custom ? getPaletteById(custom) : pastelPresets[index % pastelPresets.length];
     map[code] = palette;
   });
   return map;

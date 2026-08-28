@@ -538,82 +538,80 @@ div[id*="netlify"] {
 
 .course-legend {
   margin: 0 0 18px;
-  padding: 12px 16px;
-  background: var(--bg-alt);
+  padding: 10px 14px;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .legend-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .legend-title {
-  font-size: 0.84rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--text-1);
   letter-spacing: -0.01em;
 }
 
 .legend-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-3);
 }
 
 .legend-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .course-badge {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 5px 11px;
-  border-radius: 9999px;
-  border: 1.5px solid var(--card-border, var(--border));
-  background: var(--card-bg, var(--surface));
-  color: var(--card-code, var(--text-1));
-  font-size: 0.8rem;
-  font-weight: 700;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  color: var(--text-1);
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
   position: relative;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
   user-select: none;
 }
 
 .course-badge:hover {
+  background: var(--surface);
+  border-color: var(--text-3);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .course-badge-swatch {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: var(--card-swatch, var(--accent));
   flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.course-badge-code {
+  font-weight: 700;
 }
 
 .course-badge-section {
-  font-size: 0.72rem;
-  font-weight: 600;
-  opacity: 0.85;
-}
-
-.course-badge-caret {
-  font-size: 0.65rem;
-  opacity: 0.5;
-  margin-left: 2px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-3);
 }
 
 /* Palette selection popover */
@@ -623,12 +621,12 @@ div[id*="netlify"] {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 10px;
+  padding: 10px 12px;
   box-shadow: var(--shadow-md);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  width: 136px;
+  width: 172px;
   animation: popoverFadeIn 0.15s ease-out;
 }
 
@@ -637,9 +635,59 @@ div[id*="netlify"] {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+.popover-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+.palette-plain-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  color: var(--text-1);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.palette-plain-btn:hover {
+  background: var(--surface);
+  border-color: var(--text-3);
+}
+
+.palette-plain-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-ghost);
+}
+
+.plain-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+}
+
+.palette-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  justify-items: center;
+}
+
 .palette-option-btn {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -647,6 +695,7 @@ div[id*="netlify"] {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
   transition: transform 0.12s ease, border-color 0.12s ease;
 }
 
@@ -661,84 +710,128 @@ div[id*="netlify"] {
 }
 
 .palette-option-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   color: #ffffff;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
 }
 
-/* Light mode palette definitions */
-.palette-emerald {
-  --card-bg: #edf7f0;
-  --card-border: #97d4ab;
-  --card-code: #087830;
-  --card-title: #154726;
-  --card-meta: #2d6340;
-  --card-swatch: #087830;
+.palette-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px dashed var(--border);
+  background: var(--bg-alt);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
 }
-.palette-blue {
-  --card-bg: #eff6ff;
-  --card-border: #93c5fd;
-  --card-code: #1d4ed8;
-  --card-title: #1e3a8a;
-  --card-meta: #2563eb;
-  --card-swatch: #1d4ed8;
+
+.palette-custom-row:hover {
+  background: var(--surface);
+  border-color: var(--text-3);
 }
-.palette-purple {
-  --card-bg: #faf5ff;
-  --card-border: #d8b4fe;
-  --card-code: #7e22ce;
-  --card-title: #3b0764;
-  --card-meta: #9333ea;
-  --card-swatch: #7e22ce;
+
+.palette-color-input {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  background: none;
 }
-.palette-amber {
-  --card-bg: #fff7ed;
-  --card-border: #fed7aa;
-  --card-code: #c2410c;
-  --card-title: #431407;
-  --card-meta: #ea580c;
-  --card-swatch: #c2410c;
+
+.palette-color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
 }
-.palette-teal {
-  --card-bg: #f0fdfa;
-  --card-border: #99f6e4;
-  --card-code: #0f766e;
-  --card-title: #134e4a;
-  --card-meta: #0d9488;
-  --card-swatch: #0f766e;
+
+.palette-color-input::-webkit-color-swatch {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+}
+
+.palette-custom-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* Light mode pastel palette definitions */
+.palette-plain {
+  --card-bg: #ffffff;
+  --card-border: #cbd5e1;
+  --card-code: #1e293b;
+  --card-title: #334155;
+  --card-meta: #64748b;
+  --card-swatch: #94a3b8;
+}
+.palette-sage {
+  --card-bg: #f2f7f4;
+  --card-border: #bcd6c6;
+  --card-code: #2f523d;
+  --card-title: #1f3829;
+  --card-meta: #52796f;
+  --card-swatch: #52796f;
+}
+.palette-sky {
+  --card-bg: #f0f5fb;
+  --card-border: #bed4eb;
+  --card-code: #285882;
+  --card-title: #1b3b57;
+  --card-meta: #4682b4;
+  --card-swatch: #4682b4;
+}
+.palette-lavender {
+  --card-bg: #f6f3fb;
+  --card-border: #d5c9ec;
+  --card-code: #564287;
+  --card-title: #3a2c5c;
+  --card-meta: #7d6ba8;
+  --card-swatch: #7d6ba8;
+}
+.palette-peach {
+  --card-bg: #fbf4f0;
+  --card-border: #ebcfc3;
+  --card-code: #8a442b;
+  --card-title: #5e2d1c;
+  --card-meta: #ba6e54;
+  --card-swatch: #ba6e54;
+}
+.palette-mint {
+  --card-bg: #f0f8f7;
+  --card-border: #b7deda;
+  --card-code: #245953;
+  --card-title: #163b37;
+  --card-meta: #3f827c;
+  --card-swatch: #3f827c;
 }
 .palette-rose {
-  --card-bg: #fff1f2;
-  --card-border: #fecdd3;
-  --card-code: #be123c;
-  --card-title: #4c0519;
-  --card-meta: #e11d48;
-  --card-swatch: #be123c;
+  --card-bg: #faf1f4;
+  --card-border: #e7c3cf;
+  --card-code: #873650;
+  --card-title: #5e2235;
+  --card-meta: #b55e79;
+  --card-swatch: #b55e79;
 }
-.palette-indigo {
-  --card-bg: #eef2ff;
-  --card-border: #c7d2fe;
-  --card-code: #4338ca;
-  --card-title: #1e1b4b;
-  --card-meta: #4f46e5;
-  --card-swatch: #4338ca;
+.palette-sand {
+  --card-bg: #f9f7f2;
+  --card-border: #e0d8c4;
+  --card-code: #6e5a35;
+  --card-title: #4a3c22;
+  --card-meta: #917c56;
+  --card-swatch: #917c56;
 }
-.palette-cyan {
-  --card-bg: #f0f9ff;
-  --card-border: #bae6fd;
-  --card-code: #0369a1;
-  --card-title: #082f49;
-  --card-meta: #0284c7;
-  --card-swatch: #0369a1;
-}
-.palette-yellow {
-  --card-bg: #fefce8;
-  --card-border: #fef08a;
-  --card-code: #a16207;
-  --card-title: #422006;
-  --card-meta: #ca8a04;
-  --card-swatch: #a16207;
+.palette-slate {
+  --card-bg: #f1f4f7;
+  --card-border: #c3ced9;
+  --card-code: #36495d;
+  --card-title: #22303e;
+  --card-meta: #5a6f84;
+  --card-swatch: #5a6f84;
 }
 
 .schedule-scroll {
@@ -1207,68 +1300,77 @@ div[id*="netlify"] {
   border-color: rgba(255, 255, 255, 0.16);
 }
 
-:root[data-theme="dark"] .palette-emerald {
-  --card-bg: #0b2414;
-  --card-border: #1e6837;
-  --card-code: #4ade80;
-  --card-title: #f0fdf4;
-  --card-meta: #86efac;
+:root[data-theme="dark"] .palette-plain {
+  --card-bg: #080808;
+  --card-border: #334155;
+  --card-code: #f8fafc;
+  --card-title: #cbd5e1;
+  --card-meta: #94a3b8;
+  --card-swatch: #64748b;
 }
-:root[data-theme="dark"] .palette-blue {
-  --card-bg: #0c1e36;
-  --card-border: #1d4ed8;
-  --card-code: #60a5fa;
+:root[data-theme="dark"] .palette-sage {
+  --card-bg: #0d1a14;
+  --card-border: #2f523d;
+  --card-code: #86efac;
+  --card-title: #ecfdf5;
+  --card-meta: #6ee7b7;
+  --card-swatch: #52796f;
+}
+:root[data-theme="dark"] .palette-sky {
+  --card-bg: #0c1724;
+  --card-border: #285882;
+  --card-code: #93c5fd;
   --card-title: #eff6ff;
-  --card-meta: #93c5fd;
+  --card-meta: #60a5fa;
+  --card-swatch: #4682b4;
 }
-:root[data-theme="dark"] .palette-purple {
-  --card-bg: #250f33;
-  --card-border: #7e22ce;
-  --card-code: #c084fc;
+:root[data-theme="dark"] .palette-lavender {
+  --card-bg: #181226;
+  --card-border: #564287;
+  --card-code: #c4b5fd;
   --card-title: #faf5ff;
-  --card-meta: #d8b4fe;
+  --card-meta: #a78bfa;
+  --card-swatch: #7d6ba8;
 }
-:root[data-theme="dark"] .palette-amber {
-  --card-bg: #2d140a;
-  --card-border: #c2410c;
-  --card-code: #fb923c;
+:root[data-theme="dark"] .palette-peach {
+  --card-bg: #22120c;
+  --card-border: #8a442b;
+  --card-code: #fdba74;
   --card-title: #fff7ed;
-  --card-meta: #fed7aa;
+  --card-meta: #fb923c;
+  --card-swatch: #ba6e54;
 }
-:root[data-theme="dark"] .palette-teal {
-  --card-bg: #082522;
-  --card-border: #0f766e;
-  --card-code: #2dd4bf;
+:root[data-theme="dark"] .palette-mint {
+  --card-bg: #0b1c1a;
+  --card-border: #245953;
+  --card-code: #5eead4;
   --card-title: #f0fdfa;
-  --card-meta: #99f6e4;
+  --card-meta: #2dd4bf;
+  --card-swatch: #3f827c;
 }
 :root[data-theme="dark"] .palette-rose {
-  --card-bg: #2e0a13;
-  --card-border: #be123c;
-  --card-code: #fb7185;
-  --card-title: #fff1f2;
-  --card-meta: #fecdd3;
+  --card-bg: #230e16;
+  --card-border: #873650;
+  --card-code: #f472b6;
+  --card-title: #fdf2f8;
+  --card-meta: #f43f5e;
+  --card-swatch: #b55e79;
 }
-:root[data-theme="dark"] .palette-indigo {
-  --card-bg: #131538;
-  --card-border: #4338ca;
-  --card-code: #818cf8;
-  --card-title: #eef2ff;
-  --card-meta: #c7d2fe;
-}
-:root[data-theme="dark"] .palette-cyan {
-  --card-bg: #082236;
-  --card-border: #0369a1;
-  --card-code: #38bdf8;
-  --card-title: #f0fdfa;
-  --card-meta: #bae6fd;
-}
-:root[data-theme="dark"] .palette-yellow {
-  --card-bg: #291f06;
-  --card-border: #a16207;
-  --card-code: #facc15;
+:root[data-theme="dark"] .palette-sand {
+  --card-bg: #1e1910;
+  --card-border: #6e5a35;
+  --card-code: #fde047;
   --card-title: #fefce8;
-  --card-meta: #fef08a;
+  --card-meta: #eab308;
+  --card-swatch: #917c56;
+}
+:root[data-theme="dark"] .palette-slate {
+  --card-bg: #11171f;
+  --card-border: #36495d;
+  --card-code: #94a3b8;
+  --card-title: #f8fafc;
+  --card-meta: #cbd5e1;
+  --card-swatch: #5a6f84;
 }
 :root[data-theme="dark"] .meeting-section {
   background: rgba(255, 255, 255, 0.1);
@@ -1390,68 +1492,77 @@ div[id*="netlify"] {
     border-color: rgba(255, 255, 255, 0.16);
   }
 
-  :root:not([data-theme="light"]) .palette-emerald {
-    --card-bg: #0b2414;
-    --card-border: #1e6837;
-    --card-code: #4ade80;
-    --card-title: #f0fdf4;
-    --card-meta: #86efac;
+  :root:not([data-theme="light"]) .palette-plain {
+    --card-bg: #080808;
+    --card-border: #334155;
+    --card-code: #f8fafc;
+    --card-title: #cbd5e1;
+    --card-meta: #94a3b8;
+    --card-swatch: #64748b;
   }
-  :root:not([data-theme="light"]) .palette-blue {
-    --card-bg: #0c1e36;
-    --card-border: #1d4ed8;
-    --card-code: #60a5fa;
+  :root:not([data-theme="light"]) .palette-sage {
+    --card-bg: #0d1a14;
+    --card-border: #2f523d;
+    --card-code: #86efac;
+    --card-title: #ecfdf5;
+    --card-meta: #6ee7b7;
+    --card-swatch: #52796f;
+  }
+  :root:not([data-theme="light"]) .palette-sky {
+    --card-bg: #0c1724;
+    --card-border: #285882;
+    --card-code: #93c5fd;
     --card-title: #eff6ff;
-    --card-meta: #93c5fd;
+    --card-meta: #60a5fa;
+    --card-swatch: #4682b4;
   }
-  :root:not([data-theme="light"]) .palette-purple {
-    --card-bg: #250f33;
-    --card-border: #7e22ce;
-    --card-code: #c084fc;
+  :root:not([data-theme="light"]) .palette-lavender {
+    --card-bg: #181226;
+    --card-border: #564287;
+    --card-code: #c4b5fd;
     --card-title: #faf5ff;
-    --card-meta: #d8b4fe;
+    --card-meta: #a78bfa;
+    --card-swatch: #7d6ba8;
   }
-  :root:not([data-theme="light"]) .palette-amber {
-    --card-bg: #2d140a;
-    --card-border: #c2410c;
-    --card-code: #fb923c;
+  :root:not([data-theme="light"]) .palette-peach {
+    --card-bg: #22120c;
+    --card-border: #8a442b;
+    --card-code: #fdba74;
     --card-title: #fff7ed;
-    --card-meta: #fed7aa;
+    --card-meta: #fb923c;
+    --card-swatch: #ba6e54;
   }
-  :root:not([data-theme="light"]) .palette-teal {
-    --card-bg: #082522;
-    --card-border: #0f766e;
-    --card-code: #2dd4bf;
+  :root:not([data-theme="light"]) .palette-mint {
+    --card-bg: #0b1c1a;
+    --card-border: #245953;
+    --card-code: #5eead4;
     --card-title: #f0fdfa;
-    --card-meta: #99f6e4;
+    --card-meta: #2dd4bf;
+    --card-swatch: #3f827c;
   }
   :root:not([data-theme="light"]) .palette-rose {
-    --card-bg: #2e0a13;
-    --card-border: #be123c;
-    --card-code: #fb7185;
-    --card-title: #fff1f2;
-    --card-meta: #fecdd3;
+    --card-bg: #230e16;
+    --card-border: #873650;
+    --card-code: #f472b6;
+    --card-title: #fdf2f8;
+    --card-meta: #f43f5e;
+    --card-swatch: #b55e79;
   }
-  :root:not([data-theme="light"]) .palette-indigo {
-    --card-bg: #131538;
-    --card-border: #4338ca;
-    --card-code: #818cf8;
-    --card-title: #eef2ff;
-    --card-meta: #c7d2fe;
-  }
-  :root:not([data-theme="light"]) .palette-cyan {
-    --card-bg: #082236;
-    --card-border: #0369a1;
-    --card-code: #38bdf8;
-    --card-title: #f0f9ff;
-    --card-meta: #bae6fd;
-  }
-  :root:not([data-theme="light"]) .palette-yellow {
-    --card-bg: #291f06;
-    --card-border: #a16207;
-    --card-code: #facc15;
+  :root:not([data-theme="light"]) .palette-sand {
+    --card-bg: #1e1910;
+    --card-border: #6e5a35;
+    --card-code: #fde047;
     --card-title: #fefce8;
-    --card-meta: #fef08a;
+    --card-meta: #eab308;
+    --card-swatch: #917c56;
+  }
+  :root:not([data-theme="light"]) .palette-slate {
+    --card-bg: #11171f;
+    --card-border: #36495d;
+    --card-code: #94a3b8;
+    --card-title: #f8fafc;
+    --card-meta: #cbd5e1;
+    --card-swatch: #5a6f84;
   }
   :root:not([data-theme="light"]) .meeting-section {
     background: rgba(255, 255, 255, 0.1);
