@@ -1,4 +1,4 @@
-# Animo Sort static deployment. Netlify serves files only; there is no
+# AnimoSort static deployment. Netlify serves files only; there is no
 # backend, function, redirect, or upload endpoint.
 
 [build]

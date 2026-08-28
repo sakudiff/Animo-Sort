@@ -1,8 +1,6 @@
-<!-- research-readme template: project-README -->
+# AnimoSort
 
-# Animo Sort
-
-Animo Sort is a client-side web application that converts De La Salle University Enrollment Assessment Form PDFs into a clean weekly timetable. The application runs entirely within the browser, ensuring student schedule data remains private and is never transmitted over a network.
+AnimoSort is a client-side web application that converts De La Salle University Enrollment Assessment Form PDFs into a clean weekly timetable. The application runs entirely within the browser, ensuring student schedule data remains private and is never transmitted over a network.
 
 ## Why does this exist?
 
@@ -80,11 +78,11 @@ It was simply built by someone who opened the Schedule page one too many times.
 
 ## Compatibility
 
-Animo Sort supports official DLSU Enrollment Assessment Forms generated from [ArchersHub](https://archershub.dlsu.edu.ph/) starting from AY 2025-2026 Term 3. Legacy documents from Animo.sys are unsupported.
+AnimoSort supports official DLSU Enrollment Assessment Forms generated from [ArchersHub](https://archershub.dlsu.edu.ph/) starting from AY 2025-2026 Term 3. Legacy documents from Animo.sys are unsupported.
 
 ## Quickstart
 
-Because Animo Sort is a static web application with no build steps, you can serve it with any local static web server.
+Because AnimoSort is a static web application with no build steps, you can serve it with any local static web server.
 
 ```bash
 # Clone the repository
@@ -99,7 +97,7 @@ Open `http://localhost:8000` in your web browser to use the application.
 
 ## Usage
 
-1. Open Animo Sort in your browser.
+1. Open AnimoSort in your browser.
 2. Select or drag your official ArchersHub EAF PDF into the upload area.
 3. Review your timetable across Monday to Saturday.
 4. Toggle full course titles or download a PNG image of your schedule.

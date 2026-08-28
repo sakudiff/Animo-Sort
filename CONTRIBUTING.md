@@ -1,6 +1,6 @@
-# Contributing to Animo Sort
+# Contributing to AnimoSort
 
-Thank you for your interest in contributing to Animo Sort. We welcome bug reports, building code expansions, parser improvements, and user interface enhancements from the community.
+Thank you for your interest in contributing to AnimoSort. We welcome bug reports, building code expansions, parser improvements, and user interface enhancements from the community.
 
 ## Core Project Guarantees
 

@@ -3,5 +3,5 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Animo Sort: convert an ArcherHub EAF PDF into a weekly timetable. Local-only static web app."
+  "description": "AnimoSort: convert an ArcherHub EAF PDF into a weekly timetable. Local-only static web app."
 }

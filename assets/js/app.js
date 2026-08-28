@@ -1,4 +1,4 @@
-// Animo Sort application shell. Owns in-memory schedule state and UI wiring.
+// AnimoSort application shell. Owns in-memory schedule state and UI wiring.
 // Imports only the sanitized Schedule produced by eaf-parser.js.
 
 import {
@@ -104,7 +104,7 @@ function requireElements() {
   for (const [key, id] of Object.entries(ids)) {
     const node = document.getElementById(id);
     if (!node) {
-      throw new Error(`Animo Sort failed to start: missing #${id}`);
+      throw new Error(`AnimoSort failed to start: missing #${id}`);
     }
     els[key] = node;
   }

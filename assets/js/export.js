@@ -1,4 +1,4 @@
-// Single-page PNG export and native print for Animo Sort.
+// Single-page PNG export and native print for AnimoSort.
 // Accepts only the sanitized Schedule object produced by eaf-parser.js.
 
 import { DAY_ORDER, STANDARD_PERIODS, expandLocation } from './eaf-parser.js';
@@ -84,7 +84,7 @@ export function createScheduleSvg(schedule, options = {}) {
   const esc = escapeSvgText;
   const title = esc(formatExportTitle(schedule));
 
-  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${SVG_WIDTH}" height="${SVG_HEIGHT}" viewBox="0 0 ${SVG_WIDTH} ${SVG_HEIGHT}" role="img" aria-label="Weekly schedule from Animo Sort">`);
+  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${SVG_WIDTH}" height="${SVG_HEIGHT}" viewBox="0 0 ${SVG_WIDTH} ${SVG_HEIGHT}" role="img" aria-label="Weekly schedule from AnimoSort">`);
   parts.push(`<rect width="${SVG_WIDTH}" height="${SVG_HEIGHT}" fill="#ffffff"/>`);
 
   const titleSize = 32;
