@@ -695,12 +695,12 @@ div[id*="netlify"] {
 }
 
 .story-quote {
-  margin: 16px 0;
-  padding: 12px 20px;
-  background: var(--accent-ghost);
-  border-left: 4px solid var(--accent);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin: 12px 0 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
   font-weight: 700;
+  font-size: 1.05rem;
   color: var(--text-1);
   font-style: italic;
 }
@@ -969,7 +969,7 @@ div[id*="netlify"] {
 }
 
 :root[data-theme="dark"] .story-quote {
-  background: rgba(34, 197, 94, 0.1);
+  background: transparent;
   color: var(--text-1);
 }
 
@@ -1098,7 +1098,7 @@ div[id*="netlify"] {
   }
 
   :root:not([data-theme="light"]) .story-quote {
-    background: rgba(34, 197, 94, 0.1);
+    background: transparent;
     color: var(--text-1);
   }
 
