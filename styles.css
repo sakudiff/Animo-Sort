@@ -178,6 +178,57 @@ button {
   color: var(--accent);
 }
 
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: color var(--silk-dur) var(--silk), border-color var(--silk-dur) var(--silk), background var(--silk-dur) var(--silk);
+}
+
+.nav-theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-ghost);
+}
+
+.nav-theme-toggle .sun-icon {
+  display: none;
+}
+
+.nav-theme-toggle .moon-icon {
+  display: block;
+}
+
+[data-theme="dark"] .nav-theme-toggle .sun-icon {
+  display: block;
+}
+
+[data-theme="dark"] .nav-theme-toggle .moon-icon {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .nav-theme-toggle .sun-icon {
+    display: block;
+  }
+  :root:not([data-theme="light"]) .nav-theme-toggle .moon-icon {
+    display: none;
+  }
+}
+
 .nav-github-link {
   display: inline-flex;
   align-items: center;
@@ -202,6 +253,21 @@ button {
   width: 15px;
   height: 15px;
   fill: currentColor;
+}
+
+/* Netlify badge transparent container reset */
+[data-netlify-badge],
+.netlify-badge,
+.netlify-badge-container,
+a[href*="netlify"] img,
+img[src*="netlify"],
+iframe[src*="netlify"],
+div[class*="netlify"],
+div[id*="netlify"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .hero {
@@ -790,8 +856,136 @@ button {
 
 /* ── AMOLED Dark Mode ── */
 
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --bg-alt: #050505;
+  --surface: #0a0a0a;
+  --accent: #22c55e;
+  --accent-mid: #16a34a;
+  --accent-ghost: rgba(34, 197, 94, 0.12);
+  --accent-border: rgba(34, 197, 94, 0.28);
+  --text-1: #f9fafb;
+  --text-2: #d1d5db;
+  --text-3: #9ca3af;
+  --border: rgba(255, 255, 255, 0.12);
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.85);
+}
+
+:root[data-theme="dark"] body {
+  background: #000000;
+  color: var(--text-1);
+}
+
+:root[data-theme="dark"] .nav.scrolled {
+  background: rgba(0, 0, 0, 0.88);
+  box-shadow: 0 1px 0 var(--border);
+}
+
+:root[data-theme="dark"] .nav-theme-toggle,
+:root[data-theme="dark"] .nav-github-link {
+  background: #0a0a0a;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--text-2);
+}
+
+:root[data-theme="dark"] .nav-theme-toggle:hover,
+:root[data-theme="dark"] .nav-github-link:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-ghost);
+}
+
+:root[data-theme="dark"] .panel-card {
+  background: #0a0a0a;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+:root[data-theme="dark"] .drop-zone {
+  background: #000000;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+:root[data-theme="dark"] .drop-zone.drop-active,
+:root[data-theme="dark"] .drop-zone:focus-visible {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: var(--accent);
+}
+
+:root[data-theme="dark"] .schedule-scroll {
+  background: #000000;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+:root[data-theme="dark"] .timetable-header {
+  background: #0a0a0a;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+:root[data-theme="dark"] .day-column {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme="dark"] .guide-line {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+:root[data-theme="dark"] .guide-label {
+  background: #000000;
+  color: var(--text-3);
+}
+
+:root[data-theme="dark"] .meeting-block {
+  background: #0f1712;
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+:root[data-theme="dark"] .meeting-block:hover {
+  background: #14231b;
+  border-color: var(--accent);
+}
+
+:root[data-theme="dark"] .meeting-code {
+  color: #4ade80;
+}
+
+:root[data-theme="dark"] .meeting-title {
+  color: var(--text-1);
+}
+
+:root[data-theme="dark"] .meeting-room,
+:root[data-theme="dark"] .meeting-time {
+  color: var(--text-3);
+}
+
+:root[data-theme="dark"] .btn-ghost {
+  background: #0a0a0a;
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+:root[data-theme="dark"] .btn-ghost:hover {
+  background: var(--accent-ghost);
+}
+
+:root[data-theme="dark"] .story-quote {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--text-1);
+}
+
+:root[data-theme="dark"] .story-timeline-chaos {
+  background: #080808;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f87171;
+}
+
+:root[data-theme="dark"] .empty-state {
+  background: #050505;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #000000;
     --bg-alt: #050505;
     --surface: #0a0a0a;
@@ -807,112 +1001,114 @@ button {
     --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.85);
   }
 
-  body {
+  :root:not([data-theme="light"]) body {
     background: #000000;
     color: var(--text-1);
   }
 
-  .nav.scrolled {
+  :root:not([data-theme="light"]) .nav.scrolled {
     background: rgba(0, 0, 0, 0.88);
     box-shadow: 0 1px 0 var(--border);
   }
 
-  .nav-github-link {
+  :root:not([data-theme="light"]) .nav-theme-toggle,
+  :root:not([data-theme="light"]) .nav-github-link {
     background: #0a0a0a;
     border-color: rgba(255, 255, 255, 0.14);
     color: var(--text-2);
   }
 
-  .nav-github-link:hover {
+  :root:not([data-theme="light"]) .nav-theme-toggle:hover,
+  :root:not([data-theme="light"]) .nav-github-link:hover {
     color: var(--accent);
     border-color: var(--accent-border);
     background: var(--accent-ghost);
   }
 
-  .panel-card {
+  :root:not([data-theme="light"]) .panel-card {
     background: #0a0a0a;
     border-color: rgba(255, 255, 255, 0.12);
   }
 
-  .drop-zone {
+  :root:not([data-theme="light"]) .drop-zone {
     background: #000000;
     border-color: rgba(255, 255, 255, 0.16);
   }
 
-  .drop-zone.drop-active,
-  .drop-zone:focus-visible {
+  :root:not([data-theme="light"]) .drop-zone.drop-active,
+  :root:not([data-theme="light"]) .drop-zone:focus-visible {
     background: rgba(34, 197, 94, 0.1);
     border-color: var(--accent);
   }
 
-  .schedule-scroll {
+  :root:not([data-theme="light"]) .schedule-scroll {
     background: #000000;
     border-color: rgba(255, 255, 255, 0.14);
   }
 
-  .timetable-header {
+  :root:not([data-theme="light"]) .timetable-header {
     background: #0a0a0a;
     border-color: rgba(255, 255, 255, 0.14);
   }
 
-  .day-column {
+  :root:not([data-theme="light"]) .day-column {
     border-color: rgba(255, 255, 255, 0.08);
   }
 
-  .guide-line {
+  :root:not([data-theme="light"]) .guide-line {
     border-color: rgba(255, 255, 255, 0.16);
   }
 
-  .guide-label {
+  :root:not([data-theme="light"]) .guide-label {
     background: #000000;
     color: var(--text-3);
   }
 
-  .meeting-block {
+  :root:not([data-theme="light"]) .meeting-block {
     background: #0f1712;
     border-color: rgba(34, 197, 94, 0.35);
   }
 
-  .meeting-block:hover {
+  :root:not([data-theme="light"]) .meeting-block:hover {
     background: #14231b;
     border-color: var(--accent);
   }
 
-  .meeting-code {
+  :root:not([data-theme="light"]) .meeting-code {
     color: #4ade80;
   }
 
-  .meeting-title {
+  :root:not([data-theme="light"]) .meeting-title {
     color: var(--text-1);
   }
 
-  .meeting-room,
-  .meeting-time {
+  :root:not([data-theme="light"]) .meeting-room,
+  :root:not([data-theme="light"]) .meeting-time {
     color: var(--text-3);
   }
 
-  .btn-ghost {
+  :root:not([data-theme="light"]) .btn-ghost {
     background: #0a0a0a;
     border-color: var(--accent-border);
     color: var(--accent);
   }
 
-  .btn-ghost:hover {
+  :root:not([data-theme="light"]) .btn-ghost:hover {
     background: var(--accent-ghost);
   }
 
-  .story-quote {
+  :root:not([data-theme="light"]) .story-quote {
     background: rgba(34, 197, 94, 0.1);
     color: var(--text-1);
   }
 
-  .story-timeline-chaos {
+  :root:not([data-theme="light"]) .story-timeline-chaos {
     background: #080808;
     border-color: rgba(255, 255, 255, 0.12);
     color: #f87171;
   }
 
-  .empty-state {
+  :root:not([data-theme="light"]) .empty-state {
     background: #050505;
     border-color: rgba(255, 255, 255, 0.12);
   }

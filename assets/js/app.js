@@ -48,6 +48,49 @@ function initSmoothScroll() {
   });
 }
 
+function initTheme() {
+  const toggleBtn = document.getElementById('theme-toggle');
+  const toggleText = document.getElementById('theme-toggle-text');
+
+  function updateToggleUI(theme) {
+    const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (toggleText) {
+      toggleText.textContent = isDark ? 'Light' : 'Dark';
+    }
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+      toggleBtn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+  }
+
+  const savedTheme = localStorage.getItem('animosort_theme');
+  if (savedTheme === 'dark' || savedTheme === 'light') {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }
+  updateToggleUI(savedTheme);
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const activeTheme = document.documentElement.getAttribute('data-theme');
+      const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const currentlyDark = activeTheme ? activeTheme === 'dark' : isSystemDark;
+      const nextTheme = currentlyDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      localStorage.setItem('animosort_theme', nextTheme);
+      updateToggleUI(nextTheme);
+    });
+  }
+
+  if (window.matchMedia) {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', (e) => {
+      if (!localStorage.getItem('animosort_theme')) {
+        updateToggleUI(e.matches ? 'dark' : 'light');
+      }
+    });
+  }
+}
+
 function initReveal() {
   const revealEls = document.querySelectorAll('.reveal');
   if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -364,6 +407,7 @@ export async function handleFile(file) {
 }
 
 export function initApp() {
+  initTheme();
   initNavigation();
   initSmoothScroll();
   initReveal();
