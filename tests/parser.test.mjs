@@ -3,6 +3,10 @@ import {
   EafParseError,
   DAY_ORDER,
   STANDARD_PERIODS,
+  BUILDING_NAMES,
+  getBuildingCode,
+  getBuildingName,
+  expandLocation,
   parseTimeLabel,
   parseTimeRange,
   splitMeetingSegments,
@@ -89,13 +93,20 @@ assert(normalizeLocation('  online , ') === 'Online', 'case/whitespace variants 
 assert(normalizeLocation('M306') === 'M306', 'room kept');
 assert(normalizeLocation('M306,') === 'M306', 'trailing comma stripped');
 assert(normalizeLocation('') === null, 'empty -> null');
+assert(getBuildingCode('M306') === 'M' && getBuildingName('M306') === 'Miguel Hall', 'single-letter M maps to Miguel Hall');
+assert(getBuildingName('SM101') === 'Miguel Hall', 'SM maps to Miguel Hall');
+assert(getBuildingName('LS101') === 'Saint La Salle Hall' && getBuildingName('L101') === 'Saint La Salle Hall', 'LS and L map to Saint La Salle Hall');
+assert(getBuildingName('VE210') === 'Velasco Hall' && BUILDING_NAMES.MM === 'St. Mutien Marie Hall', 'VE alias and MM mapping preserved');
+assert(expandLocation('M306') === 'M306 · Miguel Hall' && expandLocation('V305') === 'V305', 'known rooms expand and unknown rooms stay compact');
+assert(expandLocation('Online') === 'Online', 'Online remains compact');
 
 // normalizeMeeting
 const m = normalizeMeeting({ day: 'MON', timeText: '02:30 PM-04:00 PM', locationText: 'M306' }, baseCourse);
 assert(m.courseCode === 'FINA101' && m.day === 'MON' && m.startMinutes === 870 && m.endMinutes === 960, 'normalizeMeeting core');
 assert(m.modality === 'room' && m.location === 'M306', 'room modality');
+assert(m.buildingCode === 'M' && m.buildingName === 'Miguel Hall' && m.expandedLocation === 'M306 · Miguel Hall', 'normalized meeting contains room expansion fields');
 const mo = normalizeMeeting({ day: 'THU', timeText: '02:30 PM-04:00 PM', locationText: 'Online' }, baseCourse);
-assert(mo.modality === 'online' && mo.location === 'Online', 'online modality');
+assert(mo.modality === 'online' && mo.location === 'Online' && mo.expandedLocation === 'Online' && mo.buildingCode === null, 'online modality');
 const mc = normalizeMeeting({ day: 'WED', timeText: '10:50 AM-12:20 PM', locationText: 'R305' }, baseCourse);
 assert(mc.startMinutes === 650 && mc.endMinutes === 740, 'custom interval normalized exactly');
 assert(mc.startLabel === '10:50 AM' && mc.endLabel === '12:20 PM', 'custom labels preserved');
@@ -104,7 +115,8 @@ assert(m7.startMinutes === 450 && m7.endMinutes === 540, '7:30-9:00 exact');
 assertThrows(() => normalizeMeeting({ day: 'SUN', timeText: '09:15 AM-10:45 AM', locationText: 'Online' }, baseCourse), 'UNSUPPORTED_DAY', 'Sunday rejected');
 assertThrows(() => normalizeMeeting({ day: 'MON', timeText: '', locationText: 'M101' }, baseCourse), 'MEETING_UNREADABLE', 'missing time rejected');
 assertThrows(() => normalizeMeeting({ day: 'MON', timeText: '04:00 PM-02:30 PM', locationText: 'M101' }, baseCourse), 'INVALID_TIME', 'invalid interval rejected');
-assertThrows(() => normalizeMeeting({ day: 'MON', timeText: '09:15 AM-10:45 AM', locationText: '' }, baseCourse), 'MEETING_UNREADABLE', 'missing location rejected');
+const mBlank = normalizeMeeting({ day: 'MON', timeText: '09:15 AM-10:45 AM', locationText: '' }, baseCourse);
+assert(mBlank.location === 'Room not specified' && mBlank.expandedLocation === 'Room not specified' && mBlank.buildingCode === null && mBlank.buildingName === null, 'empty location defaults to Room not specified');
 
 // validateNoOverlaps
 const mk = (day, start, end, code = 'X') => ({ courseCode: code, title: 'T', section: 'A', credits: 3, day, startMinutes: start, endMinutes: end, location: 'M101' });

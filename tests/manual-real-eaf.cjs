@@ -52,13 +52,23 @@ async function main() {
 
     const blocks = await page.locator('.meeting-block').count();
     ok(blocks === 14, `14 meeting blocks rendered (got ${blocks})`);
+    ok(await page.isChecked('#show-course-titles'), 'course names shown by default');
+    ok(await page.$eval('.meeting-title', (el) => getComputedStyle(el).display !== 'none'), 'default course-name state renders titles');
+    ok(await page.locator('.day-gridline.major').count() > 0 && await page.locator('.day-gridline.minor').count() > 0, 'major and minor timetable gridlines rendered');
 
     const domText = await page.textContent('#schedule-canvas');
     ok(!domText.includes('SISON'), 'DOM excludes student name');
     ok(!domText.includes('12320609'), 'DOM excludes student ID');
     ok(!domText.includes('99,820'), 'DOM excludes fees');
     ok(!domText.includes('08/26/2026'), 'DOM excludes enlistment date');
+    ok(domText.includes('Room:') && domText.includes('Time:') && !domText.includes(' cr'), 'visible fields include room and time without credits');
+    ok(await page.locator('.meeting-section').count() === 14, 'visible cards include Section after Course Code');
+    ok(domText.includes('Miguel Hall'), 'mapped room expansion appears in the real EAF');
     ok(!domText.includes('M306, THU') || domText.includes('FINA101'), 'normalized course code present');
+
+    await page.check('#show-course-titles');
+    ok(await page.$eval('.meeting-title', (el) => getComputedStyle(el).display !== 'none'), 'course-name toggle reveals titles');
+    await page.uncheck('#show-course-titles');
 
     // Verify actual parsed meetings include the paired pattern
     const monBlocks = await page.locator('.day-column[data-day="MON"] .meeting-block').count();
@@ -85,7 +95,6 @@ async function main() {
     ok(countMatch && Number(countMatch[1]) === 1, `print one page (Count=${countMatch ? countMatch[1] : 'unknown'})`);
     await page.emulateMedia({ media: 'screen' });
 
-    // No remote requests
     ok(remoteRequests.length === 0, `no remote network requests (${remoteRequests.length})`);
 
     // Storage untouched

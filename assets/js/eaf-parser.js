@@ -16,6 +16,22 @@ export const STANDARD_PERIODS = [
   [1185, 1275],
 ];
 
+export const BUILDING_NAMES = Object.freeze({
+  L: 'Saint La Salle Hall',
+  LS: 'Saint La Salle Hall',
+  M: 'Miguel Hall',
+  SM: 'Miguel Hall',
+  AG: 'Brother Andrew Gonzales Building',
+  EY: 'Don Enrique Yuchengco Hall',
+  VL: 'Velasco Hall',
+  VE: 'Velasco Hall',
+  ER: 'Enrique Razon Sports Center',
+  SJ: 'St. Joseph Hall',
+  G: 'Gokongwei Hall',
+  ST: 'Science & Technology Research Center',
+  MM: 'St. Mutien Marie Hall',
+});
+
 export class EafParseError extends Error {
   constructor(code, message, details = null) {
     super(message);
@@ -93,6 +109,25 @@ export function normalizeLocation(text) {
   return t;
 }
 
+export function getBuildingCode(location) {
+  const normalized = String(location).trim().toUpperCase();
+  if (!normalized || normalized === 'ONLINE') return null;
+  const match = /^([A-Z]+)(?=\s*(?:\d|-|$))/.exec(normalized);
+  return match ? match[1] : null;
+}
+
+export function getBuildingName(location) {
+  const code = getBuildingCode(location);
+  return code ? BUILDING_NAMES[code] || null : null;
+}
+
+export function expandLocation(location) {
+  const normalized = normalizeLocation(location);
+  if (!normalized) return null;
+  const buildingName = getBuildingName(normalized);
+  return buildingName ? `${normalized} · ${buildingName}` : normalized;
+}
+
 export function normalizeMeeting(rawMeeting, course) {
   if (!rawMeeting || typeof rawMeeting !== 'object') {
     throw new EafParseError('MEETING_UNREADABLE', 'A schedule entry could not be read.', { courseCode: course?.code ?? null });
@@ -119,13 +154,9 @@ export function normalizeMeeting(rawMeeting, course) {
       day,
     });
   }
-  const location = normalizeLocation(rawMeeting.locationText);
-  if (!location) {
-    throw new EafParseError('MEETING_UNREADABLE', 'A schedule entry is missing a room or Online value.', {
-      courseCode: course?.code ?? null,
-      day,
-    });
-  }
+  const location = normalizeLocation(rawMeeting.locationText) || 'Room not specified';
+  const buildingCode = getBuildingCode(location);
+  const buildingName = getBuildingName(location);
   return {
     id: `${course.code}-${day}-${range.startMinutes}-${range.endMinutes}`,
     courseCode: course.code,
@@ -138,6 +169,9 @@ export function normalizeMeeting(rawMeeting, course) {
     startLabel: range.startLabel,
     endLabel: range.endLabel,
     location,
+    expandedLocation: expandLocation(location),
+    buildingCode,
+    buildingName,
     modality: /^online$/i.test(location) ? 'online' : 'room',
   };
 }
@@ -174,11 +208,15 @@ export function sanitizeSchedule(session, rows) {
         typeof meeting.title === 'string' &&
         typeof meeting.section === 'string' &&
         Number.isFinite(meeting.credits) &&
+        meeting.credits >= 0 &&
         DAY_SET.has(meeting.day) &&
         Number.isFinite(meeting.startMinutes) &&
         Number.isFinite(meeting.endMinutes) &&
         meeting.endMinutes > meeting.startMinutes &&
-        typeof meeting.location === 'string';
+        typeof meeting.location === 'string' &&
+        typeof meeting.expandedLocation === 'string' &&
+        (meeting.buildingCode === null || typeof meeting.buildingCode === 'string') &&
+        (meeting.buildingName === null || typeof meeting.buildingName === 'string');
       if (!valid) {
         throw new EafParseError('SCHEDULE_SANITIZATION_FAILED', 'A schedule row could not be reduced to the allowed fields.');
       }
@@ -274,7 +312,7 @@ function parseCourseRow(row, headerInfo) {
   const title = codeMatch ? courseText.slice(codeMatch[0].length).trim() : '';
   const section = joinColumnWords(cols.section);
   const credits = Number.parseFloat(joinColumnWords(cols.credits));
-  if (!code || !title || !section || !Number.isFinite(credits) || credits <= 0) {
+  if (!code || !title || !section || !Number.isFinite(credits) || credits < 0) {
     throw new EafParseError('ROW_UNREADABLE', 'The ArcherHub EAF was recognized, but one or more schedule entries could not be read reliably. No schedule was replaced. Upload the original PDF again or verify the document format.', { row: no ?? null });
   }
   const scheduleText = joinColumnWords(cols.schedule);

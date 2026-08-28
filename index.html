@@ -9,54 +9,76 @@
   <link rel="stylesheet" href="print.css" media="print">
 </head>
 <body>
-  <main class="app-shell">
-    <header class="app-header">
-      <p class="brand">Animo Sort</p>
-      <p class="privacy-note">Built for ArcherHub EAF schedules. Your EAF is processed locally in your browser and is never uploaded.</p>
-      <h1>Turn your ArcherHub EAF into a week at a glance</h1>
-    </header>
+
+  <nav class="nav" id="mainNav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="#top" class="nav-logo">Animo<span>Sort</span></a>
+    </div>
+  </nav>
+
+  <main class="app-shell" id="top">
+    <section class="hero">
+      <div class="hero-inner">
+        <h1 class="hero-title reveal reveal-delay-1">
+          Turn your EAF into a week<br><em>at a glance.</em>
+        </h1>
+        <p class="hero-sub reveal reveal-delay-2">
+          Animo Sort reads your official ArcherHub Enrollment Assessment Form locally,
+          then lays out the current term as a clean Monday through Saturday timetable.
+          No uploads. No accounts. No schedule data ever leaves your browser.
+        </p>
+      </div>
+    </section>
 
     <section class="import-panel" id="import-panel" aria-labelledby="import-heading">
-      <h2 id="import-heading" class="visually-hidden">Import your EAF</h2>
-      <form id="eaf-form" novalidate>
-        <label for="eaf-file" class="file-label">
-          Choose an official ArcherHub EAF PDF
-        </label>
-        <div class="file-row">
-          <input type="file" id="eaf-file" name="eaf" accept="application/pdf" aria-describedby="import-hint">
-          <button type="button" id="browse-btn" class="button">Browse</button>
+      <div class="panel-card reveal">
+        <div class="panel-heading">
+          <h2 id="import-heading">Import your EAF</h2>
+          <p class="panel-sub">Choose or drop the official ArcherHub EAF PDF. It is processed on this device only.</p>
         </div>
-        <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Drop an ArcherHub EAF PDF here or press Enter to choose a file">
-          <p class="drop-zone-text">Drop your ArcherHub EAF PDF here</p>
-        </div>
-        <p id="import-hint" class="import-hint">Only official DLSU ArcherHub EAF PDFs are supported. The file stays on this device.</p>
-        <div id="status-region" class="status-region" role="status" aria-live="polite"></div>
-      </form>
+        <form id="eaf-form" novalidate>
+          <label for="eaf-file" class="file-label">Choose an official ArcherHub EAF PDF</label>
+          <div class="file-row">
+            <input type="file" id="eaf-file" name="eaf" accept="application/pdf" aria-describedby="import-hint" class="visually-hidden-input">
+            <button type="button" id="browse-btn" class="button btn-primary">Browse</button>
+          </div>
+          <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Drop an ArcherHub EAF PDF here or press Enter to choose a file">
+            <p class="drop-zone-text">Drop your ArcherHub EAF PDF here</p>
+          </div>
+          <p id="import-hint" class="import-hint">Only Official DLSU EAFs are accepted up to 1 MiB (download yours from <a href="https://archershub.dlsu.edu.ph/" target="_blank" rel="noopener noreferrer">https://archershub.dlsu.edu.ph/</a>). The file stays on your device.</p>
+          <div id="status-region" class="status-region" role="status" aria-live="polite"></div>
+        </form>
+      </div>
     </section>
 
     <section class="schedule-panel" id="schedule-panel" hidden aria-labelledby="schedule-heading">
-      <header class="schedule-header">
-        <h2 id="schedule-heading" class="visually-hidden">Weekly timetable</h2>
-        <p id="session-label" class="session-label"></p>
-        <p id="summary-label" class="summary-label"></p>
-      </header>
-      <div class="actions" aria-label="Schedule actions">
-        <button type="button" id="replace-btn" class="button">Replace schedule</button>
-        <button type="button" id="clear-btn" class="button button-ghost">Clear schedule</button>
-        <button type="button" id="print-btn" class="button">Print / Save as PDF</button>
-        <button type="button" id="download-png-btn" class="button">Download PNG</button>
-      </div>
-      <div class="schedule-scroll" id="schedule-scroll" aria-label="Weekly timetable, scrollable horizontally">
-        <div id="schedule-canvas" class="schedule-canvas"></div>
+      <div class="panel-card reveal">
+        <div class="panel-heading schedule-heading">
+          <h2 id="schedule-heading">Weekly timetable</h2>
+          <p id="session-label" class="session-label"></p>
+          <p id="summary-label" class="summary-label"></p>
+        </div>
+        <div class="actions" aria-label="Schedule actions">
+          <button type="button" id="replace-btn" class="button btn-primary">Replace schedule</button>
+          <button type="button" id="clear-btn" class="button btn-ghost">Clear schedule</button>
+          <button type="button" id="download-png-btn" class="button btn-primary">Download PNG</button>
+        </div>
+        <label class="title-toggle" for="show-course-titles">
+          <input type="checkbox" id="show-course-titles" checked>
+          <span>Show full course names</span>
+        </label>
+        <div class="schedule-scroll" id="schedule-scroll" aria-label="Weekly timetable, scrollable horizontally">
+          <div id="schedule-canvas" class="schedule-canvas"></div>
+        </div>
       </div>
     </section>
 
-    <section class="empty-state" id="empty-state">
+    <section class="empty-state" id="empty-state" hidden>
       <p class="empty-title">No schedule loaded.</p>
       <p class="empty-body">Upload an official ArcherHub EAF PDF to build the current-term timetable. The file is processed locally and is not uploaded.</p>
     </section>
 
-    <footer class="app-footer">
+    <footer class="app-footer" id="privacy">
       <p>Animo Sort is not an official ArcherHub or DLSU product. This page does not upload, store, or share your EAF.</p>
     </footer>
   </main>

@@ -14,7 +14,8 @@
     width: 100%;
   }
 
-  .app-header,
+  .nav,
+  .hero,
   .import-panel,
   .actions,
   .app-footer,
@@ -23,13 +24,36 @@
     display: none !important;
   }
 
-  .schedule-panel {
-    display: block !important;
-    margin: 0;
+  .app-shell {
+    max-width: none;
     padding: 0;
   }
 
-  .schedule-header {
+  .schedule-panel {
+    display: block !important;
+    padding: 0;
+  }
+
+  .title-toggle {
+    display: none !important;
+  }
+
+  .panel-card {
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    max-width: none;
+  }
+
+  .reveal,
+  .reveal.visible,
+  #schedule-panel .panel-card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .schedule-heading {
     margin-bottom: 10px;
   }
 
@@ -48,6 +72,7 @@
     overflow: visible;
     border: 1px solid #999;
     border-radius: 0;
+    background: #ffffff;
   }
 
   .schedule-canvas {
@@ -73,7 +98,7 @@
   }
 
   .day-body {
-    height: 520px;
+    height: 550px;
   }
 
   .day-header {
@@ -84,20 +109,34 @@
 
   .meeting-block {
     border: 1px solid #000000;
-    border-left: 4px solid #087830;
     background: #ffffff;
     color: #000000;
     page-break-inside: avoid;
     break-inside: avoid;
   }
 
+  .day-gridline {
+    border-top-color: #d0d0d0;
+  }
+
+  .day-gridline.major {
+    border-top-color: #888888;
+  }
+
   .meeting-code {
     color: #000000;
   }
 
-  .meeting-meta,
+  .meeting-section {
+    display: none !important;
+  }
+
+  .meeting-room,
   .meeting-time {
     color: #000000;
+    font-size: 8px;
+    line-height: 1;
+    white-space: nowrap;
   }
 
   .guide-label {
