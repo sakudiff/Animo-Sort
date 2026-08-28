@@ -66,14 +66,18 @@ It was simply built by someone who opened the Schedule page one too many times.
 
 **Your timetable has now been created.**
 
+*P.S. Yes, course colors and hex codes are fully customizable. Click any course dot, pick pastel presets, shuffle them, or type your own hex codes.*
+
 ## Core Features
 
 - Client-side PDF parsing with vendored PDF.js
 - Automatic term detection and course schedule extraction
-- Campus building code expansions for physical classrooms
+- Campus building code expansions for physical classrooms (including Velasco Hall, LS Hall, Miguel Hall, etc.)
+- Customizable course colors with pastel presets, monochrome plain mode, direct `#HEX` code input, and one-click randomize
+- AMOLED dark mode with dedicated header theme toggle
 - Support for non-standard meeting intervals and split room allocations
 - Toggle controls for full course titles
-- High-resolution PNG timetable export
+- High-resolution theme-aware PNG timetable export
 - Zero telemetry and zero external server dependencies
 
 ## Compatibility

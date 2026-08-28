@@ -1172,6 +1172,13 @@ div[id*="netlify"] {
   color: var(--accent);
 }
 
+.story-ps {
+  margin-top: 10px;
+  font-size: 0.86rem;
+  color: var(--text-3);
+  line-height: 1.45;
+}
+
 .empty-state {
   border: 1px dashed var(--border);
   border-radius: var(--radius);
