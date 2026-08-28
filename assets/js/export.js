@@ -206,11 +206,6 @@ export async function downloadSchedulePng(schedule, options = {}) {
   const svgString = createScheduleSvg(schedule, options);
   const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.style.display = 'none';
-  link.setAttribute('href', url);
-  link.setAttribute('download', PNG_FILENAME);
-  document.body.appendChild(link);
 
   try {
     const img = new Image();
@@ -227,11 +222,36 @@ export async function downloadSchedulePng(schedule, options = {}) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    if (typeof canvas.toBlob === 'function') {
+      const pngBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+      if (pngBlob) {
+        const pngUrl = URL.createObjectURL(pngBlob);
+        const link = document.createElement('a');
+        link.style.display = 'none';
+        link.download = PNG_FILENAME;
+        link.href = pngUrl;
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+          URL.revokeObjectURL(pngUrl);
+          link.remove();
+        }, 1500);
+        return;
+      }
+    }
+
     const pngUrl = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.style.display = 'none';
+    link.download = PNG_FILENAME;
     link.href = pngUrl;
+    document.body.appendChild(link);
     link.click();
+    setTimeout(() => {
+      link.remove();
+    }, 1500);
   } finally {
     URL.revokeObjectURL(url);
-    link.remove();
   }
 }
