@@ -115,41 +115,94 @@ function openPalettePopover(anchor, courseCode, currentPaletteId) {
   }
   popover.appendChild(grid);
 
-  // 3. Custom color picker
-  const customRow = document.createElement('label');
-  customRow.className = 'palette-custom-row';
-  customRow.title = 'Choose custom color';
+  // 3. Hex code & native color picker form
+  const hexForm = document.createElement('form');
+  hexForm.className = 'palette-hex-form';
+  hexForm.setAttribute('action', 'javascript:void(0);');
+
+  const initialHex = typeof currentPaletteId === 'string' && currentPaletteId.startsWith('#')
+    ? currentPaletteId
+    : (COURSE_PALETTES.find((p) => p.id === currentPaletteId)?.swatch || '#52796f');
 
   const colorInput = document.createElement('input');
   colorInput.type = 'color';
   colorInput.className = 'palette-color-input';
-  colorInput.value = typeof currentPaletteId === 'string' && currentPaletteId.startsWith('#')
-    ? currentPaletteId
-    : '#52796f';
+  colorInput.value = initialHex.length === 7 ? initialHex : '#52796f';
+  colorInput.title = 'Open system color picker';
 
-  const customLabel = document.createElement('span');
-  customLabel.className = 'palette-custom-label';
-  customLabel.textContent = 'Custom color…';
+  const hexInput = document.createElement('input');
+  hexInput.type = 'text';
+  hexInput.className = 'palette-hex-input';
+  hexInput.placeholder = '#HEX';
+  hexInput.maxLength = 7;
+  hexInput.spellcheck = false;
+  hexInput.value = initialHex.toUpperCase();
+  hexInput.setAttribute('aria-label', `Hex code for ${courseCode}`);
 
-  customRow.append(colorInput, customLabel);
+  const applyBtn = document.createElement('button');
+  applyBtn.type = 'submit';
+  applyBtn.className = 'palette-hex-apply-btn';
+  applyBtn.textContent = 'Set';
+  applyBtn.title = 'Apply hex code';
+
+  const parseAndNormalizeHex = (val) => {
+    let clean = String(val || '').trim();
+    if (!clean.startsWith('#')) clean = `#${clean}`;
+    if (/^#[0-9A-Fa-f]{6}$/.test(clean)) return clean.toLowerCase();
+    if (/^#[0-9A-Fa-f]{3}$/.test(clean)) {
+      const r = clean[1];
+      const g = clean[2];
+      const b = clean[3];
+      return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+    }
+    return null;
+  };
 
   colorInput.addEventListener('input', (e) => {
-    saveCustomCourseColor(courseCode, e.target.value);
+    const val = e.target.value.toLowerCase();
+    hexInput.value = val.toUpperCase();
+    hexInput.classList.remove('invalid');
+    saveCustomCourseColor(courseCode, val);
     if (currentSchedule) renderSchedule(currentSchedule);
   });
 
   colorInput.addEventListener('change', (e) => {
-    saveCustomCourseColor(courseCode, e.target.value);
+    const val = e.target.value.toLowerCase();
+    hexInput.value = val.toUpperCase();
+    saveCustomCourseColor(courseCode, val);
     closeActivePopover();
     if (currentSchedule) renderSchedule(currentSchedule);
   });
 
-  popover.appendChild(customRow);
+  hexInput.addEventListener('input', (e) => {
+    const valid = parseAndNormalizeHex(e.target.value);
+    if (valid) {
+      colorInput.value = valid;
+      hexInput.classList.remove('invalid');
+    }
+  });
+
+  hexForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const valid = parseAndNormalizeHex(hexInput.value);
+    if (valid) {
+      saveCustomCourseColor(courseCode, valid);
+      closeActivePopover();
+      if (currentSchedule) renderSchedule(currentSchedule);
+    } else {
+      hexInput.classList.add('invalid');
+      hexInput.focus();
+    }
+  });
+
+  hexForm.append(colorInput, hexInput, applyBtn);
+  popover.appendChild(hexForm);
 
   document.body.appendChild(popover);
 
   const rect = anchor.getBoundingClientRect();
-  const popoverWidth = 164;
+  const popoverWidth = 180;
   let left = rect.left + window.scrollX + (rect.width / 2) - (popoverWidth / 2);
   if (left < 10) left = 10;
   if (left + popoverWidth > window.innerWidth - 10) left = window.innerWidth - popoverWidth - 10;
