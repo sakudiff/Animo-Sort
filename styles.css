@@ -1252,7 +1252,7 @@ div[id*="netlify"] {
 
 @media (max-width: 820px) {
   :root {
-    --day-column-width: 168px;
+    --gutter-width: clamp(34px, 12vw, 48px);
   }
 
   .hero {
@@ -1269,7 +1269,13 @@ div[id*="netlify"] {
   }
 
   .schedule-canvas {
-    min-width: 980px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .timetable {
+    width: 100%;
+    grid-template-columns: var(--gutter-width) repeat(6, minmax(0, 1fr));
   }
 
   .file-row {
@@ -1280,6 +1286,97 @@ div[id*="netlify"] {
   .file-row .button {
     width: 100%;
     max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .schedule-panel {
+    margin-inline: -32px;
+    padding: 12px 16px 8px;
+  }
+
+  .schedule-panel .panel-card {
+    padding: 14px 10px;
+    border-radius: 14px;
+  }
+
+  .day-header {
+    padding: 0 2px;
+    font-size: clamp(0.55rem, 2.5vw, 0.75rem);
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .guide-label {
+    right: 2px;
+    font-size: clamp(0.44rem, 1.8vw, 0.62rem);
+  }
+
+  .meeting-block {
+    left: 2px;
+    right: 2px;
+    padding: 4px 3px;
+    border-radius: 5px;
+    gap: 2px;
+  }
+
+  .meeting-primary {
+    display: block;
+    position: relative;
+    min-width: 0;
+    padding-right: 8px;
+  }
+
+  .meeting-code-group {
+    display: block;
+    min-width: 0;
+  }
+
+  .meeting-code {
+    display: block;
+    max-width: 100%;
+    min-width: 0;
+    font-size: clamp(0.45rem, 1.9vw, 0.68rem);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .meeting-section {
+    display: inline-block;
+    max-width: 100%;
+    margin-top: 1px;
+    padding: 0 2px;
+    font-size: clamp(0.35rem, 1.5vw, 0.55rem);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  .meeting-color-btn {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    width: clamp(7px, 2.1vw, 10px);
+    height: clamp(7px, 2.1vw, 10px);
+  }
+
+  .meeting-title,
+  .meeting-room,
+  .meeting-time {
+    font-size: clamp(0.4rem, 1.75vw, 0.62rem);
+    line-height: 1.15;
+  }
+
+  .meeting-title {
+    margin: 0;
+  }
+
+  .empty-day {
+    min-width: 0;
+    padding: 0 2px;
+    font-size: clamp(0.4rem, 1.75vw, 0.62rem);
+    overflow-wrap: anywhere;
+    text-align: center;
   }
 }
 
