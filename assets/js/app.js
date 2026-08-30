@@ -47,6 +47,29 @@ function closeActivePopover() {
   }
 }
 
+function setCourseLegendOpen(isOpen) {
+  if (!els.courseLegend || !els.courseLegendToggle) return;
+  els.courseLegend.classList.toggle('is-open', isOpen);
+  els.courseLegendToggle.setAttribute('aria-expanded', String(isOpen));
+}
+
+function initCourseLegendToggle() {
+  const mobileQuery = window.matchMedia('(max-width: 480px)');
+  const sync = () => setCourseLegendOpen(!mobileQuery.matches);
+
+  els.courseLegendToggle.addEventListener('click', () => {
+    const isOpen = !els.courseLegend.classList.contains('is-open');
+    setCourseLegendOpen(isOpen);
+  });
+
+  sync();
+  if (typeof mobileQuery.addEventListener === 'function') {
+    mobileQuery.addEventListener('change', sync);
+  } else if (typeof mobileQuery.addListener === 'function') {
+    mobileQuery.addListener(sync);
+  }
+}
+
 if (typeof document !== 'undefined') {
   document.addEventListener('click', (event) => {
     if (!activePopover) return;
@@ -55,7 +78,10 @@ if (typeof document !== 'undefined') {
     }
   });
 
-  window.addEventListener('resize', closeActivePopover, { passive: true });
+  window.addEventListener('resize', () => {
+    closeActivePopover();
+    fitMobileTimetable();
+  }, { passive: true });
 }
 
 function updateCourseCardsLive(courseCode, paletteOrHex) {
@@ -363,8 +389,10 @@ const els = {
   emptyState: null,
   sessionLabel: null,
   summaryLabel: null,
+  scheduleScroll: null,
   scheduleCanvas: null,
   courseLegend: null,
+  courseLegendToggle: null,
   legendBadges: null,
   randomizeColorsBtn: null,
   clearColorsBtn: null,
@@ -385,8 +413,10 @@ function requireElements() {
     emptyState: 'empty-state',
     sessionLabel: 'session-label',
     summaryLabel: 'summary-label',
+    scheduleScroll: 'schedule-scroll',
     scheduleCanvas: 'schedule-canvas',
     courseLegend: 'course-legend',
+    courseLegendToggle: 'course-legend-toggle',
     legendBadges: 'legend-badges',
     randomizeColorsBtn: 'randomize-colors-btn',
     clearColorsBtn: 'clear-colors-btn',
@@ -454,6 +484,7 @@ export function renderEmptyState() {
   els.emptyState.hidden = true;
   els.sessionLabel.textContent = '';
   els.summaryLabel.textContent = '';
+  els.scheduleCanvas.style.removeProperty('height');
   els.scheduleCanvas.replaceChildren();
   if (els.legendBadges) els.legendBadges.replaceChildren();
   setStatus('');
@@ -486,6 +517,24 @@ function fitScheduleBody(canvas, meetingBlocks, span) {
     bodyHeight = Math.max(bodyHeight, (contentHeight * span) / duration);
   }
   canvas.style.setProperty('--day-body-height', `${Math.ceil(bodyHeight)}px`);
+}
+
+function fitMobileTimetable(timetable = els.scheduleCanvas?.querySelector('.timetable')) {
+  if (!els.scheduleCanvas) return;
+  if (!timetable || !els.scheduleScroll || !window.matchMedia('(max-width: 820px)').matches) {
+    if (timetable) timetable.style.removeProperty('transform');
+    els.scheduleCanvas.style.removeProperty('height');
+    return;
+  }
+
+  const availableWidth = els.scheduleScroll.clientWidth;
+  const naturalWidth = timetable.offsetWidth;
+  const naturalHeight = timetable.offsetHeight;
+  if (!availableWidth || !naturalWidth || !naturalHeight) return;
+
+  const scale = Math.min(1, availableWidth / naturalWidth);
+  timetable.style.transform = `scale(${scale})`;
+  els.scheduleCanvas.style.height = `${Math.ceil(naturalHeight * scale)}px`;
 }
 
 function createDayGridline(minutes, canvasStart, pixelsPerMinute, kind) {
@@ -682,6 +731,7 @@ export function renderSchedule(schedule) {
   canvas.classList.toggle('course-titles-hidden', !showCourseTitles);
   els.scheduleCanvas.replaceChildren(canvas);
   fitScheduleBody(canvas, meetingBlocks, span);
+  fitMobileTimetable(canvas);
 
   els.sessionLabel.textContent = schedule.session;
   const courseCount = new Set(schedule.meetings.map((m) => m.courseCode)).size;
@@ -747,6 +797,7 @@ export function initApp() {
   initSmoothScroll();
   initReveal();
   requireElements();
+  initCourseLegendToggle();
 
   els.form.addEventListener('submit', (event) => event.preventDefault());
   els.fileInput.addEventListener('change', () => {

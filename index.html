@@ -107,17 +107,26 @@
           </label>
         </div>
         <div class="course-legend" id="course-legend" aria-label="Course colors">
-          <div class="legend-header">
-            <div class="legend-title-group">
-              <span class="legend-title">Course Colors</span>
-              <span class="legend-subtitle">Click any course dot to customize its color</span>
+          <button type="button" id="course-legend-toggle" class="course-legend-toggle" aria-expanded="false" aria-controls="course-legend-content">
+            <span class="legend-toggle-copy">
+              <span class="legend-toggle-label">Course Colors</span>
+              <span class="legend-toggle-hint">Tap to customize subjects</span>
+            </span>
+            <span class="legend-toggle-icon" aria-hidden="true">⌄</span>
+          </button>
+          <div id="course-legend-content" class="course-legend-content">
+            <div class="legend-header">
+              <div class="legend-title-group">
+                <span class="legend-title">Course Colors</span>
+                <span class="legend-subtitle">Click any course dot to customize its color</span>
+              </div>
+              <div class="legend-actions">
+                <button type="button" class="legend-action-btn" id="randomize-colors-btn" title="Randomly assign pastel colors to all courses">Randomize</button>
+                <button type="button" class="legend-action-btn" id="clear-colors-btn" title="Set all courses to plain minimal style">Set All Plain</button>
+              </div>
             </div>
-            <div class="legend-actions">
-              <button type="button" class="legend-action-btn" id="randomize-colors-btn" title="Randomly assign pastel colors to all courses">Randomize</button>
-              <button type="button" class="legend-action-btn" id="clear-colors-btn" title="Set all courses to plain minimal style">Set All Plain</button>
-            </div>
+            <div class="legend-badges" id="legend-badges"></div>
           </div>
-          <div class="legend-badges" id="legend-badges"></div>
         </div>
         <div class="schedule-scroll" id="schedule-scroll" aria-label="Weekly timetable">
           <div id="schedule-canvas" class="schedule-canvas"></div>

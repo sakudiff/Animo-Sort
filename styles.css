@@ -547,6 +547,16 @@ div[id*="netlify"] {
   gap: 8px;
 }
 
+.course-legend-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.course-legend-toggle {
+  display: none;
+}
+
 .legend-header {
   display: flex;
   align-items: center;
@@ -1251,10 +1261,6 @@ div[id*="netlify"] {
 }
 
 @media (max-width: 820px) {
-  :root {
-    --gutter-width: clamp(34px, 12vw, 48px);
-  }
-
   .hero {
     padding: 120px 20px 40px;
   }
@@ -1274,8 +1280,13 @@ div[id*="netlify"] {
   }
 
   .timetable {
-    width: 100%;
-    grid-template-columns: var(--gutter-width) repeat(6, minmax(0, 1fr));
+    width: 1096px;
+    grid-template-columns: var(--gutter-width) repeat(6, var(--day-column-width));
+    transform-origin: top left;
+  }
+
+  .schedule-scroll {
+    overflow-x: hidden;
   }
 
   .file-row {
@@ -1300,83 +1311,55 @@ div[id*="netlify"] {
     border-radius: 14px;
   }
 
-  .day-header {
-    padding: 0 2px;
-    font-size: clamp(0.55rem, 2.5vw, 0.75rem);
-    text-align: center;
-    overflow: hidden;
+  .course-legend-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 2px 0;
+    color: var(--text-1);
+    text-align: left;
   }
 
-  .guide-label {
-    right: 2px;
-    font-size: clamp(0.44rem, 1.8vw, 0.62rem);
-  }
-
-  .meeting-block {
-    left: 2px;
-    right: 2px;
-    padding: 4px 3px;
-    border-radius: 5px;
+  .legend-toggle-copy {
+    display: flex;
+    flex-direction: column;
     gap: 2px;
   }
 
-  .meeting-primary {
-    display: block;
-    position: relative;
-    min-width: 0;
-    padding-right: 8px;
+  .legend-toggle-label {
+    font-size: 0.8rem;
+    font-weight: 700;
   }
 
-  .meeting-code-group {
-    display: block;
-    min-width: 0;
+  .legend-toggle-hint {
+    font-size: 0.68rem;
+    color: var(--text-3);
   }
 
-  .meeting-code {
-    display: block;
-    max-width: 100%;
-    min-width: 0;
-    font-size: clamp(0.45rem, 1.9vw, 0.68rem);
-    line-height: 1.1;
-    overflow-wrap: anywhere;
-    white-space: normal;
+  .legend-toggle-icon {
+    flex: 0 0 auto;
+    color: var(--text-3);
+    font-size: 1rem;
+    line-height: 1;
+    transition: transform 0.15s ease;
   }
 
-  .meeting-section {
-    display: inline-block;
-    max-width: 100%;
-    margin-top: 1px;
-    padding: 0 2px;
-    font-size: clamp(0.35rem, 1.5vw, 0.55rem);
-    line-height: 1.1;
-    overflow-wrap: anywhere;
+  .course-legend:not(.is-open) .course-legend-content {
+    display: none;
   }
 
-  .meeting-color-btn {
-    position: absolute;
-    top: 1px;
-    right: 0;
-    width: clamp(7px, 2.1vw, 10px);
-    height: clamp(7px, 2.1vw, 10px);
+  .course-legend.is-open .legend-toggle-icon {
+    transform: rotate(180deg);
   }
 
-  .meeting-title,
-  .meeting-room,
-  .meeting-time {
-    font-size: clamp(0.4rem, 1.75vw, 0.62rem);
-    line-height: 1.15;
+  .course-legend.is-open .legend-header .legend-title-group {
+    display: none;
   }
 
-  .meeting-title {
-    margin: 0;
-  }
-
-  .empty-day {
-    min-width: 0;
-    padding: 0 2px;
-    font-size: clamp(0.4rem, 1.75vw, 0.62rem);
-    overflow-wrap: anywhere;
-    text-align: center;
+  .course-legend.is-open .legend-header {
+    justify-content: flex-end;
   }
 }
 
