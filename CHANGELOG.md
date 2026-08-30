@@ -15,6 +15,7 @@ Because a timetable should survive both a 7:30 PM class and a 320px viewport.
 - **Uniform mobile scaling** — Phone previews scale the complete timetable surface proportionally, keeping course codes on one line and showing the full Monday-through-Saturday week without horizontal scrolling.
 - **Compact mobile course colors** — Course color controls collapse into an accessible phone dropdown while retaining each subject's color picker and the Randomize and Set All Plain actions.
 - **Preview/export separation** — Mobile-only layout transforms affect the on-screen preview only; PNG generation continues to use the exporter’s unchanged schedule rendering path.
+- **Structured footer** — Privacy, compatibility, authorship, releases, and source links now sit in clearly labeled groups instead of one undifferentiated paragraph stack.
 
 ---
 
