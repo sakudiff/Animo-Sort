@@ -4,6 +4,20 @@ All notable changes to AnimoSort are documented here.
 
 ---
 
+## Unreleased — prepared for v0.3.0
+
+### The Night Classes and Small Screens Release
+
+Because a timetable should survive both a 7:30 PM class and a 320px viewport.
+
+- **Course-code normalization** — Hyphenated PDF text is normalized back to the full course code, preserving codes such as `THSST2`, `FINSBRE`, and `COBIBFM` instead of truncating them to a short fragment.
+- **Evening-class export sizing** — Downloaded schedule images expand their timeline for late meetings, keeping 7:30 PM classes and their labels inside the exported image.
+- **Uniform mobile scaling** — Phone previews scale the complete timetable surface proportionally, keeping course codes on one line and showing the full Monday-through-Saturday week without horizontal scrolling.
+- **Compact mobile course colors** — Course color controls collapse into an accessible phone dropdown while retaining each subject's color picker and the Randomize and Set All Plain actions.
+- **Preview/export separation** — Mobile-only layout transforms affect the on-screen preview only; PNG generation continues to use the exporter’s unchanged schedule rendering path.
+
+---
+
 ## v0.2.0 — 2026-08-28
 
 ### We Have Colors Now
