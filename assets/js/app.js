@@ -80,7 +80,7 @@ if (typeof document !== 'undefined') {
 
   window.addEventListener('resize', () => {
     closeActivePopover();
-    fitMobileTimetable();
+    fitTimetablePreview();
   }, { passive: true });
 }
 
@@ -519,22 +519,32 @@ function fitScheduleBody(canvas, meetingBlocks, span) {
   canvas.style.setProperty('--day-body-height', `${Math.ceil(bodyHeight)}px`);
 }
 
-function fitMobileTimetable(timetable = els.scheduleCanvas?.querySelector('.timetable')) {
-  if (!els.scheduleCanvas) return;
-  if (!timetable || !els.scheduleScroll || !window.matchMedia('(max-width: 820px)').matches) {
-    if (timetable) timetable.style.removeProperty('transform');
+function fitTimetablePreview(timetable = els.scheduleCanvas?.querySelector('.timetable')) {
+  if (!els.scheduleCanvas || !els.scheduleScroll) return;
+  if (!timetable) {
     els.scheduleCanvas.style.removeProperty('height');
+    els.scheduleScroll.classList.remove('is-scaled');
     return;
   }
 
+  timetable.style.removeProperty('width');
+  timetable.style.removeProperty('transform');
+  els.scheduleCanvas.style.removeProperty('height');
+  els.scheduleScroll.classList.remove('is-scaled');
+
   const availableWidth = els.scheduleScroll.clientWidth;
-  const naturalWidth = timetable.offsetWidth;
+  const naturalWidth = Math.max(timetable.offsetWidth, timetable.scrollWidth);
   const naturalHeight = timetable.offsetHeight;
   if (!availableWidth || !naturalWidth || !naturalHeight) return;
 
   const scale = Math.min(1, availableWidth / naturalWidth);
+  if (scale >= 1) return;
+
+  timetable.style.width = `${naturalWidth}px`;
+  const scaledNaturalHeight = timetable.offsetHeight;
   timetable.style.transform = `scale(${scale})`;
-  els.scheduleCanvas.style.height = `${Math.ceil(naturalHeight * scale)}px`;
+  els.scheduleCanvas.style.height = `${Math.ceil(scaledNaturalHeight * scale)}px`;
+  els.scheduleScroll.classList.add('is-scaled');
 }
 
 function createDayGridline(minutes, canvasStart, pixelsPerMinute, kind) {
@@ -731,7 +741,7 @@ export function renderSchedule(schedule) {
   canvas.classList.toggle('course-titles-hidden', !showCourseTitles);
   els.scheduleCanvas.replaceChildren(canvas);
   fitScheduleBody(canvas, meetingBlocks, span);
-  fitMobileTimetable(canvas);
+  fitTimetablePreview(canvas);
 
   els.sessionLabel.textContent = schedule.session;
   const courseCount = new Set(schedule.meetings.map((m) => m.courseCode)).size;
