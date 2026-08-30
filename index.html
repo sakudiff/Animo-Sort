@@ -68,23 +68,31 @@
 
     <section class="import-panel" id="import-panel" aria-labelledby="import-heading">
       <div class="panel-card reveal">
-        <div class="panel-heading">
-          <h2 id="import-heading">Import your EAF</h2>
-          <p class="panel-sub">Choose or drop the official Archershub EAF PDF. It is processed on this device only.</p>
+        <div class="import-layout">
+          <div class="import-copy">
+            <p class="import-kicker">Start with the document you already have</p>
+            <div class="panel-heading">
+              <h2 id="import-heading">Import your EAF</h2>
+              <p class="panel-sub">Drop the official Archershub PDF here. It stays on this device while AnimoSort turns it into a week.</p>
+            </div>
+            <div class="import-privacy"><span class="import-privacy-dot" aria-hidden="true"></span><span>Processed locally in your browser</span></div>
+          </div>
+          <form id="eaf-form" novalidate>
+            <label for="eaf-file" class="file-label">Choose your official EAF</label>
+            <div class="file-row">
+              <input type="file" id="eaf-file" name="eaf" accept="application/pdf" aria-describedby="import-hint" class="visually-hidden-input">
+              <button type="button" id="browse-btn" class="button btn-primary">Browse files</button>
+            </div>
+            <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Drop an Archershub EAF PDF here or press Enter to choose a file">
+              <p class="drop-zone-text">Or drop the PDF here</p>
+            </div>
+            <div class="import-support" id="import-hint">
+              <div class="import-support-main"><strong>Supported format</strong><span>Official DLSU Archershub EAF · AY 2025–2026 Term 3 onward · PDF up to 1 MiB.</span><a href="https://archershub.dlsu.edu.ph/" target="_blank" rel="noopener noreferrer">Get yours from Archershub</a></div>
+              <p class="import-compatibility-note"><strong>Legacy formats</strong> Animo.sys EAFs aren’t supported.</p>
+            </div>
+            <div id="status-region" class="status-region" role="status" aria-live="polite"></div>
+          </form>
         </div>
-        <form id="eaf-form" novalidate>
-          <label for="eaf-file" class="file-label">Choose an official Archershub EAF PDF</label>
-          <div class="file-row">
-            <input type="file" id="eaf-file" name="eaf" accept="application/pdf" aria-describedby="import-hint" class="visually-hidden-input">
-            <button type="button" id="browse-btn" class="button btn-primary">Browse</button>
-          </div>
-          <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Drop an Archershub EAF PDF here or press Enter to choose a file">
-            <p class="drop-zone-text">Drop your Archershub EAF PDF here</p>
-          </div>
-          <p id="import-hint" class="import-hint">Only Official DLSU EAFs are accepted up to 1 MiB (download yours from <a href="https://archershub.dlsu.edu.ph/" target="_blank" rel="noopener noreferrer">https://archershub.dlsu.edu.ph/</a>). The file stays on your device.</p>
-          <p class="import-compatibility-note"><strong>Note:</strong> Legacy Animo.sys EAFs are unsupported. AnimoSort only supports EAFs from Archershub since its introduction in AY 2025-2026 Term 3.</p>
-          <div id="status-region" class="status-region" role="status" aria-live="polite"></div>
-        </form>
       </div>
     </section>
 
@@ -107,53 +115,101 @@
           </label>
         </div>
         <div class="course-legend" id="course-legend" aria-label="Course colors">
-          <div class="legend-header">
-            <div class="legend-title-group">
-              <span class="legend-title">Course Colors</span>
-              <span class="legend-subtitle">Click any course dot to customize its color</span>
+          <button type="button" id="course-legend-toggle" class="course-legend-toggle" aria-expanded="false" aria-controls="course-legend-content">
+            <span class="legend-toggle-copy">
+              <span class="legend-toggle-label">Course Colors</span>
+              <span class="legend-toggle-hint">Tap to customize subjects</span>
+            </span>
+            <span class="legend-toggle-icon" aria-hidden="true">⌄</span>
+          </button>
+          <div id="course-legend-content" class="course-legend-content">
+            <div class="legend-header">
+              <div class="legend-title-group">
+                <span class="legend-title">Course Colors</span>
+                <span class="legend-subtitle">Click any course dot to customize its color</span>
+              </div>
+              <div class="legend-actions">
+                <button type="button" class="legend-action-btn" id="randomize-colors-btn" title="Randomly assign pastel colors to all courses">Randomize</button>
+                <button type="button" class="legend-action-btn" id="clear-colors-btn" title="Set all courses to plain minimal style">Set All Plain</button>
+              </div>
             </div>
-            <div class="legend-actions">
-              <button type="button" class="legend-action-btn" id="randomize-colors-btn" title="Randomly assign pastel colors to all courses">Randomize</button>
-              <button type="button" class="legend-action-btn" id="clear-colors-btn" title="Set all courses to plain minimal style">Set All Plain</button>
-            </div>
+            <div class="legend-badges" id="legend-badges"></div>
           </div>
-          <div class="legend-badges" id="legend-badges"></div>
         </div>
-        <div class="schedule-scroll" id="schedule-scroll" aria-label="Weekly timetable, scrollable horizontally">
+        <div class="schedule-scroll" id="schedule-scroll" aria-label="Weekly timetable">
           <div id="schedule-canvas" class="schedule-canvas"></div>
         </div>
       </div>
     </section>
 
     <section class="story-panel" id="story">
-      <div class="panel-card reveal">
-        <div class="panel-heading">
-          <h2>Tired of Archershub's idea of a schedule?</h2>
-          <p class="panel-sub">We were too.</p>
+      <div class="panel-card story-card reveal">
+        <div class="story-heading">
+          <div>
+            <p class="story-kicker">The data was already there</p>
+            <h2>Tired of Archershub's idea of a schedule?</h2>
+            <p class="panel-sub">We were too.</p>
+          </div>
+          <p class="story-heading-note">A timetable-sized space. No timetable. And when the rows do appear, chronology is apparently optional.</p>
         </div>
         <div class="story-content">
-          <p>Archershub already has your enrollment data. Your EAF already lists your subjects, meeting days, times, sections, and rooms.</p>
-          <p>And yet its Schedule page may simply tell you:</p>
-          <blockquote class="story-quote">"Time Table has not been Created"</blockquote>
-          <p>And when a schedule <em>does</em> appear, chronological order can apparently look something like:</p>
-          <div class="story-timeline-chaos">
-            <span>9:00 PM</span> <span class="arrow">&rarr;</span>
-            <span>11:00 AM</span> <span class="arrow">&rarr;</span>
-            <span>9:00 AM</span> <span class="arrow">&rarr;</span>
-            <span>4:00 PM</span> <span class="arrow">&rarr;</span>
-            <span>10:00 AM</span>
+          <div class="story-argument">
+            <div>
+              <h3>Your EAF already knows when class starts.</h3>
+            </div>
+            <div>
+              <p>Archershub already has your enrollment data: subjects, meeting days, times, sections, and rooms.</p>
+              <p class="story-lead">AnimoSort reads the same information and draws the week it was supposed to be.</p>
+            </div>
           </div>
-          <p>Very useful if you experience time nonlinearly.</p>
-          <p>So we made <strong>Animo<span class="brand-accent">Sort</span></strong>.</p>
-          <p>Give it the official EAF you already have and it turns that enrollment data into an actual weekly timetable, with your classes where you'd generally expect them to be: <strong>in order.</strong></p>
-          <p>No account. No server upload. No AI reading your EAF. Everything is parsed locally in your browser.</p>
-          <p>Want to verify the privacy guarantees, run a security audit, or host this yourself? Inspect the full source code and contribute on <a href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
-          <p>Just the apparently groundbreaking concept of turning timetable data into a timetable.</p>
-          <p class="story-punchline"><strong>Your timetable has now been created.</strong></p>
-          <p class="story-ps"><em>P.S. Yes, course colors are customizable. Click any course dot, pick pastel presets, shuffle them, or type your own hex codes.</em></p>
+
+          <div class="story-proof-flow">
+            <article class="story-before">
+              <div class="story-card-bar"><span>Archershub output</span><span>before</span></div>
+              <div class="story-source-stage">
+                <img class="story-source-screen" src="assets/images/archershub-schedule-example.png" alt="Archershub Schedule page showing an empty timetable area">
+                <div class="story-ghost-schedule" aria-label="Annotated example of the course rows that could have filled the empty timetable area">
+                  <div class="story-ghost-head"><span>If it had been populated</span><span>received order</span></div>
+                  <div class="story-ghost-row"><code>DATA103</code><time>FRI · 09:15 AM</time></div>
+                  <div class="story-ghost-row"><code>ECOF223</code><time>MON · 02:30 PM</time></div>
+                  <div class="story-ghost-row"><code>ECOF366</code><time>MON · 11:00 AM</time></div>
+                  <div class="story-ghost-row"><code>FINIVBA</code><time>FRI · 06:00 PM</time></div>
+                  <div class="story-ghost-row"><code>FINSPTO</code><time>FRI · 04:15 PM</time></div>
+                  <div class="story-ghost-row"><code>GESTSOC</code><time>FRI · 02:30 PM</time></div>
+                  <div class="story-ghost-row"><code>LCASEAN</code><time>MON · 07:30 AM</time></div>
+                  <div class="story-ghost-note">The room was there. The chronology wasn't.</div>
+                </div>
+              </div>
+              <button class="story-source-receipt" id="story-source-receipt" type="button" aria-controls="story-source-dialog">
+                <span class="story-source-thumb"><img src="assets/images/archershub-schedule-example.png" alt="Click to expand the supplied Archershub Schedule screenshot"></span>
+                <span class="story-source-copy"><strong>Source receipt</strong><span>Click to expand</span> · supplied Archershub Schedule screenshot</span>
+              </button>
+              <p class="story-source-caption">This is what the Schedule page shows in the supplied example: timetable-sized space, with “Time Table has not been Created” where the week should be.</p>
+            </article>
+
+            <div class="story-bridge"><strong>same EAF</strong><div class="story-bridge-line"></div><small>read · normalize · sort</small></div>
+
+            <figure class="story-after">
+              <div class="story-card-bar"><span>AnimoSort output</span><span>after</span></div>
+              <img id="story-demo-output" class="story-demo-output" alt="AnimoSort sample timetable generated by the same export function">
+              <figcaption><span><strong>Actual output</strong> generated by AnimoSort's export pipeline</span><span>7 courses · 14 meetings</span></figcaption>
+            </figure>
+          </div>
+
+          <div class="story-answer"><strong>AnimoSort</strong><p>The same enrollment data, finally arranged as a week.</p></div>
+          <div class="story-facts"><div><strong>Same official EAF</strong><span>No new schedule data was invented.</span></div><div><strong>Actual start times</strong><span>7:30 AM through 6:00 PM appear in order.</span></div><div><strong>Local by design</strong><span>No account, server upload, or AI reading your EAF.</span></div></div>
+          <div class="story-footer-copy"><p>Want to verify the privacy guarantees, run a security audit, or host this yourself? Inspect the full source code and contribute on <a href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer">GitHub</a>.</p><p class="story-punchline"><strong>Your timetable has now been created.</strong></p><p class="story-ps"><em>P.S. Yes, course colors are customizable. Click any course dot, pick pastel presets, shuffle them, or type your own hex codes.</em></p></div>
         </div>
       </div>
     </section>
+
+    <dialog class="story-source-dialog" id="story-source-dialog" aria-labelledby="story-source-dialog-title">
+      <button class="story-source-close" id="story-source-close" type="button">Close</button>
+      <figure>
+        <img src="assets/images/archershub-schedule-example.png" alt="Expanded Archershub Schedule screenshot">
+        <figcaption><strong id="story-source-dialog-title">Source receipt · Archershub Schedule page</strong>This is what Archershub's Schedule page looks like in the supplied example: the timetable area is present, but the portal reports that the timetable has not been created. The public view uses a cropped presentation; unrelated account details are not part of the story.</figcaption>
+      </figure>
+    </dialog>
 
     <section class="empty-state" id="empty-state" hidden>
       <p class="empty-title">No schedule loaded.</p>
@@ -161,12 +217,32 @@
     </section>
 
     <footer class="app-footer" id="privacy">
-      <p>AnimoSort is not an official Archershub or DLSU product. This page does not upload, store, or share your EAF.</p>
-      <p>Supports official DLSU Archershub EAFs starting AY 2025-2026 Term 3. Legacy Animo.sys formats are not supported.</p>
-      <p>Open source under the MIT License &middot; <a href="https://github.com/sakudiff/Animo-Sort/releases" target="_blank" rel="noopener noreferrer">v0.2.0 Releases</a> &middot; View source, self-host, or audit on <a href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer">GitHub (sakudiff/Animo-Sort)</a>.</p>
+      <div class="footer-grid">
+        <section class="footer-group">
+          <h2 class="footer-heading">About AnimoSort</h2>
+          <p>An independent tool, not affiliated with Archershub or DLSU. Your EAF is processed in the browser and never uploaded, stored, or shared.</p>
+        </section>
+        <section class="footer-group">
+          <h2 class="footer-heading">Compatibility</h2>
+          <p>Supports official DLSU Archershub EAFs starting AY 2025-2026 Term 3. Legacy Animo.sys formats are not supported.</p>
+        </section>
+        <section class="footer-group">
+          <h2 class="footer-heading">Project</h2>
+          <ul class="footer-link-list">
+            <li>Made by <a href="https://github.com/sakudiff" target="_blank" rel="noopener noreferrer">sakudiff</a></li>
+            <li><a href="https://github.com/sakudiff/Animo-Sort/releases" target="_blank" rel="noopener noreferrer">Releases</a></li>
+            <li><a href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer">GitHub source</a></li>
+          </ul>
+        </section>
+      </div>
+      <div class="footer-bottom">
+        <p>Open source under the <a href="https://github.com/sakudiff/Animo-Sort/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>.</p>
+        <p>View source, self-host, or audit on GitHub.</p>
+      </div>
     </footer>
   </main>
 
   <script type="module" src="assets/js/app.js"></script>
+  <script type="module" src="assets/js/story-demo.js"></script>
 </body>
 </html>
