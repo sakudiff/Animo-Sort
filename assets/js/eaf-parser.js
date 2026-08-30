@@ -314,14 +314,21 @@ function joinColumnWords(words) {
     .trim();
 }
 
+function parseCourseIdentity(courseText) {
+  const codeMatch = /^([A-Z]{2,12}\d{0,4}(?:\s*-\s*[A-Z]{1,12}\d{1,4})?)\s*-?\s*/.exec(courseText);
+  if (!codeMatch) return { code: null, title: '' };
+  return {
+    code: codeMatch[1].replace(/[\s-]/g, ''),
+    title: courseText.slice(codeMatch[0].length).trim(),
+  };
+}
+
 function parseCourseRow(row, headerInfo) {
   const cols = assignColumns(row.words, headerInfo);
   const noWord = cols.no.find((w) => /^\d+$/.test(w.str));
   const no = noWord ? Number(noWord.str) : null;
   const courseText = joinColumnWords(cols.course);
-  const codeMatch = /^([A-Z]{2,12}\d{0,4})\s*-?\s*/.exec(courseText);
-  const code = codeMatch ? codeMatch[1] : null;
-  const title = codeMatch ? courseText.slice(codeMatch[0].length).trim() : '';
+  const { code, title } = parseCourseIdentity(courseText);
   const section = joinColumnWords(cols.section);
   const credits = Number.parseFloat(joinColumnWords(cols.credits));
   if (!code || !title || !section || !Number.isFinite(credits) || credits < 0) {

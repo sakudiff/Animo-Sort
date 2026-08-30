@@ -3,6 +3,9 @@
   "version": "0.2.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
   "description": "AnimoSort: convert an Archershub EAF PDF into a weekly timetable. Local-only static web app.",
   "dependencies": {
     "@netlify/blobs": "^11.0.2"

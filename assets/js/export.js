@@ -10,6 +10,9 @@ const SVG_HEIGHT = 1000;
 const MARGIN = 40;
 const GUTTER = 120;
 const HEADER = 90;
+const GRID_TOP = HEADER + 100;
+const FOOTER_BOTTOM_GAP = MARGIN + 20;
+const BASE_GRID_HEIGHT = SVG_HEIGHT - GRID_TOP - FOOTER_BOTTOM_GAP;
 
 export function escapeSvgText(value) {
   return String(value)
@@ -72,6 +75,32 @@ export function wrapTitle(title, maxChars = 22) {
   }
   if (line) lines.push(line);
   return lines.length ? lines : [''];
+}
+
+function getTimelineLayout(schedule, showCourseTitles) {
+  const allMinutes = schedule.meetings.flatMap((meeting) => [meeting.startMinutes, meeting.endMinutes]);
+  const canvasStart = Math.max(0, Math.min(...allMinutes) - 15);
+  const canvasEnd = Math.min(1440, Math.max(...allMinutes) + 15);
+  const minutesInSpan = Math.max(1, canvasEnd - canvasStart);
+  let gridHeight = BASE_GRID_HEIGHT;
+
+  for (const meeting of schedule.meetings) {
+    const titleLines = showCourseTitles ? wrapTitle(meeting.title, 22).length : 0;
+    const roomLines = wrapTitle(`Room: ${formatRoomLabel(meeting)}`, 25).length;
+    const contentHeight = 20 + 16 + (showCourseTitles ? titleLines * 13 + 2 : 0) + roomLines * 13 + 8;
+    const duration = Math.max(1, meeting.endMinutes - meeting.startMinutes);
+    gridHeight = Math.max(gridHeight, (contentHeight * minutesInSpan) / duration);
+  }
+
+  gridHeight = Math.ceil(gridHeight);
+  return {
+    canvasStart,
+    canvasEnd,
+    minutesInSpan,
+    gridHeight,
+    gridBottom: GRID_TOP + gridHeight,
+    svgHeight: GRID_TOP + gridHeight + FOOTER_BOTTOM_GAP,
+  };
 }
 
 export const COURSE_PALETTES = [
@@ -229,8 +258,9 @@ export function createScheduleSvg(schedule, options = {}) {
   const footerBrandText = isDark ? '#9ca3af' : '#666666';
   const footerBrandStrong = isDark ? '#f9fafb' : '#1b2e23';
 
-  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${SVG_WIDTH}" height="${SVG_HEIGHT}" viewBox="0 0 ${SVG_WIDTH} ${SVG_HEIGHT}" role="img" aria-label="Weekly schedule from AnimoSort">`);
-  parts.push(`<rect width="${SVG_WIDTH}" height="${SVG_HEIGHT}" fill="${canvasBg}"/>`);
+  const { canvasStart, canvasEnd, minutesInSpan, gridHeight, gridBottom, svgHeight } = getTimelineLayout(schedule, showCourseTitles);
+  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${SVG_WIDTH}" height="${svgHeight}" viewBox="0 0 ${SVG_WIDTH} ${svgHeight}" role="img" aria-label="Weekly schedule from AnimoSort">`);
+  parts.push(`<rect width="${SVG_WIDTH}" height="${svgHeight}" fill="${canvasBg}"/>`);
 
   const titleSize = 32;
   const subSize = 16;
@@ -241,18 +271,12 @@ export function createScheduleSvg(schedule, options = {}) {
   const courseCount = new Set(schedule.meetings.map((m) => m.courseCode)).size;
   parts.push(`<text x="${MARGIN}" y="${titleY + 26}" font-family="Helvetica, Arial, sans-serif" font-size="${subSize}" fill="${summaryColor}">${courseCount} ${courseCount === 1 ? 'course' : 'courses'} · ${meetingCount} ${meetingCount === 1 ? 'meeting' : 'meetings'}</text>`);
 
-  const gridTop = HEADER + 100;
-  const gridBottom = SVG_HEIGHT - MARGIN - 20;
-  const gridHeight = gridBottom - gridTop;
+  const gridTop = GRID_TOP;
   const tableX = MARGIN + GUTTER;
   const tableWidth = SVG_WIDTH - MARGIN * 2 - GUTTER;
   const headerHeight = 36;
   const colWidth = tableWidth / 6;
   const timeX = tableX - 10;
-  const allMinutes = schedule.meetings.flatMap((meeting) => [meeting.startMinutes, meeting.endMinutes]);
-  const canvasStart = Math.max(0, Math.min(...allMinutes) - 15);
-  const canvasEnd = Math.min(1440, Math.max(...allMinutes) + 15);
-  const minutesInSpan = Math.max(1, canvasEnd - canvasStart);
   const visiblePeriods = [
     ...STANDARD_PERIODS.filter(([start, end]) => start >= canvasStart && end <= canvasEnd),
     ...schedule.meetings.map((m) => [m.startMinutes, m.endMinutes]),
@@ -336,7 +360,7 @@ export function createScheduleSvg(schedule, options = {}) {
   }
 
   // Footer branding
-  parts.push(`<a href="https://animosort.netlify.app/" target="_blank"><text x="${SVG_WIDTH - MARGIN}" y="${SVG_HEIGHT - 16}" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="${footerBrandText}">made with <tspan font-weight="bold" fill="${footerBrandStrong}">Animo</tspan><tspan font-weight="bold" fill="${headerBrandColor}">Sort</tspan> · <tspan fill="${headerBrandColor}" font-weight="500">https://animosort.netlify.app/</tspan></text></a>`);
+  parts.push(`<a href="https://animosort.netlify.app/" target="_blank"><text x="${SVG_WIDTH - MARGIN}" y="${svgHeight - 16}" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="${footerBrandText}">made with <tspan font-weight="bold" fill="${footerBrandStrong}">Animo</tspan><tspan font-weight="bold" fill="${headerBrandColor}">Sort</tspan> · <tspan fill="${headerBrandColor}" font-weight="500">https://animosort.netlify.app/</tspan></text></a>`);
 
   parts.push('</svg>');
   return parts.join('\n');
@@ -359,7 +383,9 @@ export async function downloadSchedulePng(schedule, options = {}) {
   if (!schedule || !Array.isArray(schedule.meetings)) {
     throw new Error('A valid schedule is required for PNG export');
   }
+  const showCourseTitles = options?.showCourseTitles !== false;
   const svgString = createScheduleSvg(schedule, options);
+  const { svgHeight } = getTimelineLayout(schedule, showCourseTitles);
   const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(blob);
 
@@ -373,7 +399,7 @@ export async function downloadSchedulePng(schedule, options = {}) {
     const scale = 2;
     const canvas = document.createElement('canvas');
     canvas.width = SVG_WIDTH * scale;
-    canvas.height = SVG_HEIGHT * scale;
+    canvas.height = svgHeight * scale;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
