@@ -8,6 +8,20 @@ All notable changes to AnimoSort are documented here.
 
 No changes yet.
 
+## v0.4.1 - 2026-09-01
+
+This patch refreshes the About-page comparison with the supplied AY 2025-2026
+Term 3 timetable while preserving the blank Archershub source receipt.
+
+### About page example
+
+- Replaced the AnimoSort after image with the supplied 8-course, 15-meeting
+  Term 3 timetable and kept its expandable viewer behavior.
+- Updated the hypothetical Archershub rows with the eight OCR-verified course
+  codes and first meeting times in non-chronological received order.
+- Made the changelog's product references open the deployed website and added
+  matching GitHub source-file links for auditability.
+
 ## v0.4.0 - 2026-08-31
 
 This release adds a private, browser-local customization workflow, a manual
@@ -75,9 +89,6 @@ trace animation.
   screenshot. The source receipt and generated AnimoSort output are clickable
   and expandable so the evidence can be inspected without permanently taking
   over the page.
-- Updated the after image with the supplied AY 2025-2026 Term 3 output and
-  synchronized the hypothetical Archershub rows with its 8 courses, 15
-  meetings, and non-chronological received order.
 - Added import guidance that explains the supported official Archershub EAF,
   local-only processing, and the file-size/format constraints.
 - Replaced the generic import loading treatment with an accessible progress bar
