@@ -368,9 +368,58 @@ div[id*="netlify"] {
   margin: 20px auto 0;
 }
 
+.hero-about-cta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: 18px;
+}
+
+.hero-about-nudge {
+  position: relative;
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-3);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.hero-about-nudge::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.hero-about-cta.visible .hero-about-nudge {
+  animation: heroAboutNudgeIn 0.45s var(--silk) 0.25s forwards;
+}
+
+@keyframes heroAboutNudgeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .hero-about-link {
   display: inline-flex;
-  margin-top: 18px;
+  margin-top: 0;
   color: var(--accent);
   font-size: 0.9rem;
   font-weight: 700;
@@ -1578,6 +1627,11 @@ div[id*="netlify"] {
   * {
     transition: none !important;
     animation: none !important;
+  }
+
+  .hero-about-nudge {
+    opacity: 1;
+    transform: none;
   }
 
   .reveal {
