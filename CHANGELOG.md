@@ -6,10 +6,15 @@ All notable changes to AnimoSort are documented here.
 
 ## Unreleased
 
-This section records the work on `dev` after the v0.3.0 release, including the
-portable customization, calendar handoff, documentation, navigation, and
-Archify presentation work. The package version is still `0.3.0`; these changes
-remain unreleased until a new version is cut.
+No changes yet.
+
+## v0.4.0 - 2026-08-31
+
+This release adds a private, browser-local customization workflow, a manual
+Google Calendar handoff, a clearer import and About experience, responsive
+navigation, and a reviewable Archify pipeline diagram. It also finishes the
+diagram's light and dark Editorial themes, readable menu surfaces, and looping
+trace animation.
 
 ### Portable customization profiles
 
@@ -104,10 +109,10 @@ remain unreleased until a new version is cut.
 - Linked the pipeline from the main page and documented the artifacts and
   regeneration boundary in the [README](README.md#interactive-pipeline-diagram).
 
-### Unreleased commit ledger
+### Release commit ledger
 
 The following commits were audited from the v0.3.0 tag through the current
-`dev` tip. The release-polish commits are already described in the v0.3.0
+v0.4.0 release candidate. The release-polish commits are already described in the v0.3.0
 section below, so they are linked here instead of repeating their details.
 
 Release-polish commits covered by v0.3.0:
@@ -129,7 +134,7 @@ Release-polish commits covered by v0.3.0:
 - [`1caddfb`](https://github.com/sakudiff/Animo-Sort/commit/1caddfb) — detail
   the v0.3.0 release changes.
 
-Work added after the v0.3.0 release:
+Work included in v0.4.0:
 
 - [`523ea4a`](https://github.com/sakudiff/Animo-Sort/commit/523ea4a) — portable
   customization profiles and PNG themes.
@@ -149,16 +154,22 @@ Work added after the v0.3.0 release:
   About nudge active while it is in view.
 - [`041da9f`](https://github.com/sakudiff/Animo-Sort/commit/041da9f) — make
   reader-facing links discoverable.
+- [`dc52453`](https://github.com/sakudiff/Animo-Sort/commit/dc52453) — integrate
+  portable profiles, calendar export, and the site guide.
+- [`5401fb1`](https://github.com/sakudiff/Animo-Sort/commit/5401fb1) — refresh
+  the README with current product screenshots.
+- [`e6dba35`](https://github.com/sakudiff/Animo-Sort/commit/e6dba35) — improve
+  Archify theme contrast and loop the pipeline trace animation.
 
 #### Verification
 
 - The audited commit range contains no dependency or server-side data path for
   EAF processing; parsing and export remain browser-local.
-- `npm test` passes all 26 tests. JavaScript syntax checks and `git diff --check`
+- `npm test` passes all 29 tests. JavaScript syntax checks and `git diff --check`
   also pass.
 - Playwright checks pass at 390px and 1440px for the home, About, and How to use
-  pages, including the hamburger menu, GitHub icon, Archify section, links, and
-  horizontal-overflow guard.
+  pages, including the hamburger menu, GitHub icon, Archify section, links,
+  horizontal-overflow guard, looping animation, and hover pause/resume behavior.
 
 ---
 
