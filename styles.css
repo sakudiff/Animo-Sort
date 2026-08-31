@@ -1,5 +1,5 @@
 /*
-AnimoSort — one-page adapted shell from the selected template.
+AnimoSort - one-page adapted shell from the selected template.
 Black text, white surfaces, neutral rules, DLSU green #087830 as the accent.
 Typography follows the approved pairing: DM Sans body, Playfair Display accents.
 */
@@ -184,6 +184,10 @@ button {
   text-transform: none;
   vertical-align: baseline;
   white-space: nowrap;
+}
+
+.brand-mark--inline {
+  display: inline;
 }
 
 .brand-mark .brand-animo {
@@ -461,7 +465,7 @@ div[id*="netlify"] {
 }
 
 .hero-about-link {
-  display: inline-flex;
+  display: inline-block;
   margin-top: 0;
   color: var(--accent);
   font-size: 0.9rem;

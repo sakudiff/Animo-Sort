@@ -82,7 +82,7 @@ test('serializes weekly Manila events with range-trimmed UTC UNTIL values', () =
   assert.match(ics, /DTSTART;TZID=Asia\/Manila:20260824T091500/);
   assert.match(ics, /DTEND;TZID=Asia\/Manila:20260824T104500/);
   assert.match(ics, /RRULE:FREQ=WEEKLY;UNTIL=20261214T024500Z/);
-  assert.match(ics, /SUMMARY:STSP002 S30A — SPECIAL TOPICS/);
+  assert.match(ics, /SUMMARY:STSP002 S30A - SPECIAL TOPICS/);
   assert.match(ics, /LOCATION:Online/);
   assert.match(ics, /DESCRIPTION:Professor: Professor Santos\\nMode: Online\\nDay: Monday\\nTime: 09:15 AM - 10:45 AM\\nAcademic session: AY 2026-2027 · Term 1/);
   assert.doesNotMatch(ics, /VALARM/);

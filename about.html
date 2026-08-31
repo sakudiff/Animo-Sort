@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>About AnimoSort — The data was already there</title>
+  <title>About AnimoSort - The data was already there</title>
   <meta name="description" content="Why AnimoSort turns the schedule information in your Archershub EAF into a readable week.">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
@@ -52,7 +52,7 @@
     <section class="guide-hero about-hero">
       <p class="import-kicker">About <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></p>
       <h1>The schedule was already <em>in the data.</em></h1>
-      <p>Why this small, local tool exists—and what it does with the EAF you already have.</p>
+      <p>Why this small, local tool exists - and what it does with the EAF you already have.</p>
     </section>
 
     <section class="story-panel" id="story" aria-labelledby="story-heading">
@@ -124,12 +124,12 @@
           <p class="story-kicker">The path from file to week</p>
           <h2 id="pipeline-heading">What happens after you choose your EAF?</h2>
         </div>
-        <p>Follow the real browser-side pipeline—from the official PDF to the timetable, reusable customization profile, PNG, and calendar handoff.</p>
+        <p>Follow the real browser-side pipeline - from the official PDF to the timetable, reusable customization profile, PNG, and calendar handoff.</p>
       </div>
       <div class="architecture-viewer architecture-viewer--desktop">
         <iframe
           class="architecture-viewer-frame"
-          src="assets/animosort-workflow.html?present=1"
+          data-src="assets/animosort-workflow.html?present=1"
           title="Interactive AnimoSort EAF-to-week pipeline diagram"
           loading="lazy"
           allowfullscreen></iframe>
@@ -137,12 +137,12 @@
       <div class="architecture-viewer architecture-viewer--mobile">
         <iframe
           class="architecture-viewer-frame"
-          src="assets/animosort-workflow-mobile.html?embed=1"
+          data-src="assets/animosort-workflow-mobile.html?embed=1"
           title="AnimoSort EAF-to-week pipeline diagram"
           loading="lazy"
           allowfullscreen></iframe>
       </div>
-      <p class="architecture-note">The diagram is interactive: use the viewer controls to inspect the path, then <a class="text-link" id="architecture-full-link" href="assets/animosort-workflow.html" target="_blank" rel="noopener noreferrer">open the full Archify diagram</a> for the complete viewer and exports.</p>
+      <p class="architecture-note">The diagram is interactive: use the viewer controls to inspect the path, then <a class="text-link" id="architecture-full-link" href="assets/animosort-workflow.html" target="_blank" rel="noopener noreferrer">open the full Archify diagram</a> for the complete viewer and exports. The <a class="text-link" href="https://github.com/sakudiff/Animo-Sort/tree/dev/assets" target="_blank" rel="noopener noreferrer">diagram source code is on GitHub</a>.</p>
     </section>
 
     <dialog class="story-source-dialog" id="story-source-dialog" aria-labelledby="story-source-dialog-title">
@@ -176,11 +176,13 @@
         : (document.documentElement.dataset.theme || (prefersDark ? 'dark' : 'light'));
 
       architectureFrames.forEach((frame) => {
-        const frameUrl = new URL(frame.getAttribute('src'), window.location.href);
+        const source = frame.getAttribute('data-src') || frame.getAttribute('src');
+        if (!source) return;
+        const frameUrl = new URL(source, window.location.href);
         if (frameUrl.searchParams.get('theme') !== activeTheme) {
           frameUrl.searchParams.set('theme', activeTheme);
-          frame.setAttribute('src', frameUrl.href);
         }
+        if (frame.getAttribute('src') !== frameUrl.href) frame.setAttribute('src', frameUrl.href);
         frame.style.colorScheme = activeTheme;
       });
 

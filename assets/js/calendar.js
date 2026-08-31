@@ -275,7 +275,7 @@ export function resolveCalendarEvent(meeting, schedule, profile, range, index = 
     dtstart: formatLocalTimestamp(firstDate, meeting.startMinutes),
     dtend: formatLocalTimestamp(firstDate, meeting.endMinutes),
     until: formatUntilTimestamp(lastDate, meeting.endMinutes),
-    summary: `${meeting.courseCode} ${meeting.section} — ${meeting.title}`,
+    summary: `${meeting.courseCode} ${meeting.section} - ${meeting.title}`,
     location: resolved.mode === 'online' ? 'Online' : physicalLocation,
     description: descriptionLines.filter(Boolean).join('\n'),
     firstOccurrenceDate: firstDate,

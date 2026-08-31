@@ -6,6 +6,7 @@
     "subtitle": "A local, reusable path from Archershub data to a timetable",
     "locale": "en",
     "quality_profile": "showcase",
+    "animation": "trace",
     "output": "assets/animosort-workflow.html"
   },
   "lanes": [

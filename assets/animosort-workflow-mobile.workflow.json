@@ -6,6 +6,7 @@
     "subtitle": "The same local pipeline, arranged for a narrow screen",
     "locale": "en",
     "quality_profile": "showcase",
+    "animation": "trace",
     "output": "assets/animosort-workflow-mobile.html"
   },
   "lanes": [
