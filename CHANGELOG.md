@@ -44,7 +44,8 @@ trace animation.
 - Migrated legacy `animosort_course_colors` values into the Default profile
   without deleting the legacy key, preserving existing users' choices.
 - Added profile persistence, migration, reset, resolution, custom-color, and
-  export metadata tests. See the [customization guide](how-to-use.html#customization-profiles)
+  export metadata tests. See the [customization guide on the website](https://animosort.netlify.app/how-to-use.html#customization-profiles)
+  or the [guide source on GitHub](https://github.com/sakudiff/Animo-Sort/blob/main/how-to-use.html)
   for the user-facing workflow.
 
 ### Google Calendar handoff
@@ -60,18 +61,23 @@ trace animation.
   room or Online mode, professor when available, meeting day, time, and session
   information. Classes with no occurrence in the selected range are skipped.
 - Adds no reminders and blocks an empty export with a useful explanation.
-  The [calendar handoff guide](how-to-use.html#google-calendar) explains what
-  an `.ics` file is, how to import it into Google Calendar, and why importing
-  works best on a computer.
+  The [calendar handoff guide on the website](https://animosort.netlify.app/how-to-use.html#google-calendar)
+  and its [guide source on GitHub](https://github.com/sakudiff/Animo-Sort/blob/main/how-to-use.html)
+  explain what an `.ics` file is, how to import it into Google Calendar, and
+  why importing works best on a computer.
 
 ### About page, source receipts, and import clarity
 
-- Moved the landing-page pitch into a dedicated, full-width [About page](about.html),
+- Moved the landing-page pitch into a dedicated, full-width [About page on the website](https://animosort.netlify.app/about),
+  with the [page source on GitHub](https://github.com/sakudiff/Animo-Sort/blob/main/about.html),
   keeping the main page focused on importing an EAF and viewing a timetable.
 - Added a responsive before/after story using the supplied Archershub Schedule
   screenshot. The source receipt and generated AnimoSort output are clickable
   and expandable so the evidence can be inspected without permanently taking
   over the page.
+- Updated the after image with the supplied AY 2025-2026 Term 3 output and
+  synchronized the hypothetical Archershub rows with its 8 courses, 15
+  meetings, and non-chronological received order.
 - Added import guidance that explains the supported official Archershub EAF,
   local-only processing, and the file-size/format constraints.
 - Replaced the generic import loading treatment with an accessible progress bar
@@ -83,9 +89,10 @@ trace animation.
 - Added shared responsive navigation with a mobile hamburger menu, outside-click
   and Escape dismissal, and automatic close after navigation.
 - Added clear About and How to use entry points in the header, footer, and hero.
-  The main page now exposes [See how the code works](about.html#pipeline), and
-  reader-facing links use green underlines/highlights so they are discoverable
-  without overpowering the interface.
+  The main page now exposes [See how the code works on the website](https://animosort.netlify.app/about#pipeline), with the
+  [home-page source on GitHub](https://github.com/sakudiff/Animo-Sort/blob/main/index.html), and reader-facing links use green
+  underlines/highlights so they are discoverable without overpowering the
+  interface.
 - Added the persistent, subtle “Click to learn more” nudge while the About CTA
   is visible, with reduced-motion behavior for users who request less motion.
 - Kept GitHub as the source/audit destination while removing the redundant
@@ -93,21 +100,28 @@ trace animation.
 
 ### Interactive Archify pipeline
 
-- Added a responsive architecture reference at [About → How the code works](about.html#pipeline),
-  rendered with [Archify](https://github.com/tt-a1i/archify). Desktop and narrow
-  screens use separate generated viewers so the pipeline remains readable at
-  both widths.
+- Added a responsive architecture reference at [About → How the code works on the website](https://animosort.netlify.app/about#pipeline),
+  with the [About-page source on GitHub](https://github.com/sakudiff/Animo-Sort/blob/main/about.html), rendered with
+  [Archify](https://github.com/tt-a1i/archify). Desktop and narrow screens use
+  separate generated viewers so the pipeline remains readable at both widths.
 - Added light/dark viewer synchronization with the site theme and a direct
   full-view link. The diagram names the actual browser-side modules and
   functions, including `initApp`, `parseEafFile`, `parseScheduleRows`,
   `renderSchedule`, `downloadCustomization`, `downloadSchedulePng`, and
   `formatIcsCalendar`.
-- Added the generated [desktop viewer](assets/animosort-workflow.html),
-  [mobile viewer](assets/animosort-workflow-mobile.html), and their companion
-  `.workflow.json` source specifications. Archify is used to generate the
-  reviewable artifacts; it is not added as a runtime dependency of the app.
+- Added the generated [desktop viewer on the website](https://animosort.netlify.app/assets/animosort-workflow.html)
+  with its [HTML source on GitHub](https://github.com/sakudiff/Animo-Sort/blob/main/assets/animosort-workflow.html),
+  and the [mobile viewer on the website](https://animosort.netlify.app/assets/animosort-workflow-mobile.html)
+  with its [HTML source on GitHub](https://github.com/sakudiff/Animo-Sort/blob/main/assets/animosort-workflow-mobile.html).
+  Their companion [desktop workflow specification on the website](https://animosort.netlify.app/assets/animosort-workflow.workflow.json)
+  and [mobile workflow specification on the website](https://animosort.netlify.app/assets/animosort-workflow-mobile.workflow.json)
+  have matching [desktop JSON source on GitHub](https://github.com/sakudiff/Animo-Sort/blob/main/assets/animosort-workflow.workflow.json)
+  and [mobile JSON source on GitHub](https://github.com/sakudiff/Animo-Sort/blob/main/assets/animosort-workflow-mobile.workflow.json).
+  Archify is used to generate the reviewable artifacts; it is not added as a
+  runtime dependency of the app.
 - Linked the pipeline from the main page and documented the artifacts and
-  regeneration boundary in the [README](README.md#interactive-pipeline-diagram).
+  regeneration boundary in the [pipeline page on the website](https://animosort.netlify.app/about#pipeline)
+  and the [README source on GitHub](https://github.com/sakudiff/Animo-Sort/blob/main/README.md#interactive-pipeline-diagram).
 
 ### Release commit ledger
 
