@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About AnimoSort — The data was already there</title>
+  <meta name="description" content="Why AnimoSort turns the schedule information in your Archershub EAF into a readable week.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <script>
+    (function() {
+      try {
+        const theme = localStorage.getItem('animosort_theme');
+        if (theme === 'dark' || theme === 'light') document.documentElement.setAttribute('data-theme', theme);
+      } catch (error) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="nav" id="mainNav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Animo<span>Sort</span></a>
+      <div class="nav-actions">
+        <button type="button" id="theme-toggle" class="nav-theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg class="sun-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <span id="theme-toggle-text" class="theme-toggle-text">Dark</span>
+        </button>
+        <a href="about.html" class="nav-help-link nav-about-link nav-current-link" aria-current="page" aria-label="About AnimoSort" title="About AnimoSort">About</a>
+        <a href="how-to-use.html" class="nav-help-link nav-guide-link" aria-label="How to use AnimoSort" title="How to use AnimoSort">
+          <span class="nav-guide-icon" aria-hidden="true">?</span>
+          <span class="nav-guide-label">How to use</span>
+        </a>
+        <a href="index.html#top" class="nav-help-link nav-back-link">Back to timetable</a>
+        <a href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer" class="nav-github-link" aria-label="View source code and audit on GitHub">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="guide-shell about-shell" id="top">
+    <section class="guide-hero about-hero">
+      <p class="import-kicker">About AnimoSort</p>
+      <h1>The schedule was already <em>in the data.</em></h1>
+      <p>Why this small, local tool exists—and what it does with the EAF you already have.</p>
+    </section>
+
+    <section class="story-panel" id="story" aria-labelledby="story-heading">
+      <div class="story-card reveal">
+        <div class="story-heading">
+          <div>
+            <p class="story-kicker">The data was already there</p>
+            <h2 id="story-heading">Tired of Archershub's idea of a schedule?</h2>
+            <p class="panel-sub">We were too.</p>
+          </div>
+          <p class="story-heading-note">A timetable-sized space. No timetable. And when the rows do appear, chronology is apparently optional.</p>
+        </div>
+        <div class="story-content">
+          <div class="story-argument">
+            <div>
+              <h3>Your EAF already knows when class starts.</h3>
+            </div>
+            <div>
+              <p>Archershub already has your enrollment data: subjects, meeting days, times, sections, and rooms.</p>
+              <p class="story-lead">AnimoSort reads the same information and draws the week it was supposed to be.</p>
+            </div>
+          </div>
+
+          <div class="story-proof-flow">
+            <article class="story-before">
+              <div class="story-card-bar"><span>Archershub output</span><span>before</span></div>
+              <div class="story-source-stage">
+                <img class="story-source-screen" src="assets/images/archershub-schedule-example.png" alt="Archershub Schedule page showing an empty timetable area">
+                <div class="story-empty-state" aria-hidden="true">Time Table has not been Created</div>
+                <div class="story-ghost-schedule" aria-label="Annotated example of the course rows that could have filled the empty timetable area">
+                  <div class="story-ghost-head"><span>If it had been populated</span><span>received order</span></div>
+                  <div class="story-ghost-row"><code>DATA103</code><time>FRI · 09:15 AM</time></div>
+                  <div class="story-ghost-row"><code>ECOF223</code><time>MON · 02:30 PM</time></div>
+                  <div class="story-ghost-row"><code>ECOF366</code><time>MON · 11:00 AM</time></div>
+                  <div class="story-ghost-row"><code>FINIVBA</code><time>FRI · 06:00 PM</time></div>
+                  <div class="story-ghost-row"><code>FINSPTO</code><time>FRI · 04:15 PM</time></div>
+                  <div class="story-ghost-row"><code>GESTSOC</code><time>FRI · 02:30 PM</time></div>
+                  <div class="story-ghost-row"><code>LCASEAN</code><time>MON · 07:30 AM</time></div>
+                  <div class="story-ghost-note">The room was there. The chronology wasn't.</div>
+                </div>
+              </div>
+              <button class="story-source-receipt" id="story-source-receipt" type="button" aria-controls="story-source-dialog" aria-label="Expand the supplied Archershub Schedule screenshot">
+                <span class="story-source-thumb"><img src="assets/images/archershub-schedule-example.png" alt=""></span>
+                <span class="story-source-copy"><strong>Source receipt</strong><span>Click to expand</span> · supplied Archershub Schedule screenshot</span>
+              </button>
+              <p class="story-source-caption">This is what the Schedule page shows in the supplied example: timetable-sized space, with “Time Table has not been Created” where the week should be.</p>
+            </article>
+
+            <div class="story-bridge"><strong>same EAF</strong><div class="story-bridge-line"></div><small>read · normalize · sort</small></div>
+
+            <figure class="story-after">
+              <div class="story-card-bar"><span>AnimoSort output</span><span>after</span></div>
+              <button class="story-output-trigger" id="story-output-trigger" type="button" aria-controls="story-output-dialog" aria-label="Expand the AnimoSort sample timetable">
+                <img id="story-demo-output" class="story-demo-output" alt="AnimoSort sample timetable generated by the same export function">
+              </button>
+              <figcaption><span><strong>Actual output</strong> generated by AnimoSort's export pipeline</span><span>Click the timetable to expand · 7 courses · 14 meetings</span></figcaption>
+            </figure>
+          </div>
+
+          <div class="story-answer"><strong>AnimoSort</strong><p>The same enrollment data, finally arranged as a week.</p></div>
+          <div class="story-facts"><div><strong>Same official EAF</strong><span>No new schedule data was invented.</span></div><div><strong>Actual start times</strong><span>7:30 AM through 6:00 PM appear in order.</span></div><div><strong>Local by design</strong><span>No account, server upload, or AI reading your EAF.</span></div></div>
+          <div class="story-footer-copy"><p>Want to verify the privacy guarantees, run a security audit, or host this yourself? Inspect the full source code and contribute on <a href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer">GitHub</a>.</p><p class="story-punchline"><strong>Your timetable has now been created.</strong></p><p class="story-ps"><em>P.S. Yes, course colors are customizable. Click any course dot, pick pastel presets, shuffle them, or type your own hex codes.</em></p></div>
+        </div>
+      </div>
+    </section>
+
+    <dialog class="story-source-dialog" id="story-source-dialog" aria-labelledby="story-source-dialog-title">
+      <button class="story-source-close" id="story-source-close" type="button">Close</button>
+      <figure>
+        <img src="assets/images/archershub-schedule-example.png" alt="Expanded Archershub Schedule screenshot">
+        <figcaption><strong id="story-source-dialog-title">Source receipt · Archershub Schedule page</strong>This is what Archershub's Schedule page looks like in the supplied example: the timetable area is present, but the portal reports that the timetable has not been created. The public view uses a cropped presentation; unrelated account details are not part of the story.</figcaption>
+      </figure>
+    </dialog>
+
+    <dialog class="story-source-dialog story-output-dialog" id="story-output-dialog" aria-labelledby="story-output-dialog-title">
+      <button class="story-source-close" id="story-output-close" type="button">Close</button>
+      <figure>
+        <img id="story-output-dialog-image" alt="Expanded AnimoSort sample timetable">
+        <figcaption><strong id="story-output-dialog-title">AnimoSort output · generated locally</strong>This timetable is generated from the same sample schedule used in the comparison above. It is an example of the weekly view AnimoSort creates from the EAF data.</figcaption>
+      </figure>
+    </dialog>
+  </main>
+
+  <script type="module">
+    import { initSiteChrome } from './assets/js/site.js';
+    initSiteChrome();
+  </script>
+  <script type="module" src="assets/js/story-demo.js"></script>
+</body>
+</html>

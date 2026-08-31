@@ -65,6 +65,9 @@ const els = {
   fileInput: null,
   browseBtn: null,
   dropZone: null,
+  dropZoneText: null,
+  importProgress: null,
+  importProgressLabel: null,
   statusRegion: null,
   schedulePanel: null,
   sessionLabel: null,
@@ -135,6 +138,9 @@ function requireElements() {
     fileInput: 'eaf-file',
     browseBtn: 'browse-btn',
     dropZone: 'drop-zone',
+    dropZoneText: 'drop-zone-text',
+    importProgress: 'import-progress',
+    importProgressLabel: 'import-progress-label',
     statusRegion: 'status-region',
     schedulePanel: 'schedule-panel',
     sessionLabel: 'session-label',
@@ -194,6 +200,29 @@ function setStatus(message, kind = '') {
   els.statusRegion.textContent = message;
   els.statusRegion.className = `status-region${kind ? ` ${kind}` : ''}`;
   els.statusRegion.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+}
+
+function setImportProgress(progress = null) {
+  if (!els.importProgress) return;
+  if (!progress) {
+    els.importProgress.hidden = true;
+    els.importProgress.style.removeProperty('--import-progress');
+    els.importProgress.setAttribute('aria-valuenow', '0');
+    els.importProgress.setAttribute('aria-valuetext', 'Ready to choose a file');
+    els.importProgress.removeAttribute('data-phase');
+    els.importProgressLabel.textContent = 'Preparing local import';
+    els.dropZoneText.hidden = false;
+    return;
+  }
+  const percent = Math.max(0, Math.min(100, Math.round(Number(progress.percent) || 0)));
+  const message = progress.message || 'Processing the EAF locally…';
+  els.importProgress.hidden = false;
+  els.importProgress.style.setProperty('--import-progress', `${percent}%`);
+  els.importProgress.setAttribute('aria-valuenow', String(percent));
+  els.importProgress.setAttribute('aria-valuetext', message);
+  els.importProgress.dataset.phase = progress.phase || 'processing';
+  els.importProgressLabel.textContent = message;
+  els.dropZoneText.hidden = true;
 }
 
 function setProfileStatus(message, kind = '') {
@@ -457,7 +486,9 @@ function setImporting(isImporting) {
   els.browseBtn.disabled = isImporting;
   els.replaceBtn.disabled = isImporting;
   els.dropZone.setAttribute('aria-disabled', String(isImporting));
+  els.dropZone.setAttribute('aria-busy', String(isImporting));
   els.dropZone.setAttribute('tabindex', isImporting ? '-1' : '0');
+  els.dropZone.classList.toggle('is-importing', isImporting);
   if (isImporting) els.dropZone.classList.remove('drop-active');
 }
 
@@ -740,12 +771,13 @@ export async function handleFile(file) {
   const generation = ++importGeneration;
   activeImportGeneration = generation;
   setImporting(true);
-  setStatus('Reading EAF locally…');
+  setImportProgress({ phase: 'reading', percent: 5, message: 'Preparing the EAF locally…' });
   try {
-    const schedule = await import('./eaf-parser.js').then((module) => module.parseEafFile(file));
+    const schedule = await import('./eaf-parser.js').then((module) => module.parseEafFile(file, setImportProgress));
     if (generation !== importGeneration) return;
     replaceSchedule(schedule);
     const courseCount = new Set(schedule.meetings.map((meeting) => normalizeCourseCode(meeting.courseCode))).size;
+    setImportProgress({ phase: 'complete', percent: 100, message: 'Timetable ready.' });
     setStatus(`Loaded ${schedule.session} · ${courseCount} ${courseCount === 1 ? 'course' : 'courses'} loaded locally.`);
   } catch (error) {
     if (generation !== importGeneration) return;
@@ -756,6 +788,7 @@ export async function handleFile(file) {
       activeImportGeneration = null;
       els.fileInput.value = '';
       setImporting(false);
+      setImportProgress();
     }
   }
 }

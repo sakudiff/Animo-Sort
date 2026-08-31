@@ -22,6 +22,8 @@ Typography follows the approved pairing: DM Sans body, Playfair Display accents.
   --silk-dur: 0.8s;
   --radius: 16px;
   --radius-lg: 24px;
+  --radius-sm: 10px;
+  --control-radius: 10px;
   --gutter-width: 88px;
   --day-column-width: 168px;
   --header-height: 56px;
@@ -192,7 +194,7 @@ button {
   font-weight: 600;
   color: var(--text-2);
   padding: 6px 12px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--control-radius);
   border: 1px solid var(--border);
   background: var(--surface);
   transition: color var(--silk-dur) var(--silk), border-color var(--silk-dur) var(--silk), background var(--silk-dur) var(--silk);
@@ -237,7 +239,7 @@ button {
   font-weight: 600;
   color: var(--text-2);
   padding: 6px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--control-radius);
   border: 1px solid var(--border);
   background: var(--surface);
   transition: color var(--silk-dur) var(--silk), border-color var(--silk-dur) var(--silk), background var(--silk-dur) var(--silk);
@@ -450,7 +452,7 @@ div[id*="netlify"] {
 .button {
   font: inherit;
   padding: 9px 20px;
-  border-radius: 100px;
+  border-radius: var(--control-radius);
   font-size: 0.875rem;
   font-weight: 600;
   transition: background var(--silk-dur) var(--silk), transform var(--silk-dur) var(--silk), box-shadow var(--silk-dur) var(--silk), color 0.3s;
@@ -492,6 +494,49 @@ div[id*="netlify"] {
   color: var(--text-2);
   cursor: pointer;
   transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.drop-zone[aria-busy="true"] {
+  cursor: wait;
+}
+
+.import-progress {
+  display: grid;
+  gap: 8px;
+  width: min(100%, 520px);
+  margin: 0 auto;
+}
+
+.import-progress[hidden] {
+  display: none;
+}
+
+.import-progress-track {
+  display: grid;
+  grid-template-columns: minmax(0, var(--import-progress, 0%)) minmax(0, 1fr);
+  min-height: 20px;
+  overflow: hidden;
+  border: 2px solid #111111;
+  border-radius: var(--control-radius);
+  background: #ffffff;
+}
+
+.import-progress-fill {
+  min-width: 0;
+  background: var(--accent);
+}
+
+.import-progress-empty {
+  min-width: 0;
+  background: #ffffff;
+}
+
+.import-progress-label {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .drop-zone.drop-active,
@@ -597,7 +642,7 @@ div[id*="netlify"] {
   min-height: 38px;
   padding: 5px 10px;
   border: 1px solid var(--border);
-  border-radius: 100px;
+  border-radius: var(--control-radius);
   background: var(--surface);
   color: var(--text-2);
   font-size: 0.8rem;
@@ -629,7 +674,7 @@ div[id*="netlify"] {
   margin: 4px 0 18px;
   padding: 16px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--control-radius);
   background: var(--bg-alt);
 }
 
@@ -700,7 +745,7 @@ div[id*="netlify"] {
   padding: 0;
   text-indent: 10px;
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: var(--control-radius);
   background: var(--surface);
   color: var(--text-1);
   font: inherit;
@@ -844,7 +889,7 @@ div[id*="netlify"] {
 
 .legend-action-btn {
   padding: 3px 8px;
-  border-radius: 5px;
+  border-radius: var(--control-radius);
   border: 1px solid var(--border);
   background: var(--bg-alt);
   color: var(--text-2);
@@ -872,7 +917,7 @@ div[id*="netlify"] {
   align-items: center;
   gap: 6px;
   padding: 4px 9px;
-  border-radius: 6px;
+  border-radius: var(--control-radius);
   border: 1px solid var(--border);
   background: var(--bg-alt);
   color: var(--text-1);
@@ -914,7 +959,7 @@ div[id*="netlify"] {
   z-index: 1000;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--control-radius);
   padding: 10px 12px;
   box-shadow: var(--shadow-md);
   display: flex;
@@ -944,7 +989,7 @@ div[id*="netlify"] {
   gap: 8px;
   width: 100%;
   padding: 5px 8px;
-  border-radius: 6px;
+  border-radius: var(--control-radius);
   border: 1px solid var(--border);
   background: var(--bg-alt);
   color: var(--text-1);
@@ -1017,7 +1062,7 @@ div[id*="netlify"] {
   padding: 3px 4px;
   background: var(--bg-alt);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--control-radius);
   transition: border-color 0.12s ease;
 }
 
@@ -1073,7 +1118,7 @@ div[id*="netlify"] {
 
 .palette-hex-apply-btn {
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: var(--control-radius);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-1);
@@ -2083,11 +2128,13 @@ div[id*="netlify"] {
 .story-before,
 .story-after {
   border: 1px solid var(--border);
+  border-radius: var(--radius);
   background: var(--bg-alt);
 }
 
 .story-before {
   align-self: stretch;
+  overflow: hidden;
 }
 
 .story-card-bar {
@@ -2118,9 +2165,27 @@ div[id*="netlify"] {
 .story-source-screen {
   position: absolute;
   top: 0;
-  left: -21%;
-  width: 182%;
+  left: -54%;
+  width: 300%;
   max-width: none;
+}
+
+.story-empty-state {
+  position: absolute;
+  top: 25%;
+  right: 8%;
+  left: 8%;
+  padding: 7px 9px;
+  border: 1px solid rgba(17, 17, 17, 0.2);
+  background: rgba(255, 255, 255, 0.92);
+  color: #263238;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .story-ghost-schedule {
@@ -2180,20 +2245,32 @@ div[id*="netlify"] {
   display: grid;
   grid-template-columns: 100px minmax(0, 1fr);
   gap: 12px;
-  width: calc(100% - 32px);
-  margin: 16px;
-  padding: 0;
+  width: calc(100% - 28px);
+  margin: 12px 14px;
+  padding: 4px;
   border: 0;
+  border-radius: var(--control-radius);
   background: transparent;
   color: inherit;
   cursor: pointer;
   font: inherit;
   text-align: left;
+  transition: background 0.12s ease;
+}
+
+.story-source-receipt:hover {
+  background: var(--accent-ghost);
+}
+
+.story-source-receipt:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .story-source-thumb {
   height: 68px;
   overflow: hidden;
+  border-radius: var(--control-radius);
   border: 1px solid var(--border);
   background: #f2f4f7;
 }
@@ -2288,6 +2365,27 @@ div[id*="netlify"] {
 .story-after {
   overflow: hidden;
   background: var(--surface);
+}
+
+.story-output-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--control-radius);
+  overflow: hidden;
+  background: var(--surface);
+  line-height: 0;
+  text-align: left;
+}
+
+.story-output-trigger:hover {
+  background: var(--accent-ghost);
+}
+
+.story-output-trigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
 }
 
 .story-demo-output {
@@ -2402,6 +2500,7 @@ div[id*="netlify"] {
   margin: auto;
   padding: 0;
   border: 1px solid var(--border);
+  border-radius: var(--radius);
   background: var(--surface);
   color: var(--text-1);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.26);
@@ -2417,6 +2516,7 @@ div[id*="netlify"] {
   margin: 14px 14px 0 auto;
   padding: 7px 10px;
   border: 1px solid var(--border);
+  border-radius: var(--control-radius);
   background: var(--surface);
   color: var(--text-1);
   font-family: 'DM Mono', monospace;
@@ -2433,6 +2533,10 @@ div[id*="netlify"] {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.story-output-dialog {
+  width: min(1200px, calc(100% - 28px));
 }
 
 .story-source-dialog figcaption {
@@ -2555,8 +2659,8 @@ div[id*="netlify"] {
   }
 
   .story-source-screen {
-    left: -25%;
-    width: 195%;
+    left: -58%;
+    width: 300%;
   }
 
   .story-ghost-schedule {
@@ -2580,6 +2684,7 @@ div[id*="netlify"] {
     grid-template-columns: 80px minmax(0, 1fr);
     width: calc(100% - 22px);
     margin: 12px 11px;
+    padding: 4px;
   }
 
   .story-source-thumb {
@@ -2624,6 +2729,7 @@ div[id*="netlify"] {
   .story-source-dialog figure {
     margin: 10px;
   }
+
 }
 
 /* ── Customization profiles and section editor ── */
@@ -2654,7 +2760,7 @@ div[id*="netlify"] {
 .customization-dialog input[type="text"] {
   min-height: 38px;
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: var(--control-radius);
   background: var(--surface);
   color: var(--text-1);
   font: inherit;
@@ -2721,14 +2827,14 @@ div[id*="netlify"] {
   min-width: 190px;
   padding: 6px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--control-radius);
   background: var(--surface);
   box-shadow: var(--shadow-md);
 }
 
 .reset-menu-content button {
   padding: 8px 10px;
-  border-radius: 7px;
+  border-radius: var(--control-radius);
   color: var(--text-2);
   font-size: 0.78rem;
   text-align: left;
@@ -2913,6 +3019,7 @@ div[id*="netlify"] {
   color: var(--text-2);
   font-size: 0.85rem;
   font-weight: 600;
+  white-space: nowrap;
   transition: color var(--silk-dur) var(--silk), border-color var(--silk-dur) var(--silk), background var(--silk-dur) var(--silk);
 }
 
@@ -2938,6 +3045,29 @@ div[id*="netlify"] {
   color: var(--accent);
 }
 
+.about-shell {
+  width: 100%;
+  max-width: none;
+  padding-inline: clamp(16px, 4vw, 64px);
+}
+
+.about-hero {
+  max-width: 820px;
+}
+
+.about-shell .story-panel {
+  padding-inline: 0;
+}
+
+.about-shell .story-card {
+  max-width: none;
+  padding-inline: clamp(0px, 2vw, 32px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 @media (max-width: 820px) {
   .configuration-panel {
     padding: 12px 16px 8px;
@@ -2959,6 +3089,10 @@ div[id*="netlify"] {
   .profile-controls .reset-menu .button {
     width: 100%;
   }
+
+  .about-shell .story-card {
+    padding-inline: 0;
+  }
 }
 
 @media (max-width: 480px) {
@@ -2973,11 +3107,21 @@ div[id*="netlify"] {
   .nav-theme-toggle,
   .nav-help-link,
   .nav-github-link {
-    padding-inline: 8px;
+    padding-inline: 7px;
+    font-size: 0.75rem;
+  }
+
+  .nav-theme-toggle,
+  .nav-github-link {
+    gap: 4px;
   }
 
   .nav-back-link {
     display: none;
+  }
+
+  .about-shell .story-card {
+    padding-inline: 0;
   }
 
   #customization-form {
@@ -3012,6 +3156,16 @@ div[id*="netlify"] {
     height: 34px;
     justify-content: center;
     padding: 6px;
+  }
+
+  .nav-about-link {
+    font-size: 0;
+  }
+
+  .nav-about-link::before {
+    content: 'i';
+    font-size: 0.82rem;
+    font-weight: 800;
   }
 }
 

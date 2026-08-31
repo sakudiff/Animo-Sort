@@ -405,11 +405,26 @@ export function validateArchershubEaf(pages) {
   return { session: sessionMatch[1] };
 }
 
-export async function extractPdfTextItems(file) {
+function reportImportProgress(onProgress, phase, percent, message) {
+  if (typeof onProgress !== 'function') return;
+  try {
+    onProgress({
+      phase,
+      percent: Math.max(0, Math.min(100, Math.round(percent))),
+      message,
+    });
+  } catch {
+    return;
+  }
+}
+
+export async function extractPdfTextItems(file, onProgress = () => {}) {
   const pdfjs = await loadPdfJs();
   try {
+    reportImportProgress(onProgress, 'reading', 8, 'Reading the EAF locally…');
     const data = await file.arrayBuffer();
     const doc = await pdfjs.getDocument({ data }).promise;
+    reportImportProgress(onProgress, 'extracting', 15, 'Opening the PDF locally…');
     const pages = [];
     for (let i = 1; i <= doc.numPages; i += 1) {
       const page = await doc.getPage(i);
@@ -422,6 +437,12 @@ export async function extractPdfTextItems(file) {
           width: it.width,
         }))
       );
+      reportImportProgress(
+        onProgress,
+        'extracting',
+        15 + (40 * i) / Math.max(1, doc.numPages),
+        `Reading PDF page ${i} of ${doc.numPages} locally…`,
+      );
     }
     return pages;
   } catch (err) {
@@ -430,7 +451,7 @@ export async function extractPdfTextItems(file) {
   }
 }
 
-export async function parseEafFile(file) {
+export async function parseEafFile(file, onProgress = () => {}) {
   const isPdf = (file && file.type === 'application/pdf') || /\.pdf$/i.test((file && file.name) || '');
   if (!isPdf) {
     throw new EafParseError('NOT_A_PDF', 'This does not look like an official Archershub EAF. Upload the official DLSU Archershub EAF PDF.');
@@ -438,9 +459,14 @@ export async function parseEafFile(file) {
   if (!file || file.size === 0) {
     throw new EafParseError('EMPTY_FILE', 'The selected file is empty. Upload the official DLSU Archershub EAF PDF.');
   }
-  const pages = await extractPdfTextItems(file);
+  reportImportProgress(onProgress, 'reading', 5, 'Preparing the EAF locally…');
+  const pages = await extractPdfTextItems(file, onProgress);
+  reportImportProgress(onProgress, 'validating', 65, 'Checking the Archershub EAF…');
   const { session } = validateArchershubEaf(pages);
+  reportImportProgress(onProgress, 'parsing', 75, 'Reading class rows…');
   const rows = parseScheduleRows(pages, session);
+  reportImportProgress(onProgress, 'checking', 88, 'Checking meeting times…');
   validateNoOverlaps(rows.flatMap((row) => row.meetings));
+  reportImportProgress(onProgress, 'building', 95, 'Preparing the timetable…');
   return sanitizeSchedule(session, rows);
 }

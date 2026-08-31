@@ -21,6 +21,10 @@ const STORY_DEMO_SCHEDULE = {
 };
 
 const storyOutput = document.querySelector('#story-demo-output');
+const storyOutputDialogImage = document.querySelector('#story-output-dialog-image');
+const outputTrigger = document.querySelector('#story-output-trigger');
+const outputDialog = document.querySelector('#story-output-dialog');
+const outputClose = document.querySelector('#story-output-close');
 const sourceReceipt = document.querySelector('#story-source-receipt');
 const sourceDialog = document.querySelector('#story-source-dialog');
 const sourceClose = document.querySelector('#story-source-close');
@@ -30,14 +34,36 @@ if (storyOutput) {
     showCourseTitles: true,
     theme: 'light',
   });
-  storyOutput.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  const outputUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  storyOutput.src = outputUrl;
+  if (storyOutputDialogImage) storyOutputDialogImage.src = outputUrl;
   storyOutput.dataset.ready = 'true';
 }
 
-if (sourceReceipt && sourceDialog && sourceClose) {
-  sourceReceipt.addEventListener('click', () => sourceDialog.showModal());
-  sourceClose.addEventListener('click', () => sourceDialog.close());
-  sourceDialog.addEventListener('click', (event) => {
-    if (event.target === sourceDialog) sourceDialog.close();
+function bindStoryDialog(trigger, dialog, closeButton) {
+  if (!trigger || !dialog || !closeButton) return;
+
+  let lastTrigger = null;
+
+  trigger.addEventListener('click', () => {
+    lastTrigger = trigger;
+    if (typeof dialog.showModal === 'function') {
+      dialog.showModal();
+    } else {
+      dialog.setAttribute('open', '');
+    }
+    trigger.setAttribute('aria-expanded', 'true');
+  });
+
+  closeButton.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+  dialog.addEventListener('close', () => {
+    trigger.setAttribute('aria-expanded', 'false');
+    if (lastTrigger) lastTrigger.focus();
   });
 }
+
+bindStoryDialog(sourceReceipt, sourceDialog, sourceClose);
+bindStoryDialog(outputTrigger, outputDialog, outputClose);
