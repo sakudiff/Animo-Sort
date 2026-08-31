@@ -186,6 +186,13 @@ button {
   gap: 10px;
 }
 
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  order: 1;
+}
+
 .nav-theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -197,6 +204,7 @@ button {
   border-radius: var(--control-radius);
   border: 1px solid var(--border);
   background: var(--surface);
+  order: 2;
   transition: color var(--silk-dur) var(--silk), border-color var(--silk-dur) var(--silk), background var(--silk-dur) var(--silk);
 }
 
@@ -255,6 +263,40 @@ button {
   width: 15px;
   height: 15px;
   fill: currentColor;
+}
+
+.nav-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 0.8rem;
+  font-weight: 700;
+  order: 3;
+}
+
+.nav-menu-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-ghost);
+}
+
+.nav-menu-toggle .close-icon {
+  display: none;
+}
+
+.nav.menu-open .nav-menu-toggle .menu-icon {
+  display: none;
+}
+
+.nav.menu-open .nav-menu-toggle .close-icon {
+  display: block;
 }
 
 /* Netlify badge transparent container reset */
@@ -1705,14 +1747,16 @@ div[id*="netlify"] {
 }
 
 :root[data-theme="dark"] .nav-theme-toggle,
-:root[data-theme="dark"] .nav-github-link {
+:root[data-theme="dark"] .nav-github-link,
+:root[data-theme="dark"] .nav-menu-toggle {
   background: #0a0a0a;
   border-color: rgba(255, 255, 255, 0.14);
   color: var(--text-2);
 }
 
 :root[data-theme="dark"] .nav-theme-toggle:hover,
-:root[data-theme="dark"] .nav-github-link:hover {
+:root[data-theme="dark"] .nav-github-link:hover,
+:root[data-theme="dark"] .nav-menu-toggle:hover {
   color: var(--accent);
   border-color: var(--accent-border);
   background: var(--accent-ghost);
@@ -1881,14 +1925,16 @@ div[id*="netlify"] {
   }
 
   :root:not([data-theme="light"]) .nav-theme-toggle,
-  :root:not([data-theme="light"]) .nav-github-link {
+  :root:not([data-theme="light"]) .nav-github-link,
+  :root:not([data-theme="light"]) .nav-menu-toggle {
     background: #0a0a0a;
     border-color: rgba(255, 255, 255, 0.14);
     color: var(--text-2);
   }
 
   :root:not([data-theme="light"]) .nav-theme-toggle:hover,
-  :root:not([data-theme="light"]) .nav-github-link:hover {
+  :root:not([data-theme="light"]) .nav-github-link:hover,
+  :root:not([data-theme="light"]) .nav-menu-toggle:hover {
     color: var(--accent);
     border-color: var(--accent-border);
     background: var(--accent-ghost);
@@ -2981,6 +3027,8 @@ div[id*="netlify"] {
 .course-badge:focus-visible,
 .button:focus-visible,
 .nav-help-link:focus-visible,
+.nav-theme-toggle:focus-visible,
+.nav-menu-toggle:focus-visible,
 .profile-controls select:focus-visible,
 .reset-menu summary:focus-visible {
   outline: 2px solid var(--accent);
@@ -3045,6 +3093,40 @@ div[id*="netlify"] {
   color: var(--accent);
 }
 
+@media (max-width: 760px) {
+  .nav-links {
+    position: absolute;
+    z-index: 2;
+    top: calc(100% + 8px);
+    right: 16px;
+    left: 16px;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--control-radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+  }
+
+  .nav.menu-open .nav-links {
+    display: flex;
+  }
+
+  .nav-links .nav-help-link,
+  .nav-links .nav-github-link {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 10px 12px;
+  }
+
+  .nav-menu-toggle {
+    display: inline-flex;
+  }
+}
+
 .about-shell {
   width: 100%;
   max-width: none;
@@ -3105,6 +3187,7 @@ div[id*="netlify"] {
   }
 
   .nav-theme-toggle,
+  .nav-menu-toggle,
   .nav-help-link,
   .nav-github-link {
     padding-inline: 7px;
@@ -3112,12 +3195,9 @@ div[id*="netlify"] {
   }
 
   .nav-theme-toggle,
+  .nav-menu-toggle,
   .nav-github-link {
     gap: 4px;
-  }
-
-  .nav-back-link {
-    display: none;
   }
 
   .about-shell .story-card {
@@ -3144,28 +3224,16 @@ div[id*="netlify"] {
 
 @media (max-width: 360px) {
   .nav-theme-toggle .theme-toggle-text,
-  .nav-guide-label,
-  .nav-github-link span {
+  .nav-menu-label {
     display: none;
   }
 
   .nav-theme-toggle,
-  .nav-help-link,
-  .nav-github-link {
+  .nav-menu-toggle {
     width: 34px;
     height: 34px;
     justify-content: center;
     padding: 6px;
-  }
-
-  .nav-about-link {
-    font-size: 0;
-  }
-
-  .nav-about-link::before {
-    content: 'i';
-    font-size: 0.82rem;
-    font-weight: 800;
   }
 }
 

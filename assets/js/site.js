@@ -79,6 +79,45 @@ function initNavigation() {
   update();
 }
 
+function initMenu() {
+  const nav = document.getElementById('mainNav');
+  const toggle = document.getElementById('nav-menu-toggle');
+  const links = document.getElementById('site-nav-links');
+  if (!nav || !toggle || !links) return;
+
+  const setMenuOpen = (isOpen, restoreFocus = false) => {
+    nav.classList.toggle('menu-open', isOpen);
+    toggle.setAttribute('aria-expanded', String(isOpen));
+    const label = isOpen ? 'Close navigation menu' : 'Open navigation menu';
+    toggle.setAttribute('aria-label', label);
+    toggle.setAttribute('title', label);
+    if (!isOpen && restoreFocus) toggle.focus();
+  };
+
+  toggle.addEventListener('click', () => {
+    setMenuOpen(!nav.classList.contains('menu-open'));
+  });
+
+  links.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => setMenuOpen(false));
+  });
+
+  document.addEventListener('click', (event) => {
+    if (nav.classList.contains('menu-open') && !nav.contains(event.target)) setMenuOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && nav.classList.contains('menu-open')) setMenuOpen(false, true);
+  });
+
+  const desktopQuery = window.matchMedia('(min-width: 761px)');
+  const closeOnDesktop = (event) => {
+    if (event.matches) setMenuOpen(false);
+  };
+  if (typeof desktopQuery.addEventListener === 'function') desktopQuery.addEventListener('change', closeOnDesktop);
+  else if (typeof desktopQuery.addListener === 'function') desktopQuery.addListener(closeOnDesktop);
+}
+
 function initSmoothScroll() {
   const getScrollBehavior = () => (
     typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
@@ -124,6 +163,7 @@ export function initSiteChrome() {
   document.documentElement.dataset.siteChromeInitialized = 'true';
   initTheme();
   initNavigation();
+  initMenu();
   initSmoothScroll();
   initReveal();
 }
