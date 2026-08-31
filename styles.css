@@ -141,6 +141,7 @@ button {
 
 .reveal-delay-1 { transition-delay: 0.1s; }
 .reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
 
 .nav {
   position: fixed;
@@ -365,6 +366,26 @@ div[id*="netlify"] {
   color: var(--text-2);
   max-width: 620px;
   margin: 20px auto 0;
+}
+
+.hero-about-link {
+  display: inline-flex;
+  margin-top: 18px;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color var(--silk-dur) var(--silk);
+}
+
+.hero-about-link:hover {
+  color: var(--accent-mid);
+}
+
+.hero-about-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 
 .import-panel,
@@ -1497,6 +1518,13 @@ div[id*="netlify"] {
 .footer-group p {
   max-width: 34rem;
   margin: 0;
+}
+
+.footer-more-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--accent) !important;
+  font-weight: 700;
 }
 
 .footer-link-list {
