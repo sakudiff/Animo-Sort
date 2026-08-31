@@ -3605,3 +3605,70 @@ div[id*="netlify"] {
 .schedule-scroll[data-preview-theme="dark"] .meeting-color-btn {
   border-color: rgba(255, 255, 255, 0.15);
 }
+
+.text-link {
+  color: var(--accent);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.09em;
+  text-underline-offset: 0.16em;
+  text-decoration-color: var(--accent);
+  overflow-wrap: anywhere;
+}
+
+@supports (text-decoration-color: color-mix(in srgb, currentColor 58%, transparent)) {
+  .text-link {
+    text-decoration-color: color-mix(in srgb, var(--accent) 58%, transparent);
+  }
+}
+
+.text-link:hover {
+  color: var(--accent-mid);
+  text-decoration-color: currentColor;
+}
+
+.text-link:active {
+  color: var(--accent);
+}
+
+.text-link:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.import-support-main a.text-link,
+.profile-help a.text-link,
+.guide-card a.text-link,
+.story-footer-copy a.text-link,
+.app-footer a.text-link {
+  color: var(--accent);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.09em;
+  text-underline-offset: 0.16em;
+  text-decoration-color: var(--accent);
+}
+
+.import-support-main a.text-link:hover,
+.profile-help a.text-link:hover,
+.guide-card a.text-link:hover,
+.story-footer-copy a.text-link:hover,
+.app-footer a.text-link:hover {
+  color: var(--accent-mid);
+  text-decoration-color: currentColor;
+}
+
+/* Keep every reader-facing link discoverable without changing the pill-style navigation. */
+main a:not(.button),
+.app-footer a:not(.button) {
+  color: var(--accent);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.09em;
+  text-underline-offset: 0.16em;
+  text-decoration-color: var(--accent);
+}
+
+main a:not(.button):hover,
+.app-footer a:not(.button):hover {
+  color: var(--accent-mid);
+  text-decoration-color: currentColor;
+}
