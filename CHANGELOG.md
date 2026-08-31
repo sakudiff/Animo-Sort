@@ -4,6 +4,175 @@ All notable changes to AnimoSort are documented here.
 
 ---
 
+## Unreleased
+
+No changes yet.
+
+## v0.4.0 - 2026-08-31
+
+This release adds a private, browser-local customization workflow, a manual
+Google Calendar handoff, a clearer import and About experience, responsive
+navigation, and a reviewable Archify pipeline diagram. It also finishes the
+diagram's light and dark Editorial themes, readable menu surfaces, and looping
+trace animation.
+
+### Portable customization profiles
+
+- Added named, browser-local customization profiles using a versioned
+  `animosort-customization` JSON format. Profiles can be downloaded, moved to
+  another browser, and imported later without sending timetable data to a
+  server.
+- Kept one active profile at a time. Importing a saved profile creates and
+  activates a new profile instead of silently merging it into the current one;
+  duplicate names receive a safe suffix. Users can rename profiles afterward.
+- Kept the built-in `Default` profile protected. It is the neutral fallback
+  used by the existing random/default-color flow and cannot be deleted.
+- Unified the resolved values used by the live timetable, customization
+  controls, preview, and PNG/SVG export. Course cards present metadata in a
+  predictable order: `CourseCode Section · customization dot`, course title,
+  room or online mode, professor when supplied, and time.
+- Added course-wide colors, section-specific F2F/Online overrides, optional
+  professor labels, and arbitrary opaque 3- or 6-digit hex values entered
+  through the native color picker or text field. Long titles, rooms, and
+  professor names wrap and expand their cards instead of being clipped.
+- Added scoped reset actions for colors, details, or everything. Resetting
+  returns the selected profile to the transparent/neutral baseline while
+  preserving the protected built-in default.
+- Added Match site, Light, and Dark PNG export themes. The on-site preview
+  follows the selected export theme so the downloaded image matches what the
+  user is shown before downloading.
+- Migrated legacy `animosort_course_colors` values into the Default profile
+  without deleting the legacy key, preserving existing users' choices.
+- Added profile persistence, migration, reset, resolution, custom-color, and
+  export metadata tests. See the [customization guide](how-to-use.html#customization-profiles)
+  for the user-facing workflow.
+
+### Google Calendar handoff
+
+- Added a manual **Export to Google Calendar (.ics)** handoff. It generates a
+  standard calendar file locally; it does not request Google account access or
+  call the Google Calendar API.
+- Requires an actual term start date and end date. Both dates are inclusive,
+  are not saved, and may begin or end mid-week. Weekly classes are emitted only
+  for occurrences inside that exact range, so partial first and last weeks are
+  handled correctly.
+- Writes Manila-timezone events (`Asia/Manila`) with the course code, section,
+  room or Online mode, professor when available, meeting day, time, and session
+  information. Classes with no occurrence in the selected range are skipped.
+- Adds no reminders and blocks an empty export with a useful explanation.
+  The [calendar handoff guide](how-to-use.html#google-calendar) explains what
+  an `.ics` file is, how to import it into Google Calendar, and why importing
+  works best on a computer.
+
+### About page, source receipts, and import clarity
+
+- Moved the landing-page pitch into a dedicated, full-width [About page](about.html),
+  keeping the main page focused on importing an EAF and viewing a timetable.
+- Added a responsive before/after story using the supplied Archershub Schedule
+  screenshot. The source receipt and generated AnimoSort output are clickable
+  and expandable so the evidence can be inspected without permanently taking
+  over the page.
+- Added import guidance that explains the supported official Archershub EAF,
+  local-only processing, and the file-size/format constraints.
+- Replaced the generic import loading treatment with an accessible progress bar
+  that advances through the actual parser stages, while keeping the dropzone as
+  the primary upload surface.
+
+### Navigation and discoverability
+
+- Added shared responsive navigation with a mobile hamburger menu, outside-click
+  and Escape dismissal, and automatic close after navigation.
+- Added clear About and How to use entry points in the header, footer, and hero.
+  The main page now exposes [See how the code works](about.html#pipeline), and
+  reader-facing links use green underlines/highlights so they are discoverable
+  without overpowering the interface.
+- Added the persistent, subtle “Click to learn more” nudge while the About CTA
+  is visible, with reduced-motion behavior for users who request less motion.
+- Kept GitHub as the source/audit destination while removing the redundant
+  question-mark icon from the mobile menu.
+
+### Interactive Archify pipeline
+
+- Added a responsive architecture reference at [About → How the code works](about.html#pipeline),
+  rendered with [Archify](https://github.com/tt-a1i/archify). Desktop and narrow
+  screens use separate generated viewers so the pipeline remains readable at
+  both widths.
+- Added light/dark viewer synchronization with the site theme and a direct
+  full-view link. The diagram names the actual browser-side modules and
+  functions, including `initApp`, `parseEafFile`, `parseScheduleRows`,
+  `renderSchedule`, `downloadCustomization`, `downloadSchedulePng`, and
+  `formatIcsCalendar`.
+- Added the generated [desktop viewer](assets/animosort-workflow.html),
+  [mobile viewer](assets/animosort-workflow-mobile.html), and their companion
+  `.workflow.json` source specifications. Archify is used to generate the
+  reviewable artifacts; it is not added as a runtime dependency of the app.
+- Linked the pipeline from the main page and documented the artifacts and
+  regeneration boundary in the [README](README.md#interactive-pipeline-diagram).
+
+### Release commit ledger
+
+The following commits were audited from the v0.3.0 tag through the current
+v0.4.0 release candidate. The release-polish commits are already described in the v0.3.0
+section below, so they are linked here instead of repeating their details.
+
+Release-polish commits covered by v0.3.0:
+
+- [`553f55d`](https://github.com/sakudiff/Animo-Sort/commit/553f55d) — normalize
+  course codes and size exports.
+- [`650ff40`](https://github.com/sakudiff/Animo-Sort/commit/650ff40) — fit the
+  timetable across mobile screens.
+- [`2ca353a`](https://github.com/sakudiff/Animo-Sort/commit/2ca353a) — scale the
+  mobile timetable and collapse the color legend.
+- [`6c76bf0`](https://github.com/sakudiff/Animo-Sort/commit/6c76bf0) — prepare
+  v0.3.0 release notes and footer credit.
+- [`1916cfe`](https://github.com/sakudiff/Animo-Sort/commit/1916cfe) — organize
+  footer information hierarchy.
+- [`d52e72c`](https://github.com/sakudiff/Animo-Sort/commit/d52e72c) — add the
+  schedule story and import guidance.
+- [`196eeeb`](https://github.com/sakudiff/Animo-Sort/commit/196eeeb) — preserve
+  timetable proportions across viewports.
+- [`1caddfb`](https://github.com/sakudiff/Animo-Sort/commit/1caddfb) — detail
+  the v0.3.0 release changes.
+
+Work included in v0.4.0:
+
+- [`523ea4a`](https://github.com/sakudiff/Animo-Sort/commit/523ea4a) — portable
+  customization profiles and PNG themes.
+- [`e69776c`](https://github.com/sakudiff/Animo-Sort/commit/e69776c) — weekly
+  timetable ICS export.
+- [`762fcbe`](https://github.com/sakudiff/Animo-Sort/commit/762fcbe) — About page
+  story and import progress.
+- [`938ff6d`](https://github.com/sakudiff/Animo-Sort/commit/938ff6d) — responsive
+  navigation menu.
+- [`6bd6d27`](https://github.com/sakudiff/Animo-Sort/commit/6bd6d27) — About page
+  prompts on the home page.
+- [`d1141d2`](https://github.com/sakudiff/Animo-Sort/commit/d1141d2) — nudge users
+  toward the About page.
+- [`4e0f241`](https://github.com/sakudiff/Animo-Sort/commit/4e0f241) — refine the
+  About nudge entrance.
+- [`9188179`](https://github.com/sakudiff/Animo-Sort/commit/9188179) — keep the
+  About nudge active while it is in view.
+- [`041da9f`](https://github.com/sakudiff/Animo-Sort/commit/041da9f) — make
+  reader-facing links discoverable.
+- [`dc52453`](https://github.com/sakudiff/Animo-Sort/commit/dc52453) — integrate
+  portable profiles, calendar export, and the site guide.
+- [`5401fb1`](https://github.com/sakudiff/Animo-Sort/commit/5401fb1) — refresh
+  the README with current product screenshots.
+- [`e6dba35`](https://github.com/sakudiff/Animo-Sort/commit/e6dba35) — improve
+  Archify theme contrast and loop the pipeline trace animation.
+
+#### Verification
+
+- The audited commit range contains no dependency or server-side data path for
+  EAF processing; parsing and export remain browser-local.
+- `npm test` passes all 29 tests. JavaScript syntax checks and `git diff --check`
+  also pass.
+- Playwright checks pass at 390px and 1440px for the home, About, and How to use
+  pages, including the hamburger menu, GitHub icon, Archify section, links,
+  horizontal-overflow guard, looping animation, and hover pause/resume behavior.
+
+---
+
 ## v0.3.0 — 2026-08-30
 
 ### Night classes, responsive previews, and an auditable data path

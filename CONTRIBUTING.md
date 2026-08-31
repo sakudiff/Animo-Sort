@@ -2,6 +2,10 @@
 
 Thank you for your interest in contributing to AnimoSort. We welcome bug reports, building code expansions, parser improvements, and user interface enhancements from the community.
 
+## Customization profiles
+
+Customization profiles are deliberately client-only. Keep the portable profile contract in `assets/js/customization.js` versioned and free of EAF or student data. Do not commit real EAFs or configuration files containing personal professor notes. Course colors are keyed by normalized course code; mode and professor values are keyed by `COURSECODE::SECTION`. Use the shared resolver for both live cards and exports, and validate changes with `npm test`, `git diff --check`, and a local browser run.
+
 ## Core Project Guarantees
 
 Before submitting a change, ensure your work respects the foundational principles of this project.
@@ -27,7 +31,8 @@ Follow these steps to propose code changes.
 2. Keep changes minimal and focused on a single bug or enhancement.
 3. Test your changes locally in a modern web browser.
 4. Verify that non-standard meeting intervals, split rooms, and campus expansions continue to render properly.
-5. Submit a pull request referencing any relevant issue.
+5. Verify profile import/export, arbitrary hex colors, reset scopes, and blank-professor behavior when touching customization code.
+6. Submit a pull request referencing any relevant issue.
 
 ## Adding Campus Building Codes
 

@@ -1,0 +1,141 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "AnimoSort: EAF to a usable week",
+    "subtitle": "The same local pipeline, arranged for a narrow screen",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "output": "assets/animosort-workflow-mobile.html"
+  },
+  "lanes": [
+    { "id": "flow", "label": "AnimoSort pipeline" }
+  ],
+  "mainPath": ["eaf", "choose", "process", "design", "png"],
+  "nodes": [
+    {
+      "id": "eaf",
+      "lane": "flow",
+      "col": 0,
+      "type": "external",
+      "label": "Official EAF",
+      "sublabel": "Archershub PDF",
+      "tag": "input",
+      "width": 190,
+      "yOffset": -270
+    },
+    {
+      "id": "choose",
+      "lane": "flow",
+      "col": 0,
+      "type": "frontend",
+      "label": "Choose or drop",
+      "sublabel": "app.js · initApp()",
+      "tag": "file input + drop zone",
+      "width": 190,
+      "yOffset": -180
+    },
+    {
+      "id": "process",
+      "lane": "flow",
+      "col": 0,
+      "type": "backend",
+      "label": "Read + validate",
+      "sublabel": "eaf-parser.js",
+      "tag": "parseEafFile() + parseScheduleRows()",
+      "width": 190,
+      "yOffset": -90
+    },
+    {
+      "id": "design",
+      "lane": "flow",
+      "col": 0,
+      "type": "frontend",
+      "label": "Render + customize",
+      "sublabel": "app.js + customization.js",
+      "tag": "renderSchedule() + saveCustomizationDraft()",
+      "width": 190,
+      "yOffset": 0
+    },
+    {
+      "id": "profile",
+      "lane": "flow",
+      "col": 0,
+      "type": "database",
+      "label": "Reusable profile",
+      "sublabel": "app.js",
+      "tag": "downloadCustomization()",
+      "width": 190,
+      "yOffset": 90
+    },
+    {
+      "id": "png",
+      "lane": "flow",
+      "col": 0,
+      "type": "frontend",
+      "label": "PNG export",
+      "sublabel": "export.js",
+      "tag": "downloadSchedulePng()",
+      "width": 190,
+      "yOffset": 180
+    },
+    {
+      "id": "calendar",
+      "lane": "flow",
+      "col": 0,
+      "type": "external",
+      "label": "Calendar handoff",
+      "sublabel": "calendar.js",
+      "tag": "formatIcsCalendar() · Manila time",
+      "width": 190,
+      "yOffset": 270
+    }
+  ],
+  "edges": [
+    {
+      "id": "choose-input",
+      "from": "eaf",
+      "to": "choose",
+      "label": "select / drop"
+    },
+    {
+      "id": "read",
+      "from": "choose",
+      "to": "process",
+      "label": "read locally",
+      "variant": "emphasis"
+    },
+    {
+      "id": "render",
+      "from": "process",
+      "to": "design",
+      "label": "accepted rows",
+      "variant": "emphasis"
+    },
+    {
+      "id": "save-profile",
+      "from": "design",
+      "to": "profile",
+      "label": "save / import",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "download-png",
+      "from": "design",
+      "to": "png",
+      "label": "download",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "download-ics",
+      "from": "design",
+      "to": "calendar",
+      "label": "download",
+      "variant": "dashed",
+      "role": "branch"
+    }
+  ]
+}

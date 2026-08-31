@@ -17,10 +17,16 @@
   .nav,
   .hero,
   .import-panel,
+  .configuration-panel,
   .actions,
   .app-footer,
-  .empty-state,
-  #status-region {
+  #status-region,
+  #profile-status,
+  #profile-storage-warning,
+  .customization-dialog,
+  .calendar-export-controls,
+  .calendar-export-dialog,
+  .course-legend {
     display: none !important;
   }
 
@@ -128,10 +134,12 @@
   }
 
   .meeting-section {
-    display: none !important;
+    display: inline !important;
   }
 
   .meeting-room,
+  .meeting-location,
+  .meeting-professor,
   .meeting-time {
     color: #000000;
     font-size: 8px;

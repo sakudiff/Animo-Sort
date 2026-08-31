@@ -1,0 +1,161 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "AnimoSort: EAF to a usable week",
+    "subtitle": "A local, reusable path from Archershub data to a timetable",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "output": "assets/animosort-workflow.html"
+  },
+  "lanes": [
+    { "id": "flow", "label": "AnimoSort pipeline" },
+    { "id": "outputs", "label": "Portable outputs" }
+  ],
+  "phases": [
+    { "id": "input", "label": "Input", "fromCol": 0, "toCol": 1 },
+    { "id": "local", "label": "Read and shape", "fromCol": 2, "toCol": 2, "variant": "emphasis" },
+    { "id": "handoff", "label": "Keep or export", "fromCol": 3, "toCol": 3, "variant": "dashed" }
+  ],
+  "groups": [
+    {
+      "id": "local-boundary",
+      "label": "Local-only processing",
+      "lane": "flow",
+      "fromCol": 1,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "output-branch",
+      "label": "Optional handoffs",
+      "lane": "outputs",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": ["eaf", "choose", "process", "design", "png"],
+  "nodes": [
+    {
+      "id": "eaf",
+      "lane": "flow",
+      "col": 0,
+      "type": "external",
+      "label": "Official EAF",
+      "sublabel": "Archershub PDF",
+      "tag": "input",
+      "width": 160
+    },
+    {
+      "id": "choose",
+      "lane": "flow",
+      "col": 1,
+      "type": "frontend",
+      "label": "Choose or drop",
+      "sublabel": "app.js · initApp()",
+      "tag": "app.js · initApp()",
+      "width": 170
+    },
+    {
+      "id": "process",
+      "lane": "flow",
+      "col": 2,
+      "type": "backend",
+      "label": "Read + validate",
+      "sublabel": "eaf-parser.js",
+      "tag": "parseEafFile() + parseScheduleRows()",
+      "width": 180
+    },
+    {
+      "id": "design",
+      "lane": "flow",
+      "col": 3,
+      "type": "frontend",
+      "label": "Render + customize",
+      "sublabel": "app.js + customization.js",
+      "tag": "renderSchedule() + saveCustomizationDraft()",
+      "width": 180
+    },
+    {
+      "id": "profile",
+      "lane": "outputs",
+      "col": 3,
+      "type": "database",
+      "label": "Reusable profile",
+      "sublabel": "app.js",
+      "tag": "downloadCustomization()",
+      "width": 170,
+      "yOffset": -80
+    },
+    {
+      "id": "png",
+      "lane": "outputs",
+      "col": 3,
+      "type": "frontend",
+      "label": "PNG export",
+      "sublabel": "export.js",
+      "tag": "downloadSchedulePng()",
+      "width": 170,
+      "yOffset": 0
+    },
+    {
+      "id": "calendar",
+      "lane": "outputs",
+      "col": 3,
+      "type": "external",
+      "label": "Calendar handoff",
+      "sublabel": "calendar.js",
+      "tag": "formatIcsCalendar() · Manila time",
+      "width": 190,
+      "yOffset": 80
+    }
+  ],
+  "edges": [
+    {
+      "id": "choose-input",
+      "from": "eaf",
+      "to": "choose",
+      "label": "select / drop"
+    },
+    {
+      "id": "read",
+      "from": "choose",
+      "to": "process",
+      "label": "read locally",
+      "variant": "emphasis"
+    },
+    {
+      "id": "render",
+      "from": "process",
+      "to": "design",
+      "label": "accepted rows",
+      "variant": "emphasis"
+    },
+    {
+      "id": "save-profile",
+      "from": "design",
+      "to": "profile",
+      "label": "save / import",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "download-png",
+      "from": "design",
+      "to": "png",
+      "label": "download",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "download-ics",
+      "from": "design",
+      "to": "calendar",
+      "label": "download",
+      "variant": "dashed",
+      "role": "branch"
+    }
+  ]
+}
