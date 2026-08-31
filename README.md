@@ -88,6 +88,7 @@ See [How to use AnimoSort](how-to-use.html) for the complete walkthrough.
 │   ├── animosort-workflow-mobile.workflow.json # Archify mobile source spec
 │   ├── images/
 │   │   ├── archershub-schedule-example.png     # Source receipt used on About
+│   │   ├── animosort-term3-output.png          # Term 3 output shown on About
 │   │   ├── animosort-import-panel.png          # README screenshot
 │   │   ├── animosort-timetable-output.png       # README screenshot
 │   │   ├── animosort-customization-panel.png    # README screenshot
