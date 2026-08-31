@@ -2,6 +2,8 @@
 
 AnimoSort is a client-side web application that converts De La Salle University Enrollment Assessment Form PDFs into a clean weekly timetable. The application runs entirely within the browser, ensuring student schedule data remains private and is never transmitted over a network.
 
+Open the [hosted AnimoSort app](https://animosort.netlify.app/), read the [How to use guide](how-to-use.html), or open the [About page and interactive EAF-to-week pipeline](about.html#pipeline). The complete release history is in the [changelog](CHANGELOG.md).
+
 ## Why does this exist?
 
 Archershub has a Schedule page.
@@ -117,11 +119,15 @@ See [How to use AnimoSort](how-to-use.html) for the complete walkthrough.
 ```
 .
 ├── assets/
+│   ├── animosort-workflow.html                 # Desktop Archify pipeline viewer
+│   ├── animosort-workflow-mobile.html          # Narrow-screen Archify viewer
+│   ├── animosort-workflow.workflow.json        # Desktop diagram source
+│   ├── animosort-workflow-mobile.workflow.json # Mobile diagram source
 │   └── js/
-│       ├── app.js          # Application controller and UI interactions
+│       ├── app.js           # Application controller and UI interactions
 │       ├── customization.js # Profile schema, persistence, resolver, and resets
-│       ├── eaf-parser.js   # PDF extraction, parsing, and room mapping
-│       ├── export.js       # SVG layout and PNG image generation
+│       ├── eaf-parser.js    # PDF extraction, parsing, and room mapping
+│       ├── export.js        # SVG layout and PNG image generation
 │       └── site.js          # Shared theme, navigation, and reveal behavior
 ├── vendor/
 │   └── pdfjs/              # Vendored PDF.js library builds
@@ -144,6 +150,12 @@ The project is structured into vanilla JavaScript modules.
 - `assets/js/export.js` generates vector SVG representations and exports high-resolution timetable images.
 - `assets/js/app.js` manages DOM event bindings, drag-and-drop file ingestion, timetable rendering, and client-side view toggles.
 - `assets/js/site.js` provides the shared theme toggle, navigation state, smooth scrolling, and reveal behavior used by both pages.
+
+### Interactive pipeline diagram
+
+The [About page pipeline](about.html#pipeline) documents the browser-side path from an official EAF to a timetable and its portable outputs. It is rendered with [Archify](https://github.com/tt-a1i/archify) and includes separate horizontal and vertical viewers so the same explanation remains usable on desktop and narrow screens. The diagram names the actual modules and functions involved in parsing, rendering, customization profiles, PNG export, and `.ics` calendar handoff.
+
+The generated [desktop viewer](assets/animosort-workflow.html) and [mobile viewer](assets/animosort-workflow-mobile.html) are self-contained static artifacts. Their companion `.workflow.json` files are the source specifications, which keep the diagram reviewable and reproducible without adding Archify as a runtime dependency to the application.
 
 ### Customization file format
 

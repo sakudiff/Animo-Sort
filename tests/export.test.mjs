@@ -106,6 +106,17 @@ test('supports explicit light and dark export themes', () => {
   assert.match(darkSvg, /<rect width="1400" height="[0-9.]+" fill="#000000"\/>/);
 });
 
+test('uses the unified AnimoSort wordmark in exported footer branding', () => {
+  const schedule = {
+    session: 'AY 2026-2027 Term 1',
+    meetings: [meeting('STSP002', 'SPECIAL TOPICS', 555, 645, 'G404B')],
+  };
+
+  const lightSvg = createScheduleSvg(schedule, { theme: 'light' });
+
+  assert.match(lightSvg, /<tspan font-weight="bold" fill="#111111">Animo<\/tspan><tspan font-weight="bold" font-style="italic" fill="#087830">Sort<\/tspan>/);
+});
+
 test('expands exported layout for long metadata lines', () => {
   const schedule = {
     session: 'AY 2026-2027 Term 1',

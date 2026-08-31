@@ -165,7 +165,7 @@ export function createScheduleSvg(schedule, options = {}) {
   const minorGridColor = isDark ? '#171717' : '#ebf0ed';
   const emptyDayColor = isDark ? '#6b7280' : '#999999';
   const footerBrandText = isDark ? '#9ca3af' : '#666666';
-  const footerBrandStrong = isDark ? '#f9fafb' : '#1b2e23';
+  const footerBrandStrong = isDark ? '#f9fafb' : '#111111';
 
   const { canvasStart, minutesInSpan, gridHeight, gridBottom, svgHeight } = getTimelineLayout(schedule, showCourseTitles, profile);
   parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${SVG_WIDTH}" height="${svgHeight}" viewBox="0 0 ${SVG_WIDTH} ${svgHeight}" role="img" aria-label="Weekly schedule from AnimoSort">`);
@@ -271,7 +271,7 @@ export function createScheduleSvg(schedule, options = {}) {
     }
   }
 
-  parts.push(`<a href="https://animosort.netlify.app/" target="_blank"><text x="${SVG_WIDTH - MARGIN}" y="${svgHeight - 16}" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="${footerBrandText}">made with <tspan font-weight="bold" fill="${footerBrandStrong}">Animo</tspan><tspan font-weight="bold" fill="${headerBrandColor}">Sort</tspan> · <tspan fill="${headerBrandColor}" font-weight="500">https://animosort.netlify.app/</tspan></text></a>`);
+  parts.push(`<a href="https://animosort.netlify.app/" target="_blank"><text x="${SVG_WIDTH - MARGIN}" y="${svgHeight - 16}" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="${footerBrandText}">made with <tspan font-weight="bold" fill="${footerBrandStrong}">Animo</tspan><tspan font-weight="bold" font-style="italic" fill="${headerBrandColor}">Sort</tspan> · <tspan fill="${headerBrandColor}" font-weight="500">https://animosort.netlify.app/</tspan></text></a>`);
   parts.push('</svg>');
   return parts.join('\n');
 }
