@@ -74,6 +74,8 @@ It was simply built by someone who opened the Schedule page one too many times.
 - Automatic term detection and course schedule extraction
 - Campus building code expansions for physical classrooms (including Velasco Hall, LS Hall, Miguel Hall, etc.)
 - Customizable course colors with pastel presets, monochrome plain mode, direct `#HEX` code input, and one-click randomize
+- Named customization profiles with local persistence and portable JSON import/export
+- Section-level F2F/Online overrides and optional professor labels
 - AMOLED dark mode with dedicated header theme toggle
 - Support for non-standard meeting intervals and split room allocations
 - Toggle controls for full course titles
@@ -104,7 +106,11 @@ Open `http://localhost:8000` in your web browser to use the application.
 1. Open AnimoSort in your browser.
 2. Select or drag your official Archershub EAF PDF into the upload area.
 3. Review your timetable across Monday to Saturday.
-4. Toggle full course titles or download a PNG image of your schedule.
+4. Click a timetable card or color dot to set a course color, delivery mode, and optional professor.
+5. Use the profile panel to create, rename, reset, download, or import a customization profile. Profiles are browser-local; the JSON file contains customization values only.
+6. Toggle full course titles, choose the PNG theme, or download a PNG image of your schedule.
+
+See [How to use AnimoSort](how-to-use.html) for the complete walkthrough.
 
 ## Project Structure
 
@@ -113,11 +119,14 @@ Open `http://localhost:8000` in your web browser to use the application.
 ├── assets/
 │   └── js/
 │       ├── app.js          # Application controller and UI interactions
+│       ├── customization.js # Profile schema, persistence, resolver, and resets
 │       ├── eaf-parser.js   # PDF extraction, parsing, and room mapping
-│       └── export.js       # SVG layout and PNG image generation
+│       ├── export.js       # SVG layout and PNG image generation
+│       └── site.js          # Shared theme, navigation, and reveal behavior
 ├── vendor/
 │   └── pdfjs/              # Vendored PDF.js library builds
 ├── index.html              # Application markup and structure
+├── how-to-use.html         # User guide
 ├── styles.css              # Typography, layout, and component styling
 ├── print.css               # Print media rules
 ├── netlify.toml            # Netlify deployment configuration
@@ -128,11 +137,30 @@ Open `http://localhost:8000` in your web browser to use the application.
 
 ## Architecture
 
-The project is structured into three vanilla JavaScript modules.
+The project is structured into vanilla JavaScript modules.
 
 - `assets/js/eaf-parser.js` handles PDF text extraction, schedule row identification, zero-credit course support, and campus room translations.
+- `assets/js/customization.js` validates the versioned profile format, migrates legacy colors, stores named profiles locally, and resolves course/section presentation values.
 - `assets/js/export.js` generates vector SVG representations and exports high-resolution timetable images.
 - `assets/js/app.js` manages DOM event bindings, drag-and-drop file ingestion, timetable rendering, and client-side view toggles.
+- `assets/js/site.js` provides the shared theme toggle, navigation state, smooth scrolling, and reveal behavior used by both pages.
+
+### Customization file format
+
+Download one active profile as JSON and import it later or on another device. A profile stores only presentation preferences:
+
+```json
+{
+  "format": "animosort-customization",
+  "version": 1,
+  "name": "Classroom setup",
+  "defaults": { "color": "plain", "mode": "infer" },
+  "courses": { "STSP002": { "color": "#d946ef" } },
+  "sections": { "STSP002::S30A": { "mode": "f2f", "professor": "Prof. Santos" } }
+}
+```
+
+The file does not contain the EAF, schedule, rooms, student identity, or session data. Clearing browser site data removes local profiles, so keep a downloaded backup when portability matters.
 
 ## Contributing
 

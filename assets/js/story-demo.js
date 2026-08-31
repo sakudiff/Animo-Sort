@@ -1,4 +1,4 @@
-import { buildCourseColorMap, createScheduleSvg } from './export.js';
+import { createScheduleSvg } from './export.js';
 
 const STORY_DEMO_SCHEDULE = {
   session: 'AnimoSort example week',
@@ -29,7 +29,6 @@ if (storyOutput) {
   const svg = createScheduleSvg(STORY_DEMO_SCHEDULE, {
     showCourseTitles: true,
     theme: 'light',
-    courseColors: buildCourseColorMap(STORY_DEMO_SCHEDULE),
   });
   storyOutput.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   storyOutput.dataset.ready = 'true';

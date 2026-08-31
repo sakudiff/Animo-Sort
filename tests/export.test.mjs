@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createScheduleSvg } from '../assets/js/export.js';
+import { createScheduleSvg, getTimelineLayout } from '../assets/js/export.js';
+import { createProfile, setCourseColor, setSectionCustomization } from '../assets/js/customization.js';
 
 function meeting(courseCode, title, startMinutes, endMinutes, location, startLabel = '07:00 PM', endLabel = '08:00 PM') {
   return {
@@ -59,4 +60,72 @@ test('keeps a short late and non-standard class inside the exported timeline', (
   assert.match(svg, />9:00 PM</);
   assert.match(svg, />9:30 PM</);
   assert.ok(timeBaseline + 7 < lateCard.y + lateCard.height);
+});
+
+test('exports the same custom color and section metadata line order as the live card', () => {
+  let profile = createProfile('Export test');
+  profile = setCourseColor(profile, 'STSP002', '#d946ef');
+  profile = setSectionCustomization(profile, 'STSP002', 'S30A', { mode: 'f2f', professor: 'Prof. Santos & Co.' });
+  const schedule = {
+    session: 'AY 2026-2027 Term 1',
+    meetings: [meeting('STSP002', 'SPECIAL TOPICS', 555, 645, 'G404B')],
+  };
+  const svg = createScheduleSvg(schedule, { profile });
+
+  assert.match(svg, /fill="#d946ef"/);
+  assert.match(svg, />Room: G404B · F2F</);
+  assert.match(svg, />Professor: Prof. Santos &amp;</);
+  assert.match(svg, />Co\.</);
+  assert.match(svg, />Time: 07:00 PM - 08:00 PM</);
+  assert.ok(svg.indexOf('Room: G404B') < svg.indexOf('Professor: Prof. Santos'));
+  assert.ok(svg.indexOf('Professor: Prof. Santos') < svg.indexOf('Time: 07:00 PM'));
+});
+
+test('omits the professor line when the section has no professor', () => {
+  const profile = createProfile('No professor');
+  const schedule = {
+    session: 'AY 2026-2027 Term 1',
+    meetings: [meeting('STSP002', 'SPECIAL TOPICS', 555, 645, 'Online', '09:15 AM', '10:45 AM')],
+  };
+  const svg = createScheduleSvg(schedule, { profile });
+
+  assert.match(svg, />Mode: Online</);
+  assert.doesNotMatch(svg, /Professor:/);
+});
+
+test('supports explicit light and dark export themes', () => {
+  const schedule = {
+    session: 'AY 2026-2027 Term 1',
+    meetings: [meeting('STSP002', 'SPECIAL TOPICS', 555, 645, 'G404B')],
+  };
+
+  const lightSvg = createScheduleSvg(schedule, { theme: 'light' });
+  const darkSvg = createScheduleSvg(schedule, { theme: 'dark' });
+
+  assert.match(lightSvg, /<rect width="1400" height="[0-9.]+" fill="#ffffff"\/>/);
+  assert.match(darkSvg, /<rect width="1400" height="[0-9.]+" fill="#000000"\/>/);
+});
+
+test('expands exported layout for long metadata lines', () => {
+  const schedule = {
+    session: 'AY 2026-2027 Term 1',
+    meetings: [meeting('STSP002', 'ADVANCED DISTRIBUTED SYSTEMS AND SOFTWARE ARCHITECTURE', 555, 560, 'Gokongwei Hall Advanced Collaboration Room')],
+  };
+  let profile = createProfile('Long metadata');
+  profile = setSectionCustomization(profile, 'STSP002', 'S30A', {
+    professor: 'Professor Alexandra Maria dela Cruz-Santos, PhD',
+  });
+
+  const shortSchedule = {
+    ...schedule,
+    meetings: [meeting('STSP002', 'SPECIAL TOPICS', 555, 560, 'G404B')],
+  };
+  const shortLayout = getTimelineLayout(shortSchedule, true, createProfile('Short metadata'));
+  const longLayout = getTimelineLayout(schedule, true, profile);
+  const svg = createScheduleSvg(schedule, { profile });
+
+  assert.ok(longLayout.gridHeight > shortLayout.gridHeight);
+  assert.match(svg, />Professor: Professor</);
+  assert.match(svg, />Alexandra Maria dela</);
+  assert.match(svg, />Cruz-Santos, PhD</);
 });

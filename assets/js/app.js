@@ -1,50 +1,217 @@
-// AnimoSort application shell. Owns in-memory schedule state and UI wiring.
-// Imports only the sanitized Schedule produced by eaf-parser.js.
+// AnimoSort application shell. Schedule data comes from the EAF parser;
+// customization data comes from the profile store and never enters the parser.
 
 import {
   EafParseError,
   DAY_ORDER,
   STANDARD_PERIODS,
-  expandLocation,
 } from './eaf-parser.js';
+import { downloadSchedulePng } from './export.js';
+import { initSiteChrome } from './site.js';
 import {
   COURSE_PALETTES,
+  MAX_CUSTOMIZATION_FILE_SIZE,
+  addProfile,
   buildCourseColorMap,
+  createProfile,
+  deleteProfile,
+  getActiveProfile,
+  getCourseKey,
   getPaletteById,
-  downloadSchedulePng,
-} from './export.js';
+  getSectionKey,
+  loadProfileStore,
+  normalizeCourseCode,
+  normalizeHexColor,
+  parseProfileJson,
+  profileFilename,
+  randomizeCourseColors,
+  renameProfile,
+  resetProfile,
+  resolveMeetingCustomization,
+  resetSectionCustomization,
+  saveProfileStore,
+  serializeProfile,
+  setActiveProfile,
+  setCourseColor,
+  setSectionCustomization,
+  formatMeetingMetadataLines,
+} from './customization.js';
 
 const MAX_EAF_FILE_SIZE = 1024 * 1024;
+const STORAGE_WARNING = 'This profile is available for this session, but browser storage is unavailable. Download a JSON backup to keep it.';
+const DAY_LABELS = { MON: 'Monday', TUE: 'Tuesday', WED: 'Wednesday', THU: 'Thursday', FRI: 'Friday', SAT: 'Saturday' };
 
 let currentSchedule = null;
 let importInProgress = false;
 let importGeneration = 0;
 let activeImportGeneration = null;
 let showCourseTitles = true;
-let customCourseColors = loadCustomCourseColors();
-let activePopover = null;
+let profileStore = loadProfileStore();
+let editorContext = null;
+let appInitialized = false;
 
-function loadCustomCourseColors() {
-  try {
-    const raw = localStorage.getItem('animosort_course_colors');
-    return raw ? JSON.parse(raw) : {};
-  } catch (e) {
-    return {};
+const els = {
+  form: null,
+  fileInput: null,
+  browseBtn: null,
+  dropZone: null,
+  statusRegion: null,
+  schedulePanel: null,
+  sessionLabel: null,
+  summaryLabel: null,
+  scheduleScroll: null,
+  scheduleCanvas: null,
+  courseLegend: null,
+  courseLegendToggle: null,
+  legendBadges: null,
+  randomizeColorsBtn: null,
+  replaceBtn: null,
+  clearBtn: null,
+  pngThemeSelect: null,
+  downloadPngBtn: null,
+  showCourseTitles: null,
+  profileSelect: null,
+  newProfileBtn: null,
+  importCustomizationBtn: null,
+  customizationFile: null,
+  downloadCustomizationBtn: null,
+  renameProfileBtn: null,
+  deleteProfileBtn: null,
+  resetColorsBtn: null,
+  resetDetailsBtn: null,
+  resetEverythingBtn: null,
+  profileStatus: null,
+  profileStorageWarning: null,
+  customizationDialog: null,
+  customizationForm: null,
+  customizationContext: null,
+  customizationPaletteOptions: null,
+  customizationColor: null,
+  customizationHex: null,
+  customizationProfessor: null,
+  resetSectionBtn: null,
+  cancelCustomizationBtn: null,
+};
+
+function activeProfile() {
+  return getActiveProfile(profileStore);
+}
+
+function isDarkTheme() {
+  const explicit = document.documentElement.getAttribute('data-theme');
+  return explicit === 'dark' || (!explicit && window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+
+function getPngTheme() {
+  const selected = els.pngThemeSelect.value;
+  if (selected === 'light' || selected === 'dark') return selected;
+  return isDarkTheme() ? 'dark' : 'light';
+}
+
+function requireElements() {
+  const ids = {
+    form: 'eaf-form',
+    fileInput: 'eaf-file',
+    browseBtn: 'browse-btn',
+    dropZone: 'drop-zone',
+    statusRegion: 'status-region',
+    schedulePanel: 'schedule-panel',
+    sessionLabel: 'session-label',
+    summaryLabel: 'summary-label',
+    scheduleScroll: 'schedule-scroll',
+    scheduleCanvas: 'schedule-canvas',
+    courseLegend: 'course-legend',
+    courseLegendToggle: 'course-legend-toggle',
+    legendBadges: 'legend-badges',
+    randomizeColorsBtn: 'randomize-colors-btn',
+    replaceBtn: 'replace-btn',
+    clearBtn: 'clear-btn',
+    pngThemeSelect: 'png-theme-select',
+    downloadPngBtn: 'download-png-btn',
+    showCourseTitles: 'show-course-titles',
+    profileSelect: 'profile-select',
+    newProfileBtn: 'new-profile-btn',
+    importCustomizationBtn: 'import-customization-btn',
+    customizationFile: 'customization-file',
+    downloadCustomizationBtn: 'download-customization-btn',
+    renameProfileBtn: 'rename-profile-btn',
+    deleteProfileBtn: 'delete-profile-btn',
+    resetColorsBtn: 'reset-colors-btn',
+    resetDetailsBtn: 'reset-details-btn',
+    resetEverythingBtn: 'reset-everything-btn',
+    profileStatus: 'profile-status',
+    profileStorageWarning: 'profile-storage-warning',
+    customizationDialog: 'customization-dialog',
+    customizationForm: 'customization-form',
+    customizationContext: 'customization-context',
+    customizationPaletteOptions: 'customization-palette-options',
+    customizationColor: 'customization-color',
+    customizationHex: 'customization-hex',
+    customizationProfessor: 'customization-professor',
+    resetSectionBtn: 'reset-section-btn',
+    cancelCustomizationBtn: 'cancel-customization-btn',
+  };
+  for (const [key, id] of Object.entries(ids)) {
+    const node = document.getElementById(id);
+    if (!node) throw new Error(`AnimoSort failed to start: missing #${id}`);
+    els[key] = node;
   }
 }
 
-function saveCustomCourseColor(courseCode, paletteId) {
-  customCourseColors[courseCode] = paletteId;
-  try {
-    localStorage.setItem('animosort_course_colors', JSON.stringify(customCourseColors));
-  } catch (e) {}
+function setStatus(message, kind = '') {
+  els.statusRegion.textContent = message;
+  els.statusRegion.className = `status-region${kind ? ` ${kind}` : ''}`;
+  els.statusRegion.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+}
+
+function setProfileStatus(message, kind = '') {
+  els.profileStatus.textContent = message;
+  els.profileStatus.className = `status-region${kind ? ` ${kind}` : ''}`;
+  els.profileStatus.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+}
+
+function setStorageWarning(isUnavailable) {
+  els.profileStorageWarning.hidden = !isUnavailable;
+  if (isUnavailable) els.profileStorageWarning.textContent = STORAGE_WARNING;
+}
+
+function renderProfileControls() {
+  if (!els.profileSelect || !profileStore) return;
+  els.profileSelect.replaceChildren();
+  for (const entry of profileStore.profiles) {
+    const option = document.createElement('option');
+    option.value = entry.id;
+    option.textContent = entry.profile.name;
+    option.selected = entry.id === profileStore.activeProfileId;
+    els.profileSelect.appendChild(option);
+  }
+  els.deleteProfileBtn.title = profileStore.activeProfileId === 'default'
+    ? 'The Default profile cannot be deleted'
+    : 'Delete the active profile';
+}
+
+function persistStore(nextStore, statusMessage = '', statusKind = '') {
+  profileStore = nextStore;
+  const result = saveProfileStore(profileStore);
+  setStorageWarning(!result.ok);
+  renderProfileControls();
+  if (currentSchedule) renderSchedule(currentSchedule);
+  if (statusMessage) setProfileStatus(statusMessage, statusKind);
+  return result;
+}
+
+function updateActiveProfile(mutator, statusMessage = '', statusKind = '') {
+  const nextProfile = mutator(activeProfile());
+  return persistStore({
+    ...profileStore,
+    profiles: profileStore.profiles.map((entry) => entry.id === profileStore.activeProfileId
+      ? { ...entry, profile: nextProfile }
+      : entry),
+  }, statusMessage, statusKind);
 }
 
 function closeActivePopover() {
-  if (activePopover) {
-    activePopover.element.remove();
-    activePopover = null;
-  }
+  document.querySelectorAll('.palette-popover').forEach((node) => node.remove());
 }
 
 function setCourseLegendOpen(isOpen) {
@@ -56,398 +223,54 @@ function setCourseLegendOpen(isOpen) {
 function initCourseLegendToggle() {
   const mobileQuery = window.matchMedia('(max-width: 480px)');
   const sync = () => setCourseLegendOpen(!mobileQuery.matches);
-
   els.courseLegendToggle.addEventListener('click', () => {
-    const isOpen = !els.courseLegend.classList.contains('is-open');
-    setCourseLegendOpen(isOpen);
+    setCourseLegendOpen(!els.courseLegend.classList.contains('is-open'));
   });
-
   sync();
-  if (typeof mobileQuery.addEventListener === 'function') {
-    mobileQuery.addEventListener('change', sync);
-  } else if (typeof mobileQuery.addListener === 'function') {
-    mobileQuery.addListener(sync);
-  }
+  if (typeof mobileQuery.addEventListener === 'function') mobileQuery.addEventListener('change', sync);
+  else if (typeof mobileQuery.addListener === 'function') mobileQuery.addListener(sync);
 }
 
-if (typeof document !== 'undefined') {
-  document.addEventListener('click', (event) => {
-    if (!activePopover) return;
-    if (!activePopover.element.contains(event.target) && !activePopover.anchor.contains(event.target)) {
-      closeActivePopover();
-    }
-  });
-
-  window.addEventListener('resize', () => {
-    closeActivePopover();
-    fitTimetablePreview();
-  }, { passive: true });
+function applyPaletteStyles(element, palette, theme = isDarkTheme() ? 'dark' : 'light') {
+  for (const preset of COURSE_PALETTES) element.classList.remove(`palette-${preset.id}`);
+  if (!palette.isCustom) element.classList.add(`palette-${palette.id}`);
+  const colors = theme === 'dark' ? palette.dark : palette.light;
+  element.style.setProperty('--card-bg', colors.bg);
+  element.style.setProperty('--card-border', colors.border);
+  element.style.setProperty('--card-code', colors.code);
+  element.style.setProperty('--card-title', colors.title);
+  element.style.setProperty('--card-meta', colors.meta);
+  element.style.setProperty('--card-swatch', palette.swatch);
 }
 
-function updateCourseCardsLive(courseCode, paletteOrHex) {
-  const palette = getPaletteById(paletteOrHex);
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
-    (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const colors = isDark ? palette.dark : palette.light;
-
-  document.querySelectorAll(`.meeting-block[data-course="${courseCode}"]`).forEach((block) => {
-    for (const p of COURSE_PALETTES) {
-      block.classList.remove(`palette-${p.id}`);
-    }
-    if (!palette.isCustom) {
-      block.classList.add(`palette-${palette.id}`);
-    }
-    block.style.setProperty('--card-bg', colors.bg);
-    block.style.setProperty('--card-border', colors.border);
-    block.style.setProperty('--card-code', colors.code);
-    block.style.setProperty('--card-title', colors.title);
-    block.style.setProperty('--card-meta', colors.meta);
-    block.style.setProperty('--card-swatch', palette.swatch);
-
-    const btn = block.querySelector('.meeting-color-btn');
-    if (btn) btn.style.background = palette.swatch;
-  });
-
-  if (els.legendBadges) {
-    els.legendBadges.querySelectorAll('.course-badge').forEach((badge) => {
-      const codeSpan = badge.querySelector('.course-badge-code');
-      if (codeSpan && codeSpan.textContent === courseCode) {
-        for (const p of COURSE_PALETTES) {
-          badge.classList.remove(`palette-${p.id}`);
-        }
-        if (!palette.isCustom) {
-          badge.classList.add(`palette-${palette.id}`);
-        }
-        badge.style.setProperty('--card-border', colors.border);
-        badge.style.setProperty('--card-code', colors.code);
-        badge.style.setProperty('--card-swatch', palette.swatch);
-        const swatch = badge.querySelector('.course-badge-swatch');
-        if (swatch) swatch.style.background = palette.swatch;
-      }
-    });
+function createCourseIndexMap(schedule) {
+  const indexes = new Map();
+  for (const meeting of schedule.meetings) {
+    const code = normalizeCourseCode(meeting.courseCode);
+    if (code && !indexes.has(code)) indexes.set(code, indexes.size);
   }
+  return indexes;
 }
 
-function openPalettePopover(anchor, courseCode, currentPaletteId) {
-  if (activePopover && activePopover.anchor === anchor) {
-    closeActivePopover();
-    return;
-  }
-  closeActivePopover();
-
-  const popover = document.createElement('div');
-  popover.className = 'palette-popover';
-  popover.setAttribute('role', 'dialog');
-  popover.setAttribute('aria-label', `Choose color for ${courseCode}`);
-
-  const popoverHeader = document.createElement('div');
-  popoverHeader.className = 'popover-header';
-  popoverHeader.textContent = `Color for ${courseCode}`;
-  popover.appendChild(popoverHeader);
-
-  // 1. Plain (Minimal) option
-  const plainBtn = document.createElement('button');
-  plainBtn.type = 'button';
-  plainBtn.className = `palette-plain-btn${currentPaletteId === 'plain' ? ' active' : ''}`;
-  plainBtn.innerHTML = `<span class="plain-swatch"></span><span>Plain / Neutral</span>`;
-  plainBtn.title = 'Plain minimal style with no pastel tint';
-  plainBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    saveCustomCourseColor(courseCode, 'plain');
-    updateCourseCardsLive(courseCode, 'plain');
-    closeActivePopover();
-  });
-  popover.appendChild(plainBtn);
-
-  // 2. Pastel presets grid
-  const grid = document.createElement('div');
-  grid.className = 'palette-presets-grid';
-  for (const palette of COURSE_PALETTES.slice(1)) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `palette-option-btn${palette.id === currentPaletteId ? ' active' : ''}`;
-    btn.style.background = palette.swatch;
-    btn.title = palette.name;
-    btn.setAttribute('aria-label', palette.name);
-
-    if (palette.id === currentPaletteId) {
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-    }
-
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      saveCustomCourseColor(courseCode, palette.id);
-      updateCourseCardsLive(courseCode, palette.id);
-      closeActivePopover();
-    });
-
-    grid.appendChild(btn);
-  }
-  popover.appendChild(grid);
-
-  // 3. Hex code & native color picker form
-  const hexForm = document.createElement('form');
-  hexForm.className = 'palette-hex-form';
-  hexForm.setAttribute('action', 'javascript:void(0);');
-
-  const initialHex = typeof currentPaletteId === 'string' && currentPaletteId.startsWith('#')
-    ? currentPaletteId
-    : (COURSE_PALETTES.find((p) => p.id === currentPaletteId)?.swatch || '#52796f');
-
-  const colorInput = document.createElement('input');
-  colorInput.type = 'color';
-  colorInput.className = 'palette-color-input';
-  colorInput.value = initialHex.length === 7 ? initialHex : '#52796f';
-  colorInput.title = 'Open system color picker';
-
-  const hexInput = document.createElement('input');
-  hexInput.type = 'text';
-  hexInput.className = 'palette-hex-input';
-  hexInput.placeholder = '#HEX';
-  hexInput.maxLength = 7;
-  hexInput.spellcheck = false;
-  hexInput.value = initialHex.toUpperCase();
-  hexInput.setAttribute('aria-label', `Hex code for ${courseCode}`);
-
-  const applyBtn = document.createElement('button');
-  applyBtn.type = 'submit';
-  applyBtn.className = 'palette-hex-apply-btn';
-  applyBtn.textContent = 'Set';
-  applyBtn.title = 'Apply hex code';
-
-  const parseAndNormalizeHex = (val) => {
-    let clean = String(val || '').trim();
-    if (!clean.startsWith('#')) clean = `#${clean}`;
-    if (/^#[0-9A-Fa-f]{6}$/.test(clean)) return clean.toLowerCase();
-    if (/^#[0-9A-Fa-f]{3}$/.test(clean)) {
-      const r = clean[1];
-      const g = clean[2];
-      const b = clean[3];
-      return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
-    }
-    return null;
-  };
-
-  colorInput.addEventListener('input', (e) => {
-    const val = e.target.value.toLowerCase();
-    hexInput.value = val.toUpperCase();
-    hexInput.classList.remove('invalid');
-    saveCustomCourseColor(courseCode, val);
-    updateCourseCardsLive(courseCode, val);
-  });
-
-  colorInput.addEventListener('change', (e) => {
-    const val = e.target.value.toLowerCase();
-    hexInput.value = val.toUpperCase();
-    hexInput.classList.remove('invalid');
-    saveCustomCourseColor(courseCode, val);
-    updateCourseCardsLive(courseCode, val);
-  });
-
-  hexInput.addEventListener('input', (e) => {
-    const valid = parseAndNormalizeHex(e.target.value);
-    if (valid) {
-      colorInput.value = valid;
-      hexInput.classList.remove('invalid');
-      saveCustomCourseColor(courseCode, valid);
-      updateCourseCardsLive(courseCode, valid);
-    }
-  });
-
-  hexForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const valid = parseAndNormalizeHex(hexInput.value);
-    if (valid) {
-      saveCustomCourseColor(courseCode, valid);
-      updateCourseCardsLive(courseCode, valid);
-      closeActivePopover();
-    } else {
-      hexInput.classList.add('invalid');
-      hexInput.focus();
-    }
-  });
-
-  hexForm.append(colorInput, hexInput, applyBtn);
-  popover.appendChild(hexForm);
-
-  document.body.appendChild(popover);
-
-  const rect = anchor.getBoundingClientRect();
-  const popoverWidth = 180;
-  let left = rect.left + window.scrollX + (rect.width / 2) - (popoverWidth / 2);
-  if (left < 10) left = 10;
-  if (left + popoverWidth > window.innerWidth - 10) left = window.innerWidth - popoverWidth - 10;
-  const top = rect.bottom + window.scrollY + 6;
-
-  popover.style.left = `${Math.round(left)}px`;
-  popover.style.top = `${Math.round(top)}px`;
-
-  activePopover = { element: popover, anchor };
+function getResolvedMeeting(meeting, schedule = currentSchedule, profile = activeProfile()) {
+  const source = schedule || { meetings: [meeting] };
+  const map = buildCourseColorMap(source, profile);
+  const indexes = createCourseIndexMap(source);
+  const code = getCourseKey(meeting.courseCode);
+  return resolveMeetingCustomization(profile, meeting, indexes.get(code) || 0, map);
 }
 
-function initNavigation() {
-  const nav = document.getElementById('mainNav');
-  if (!nav) return;
-
-  window.addEventListener('scroll', () => {
-    nav.classList.toggle('scrolled', window.scrollY > 40);
-  }, { passive: true });
-}
-
-function initSmoothScroll() {
-  const getScrollBehavior = () => (
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-  );
-
-  document.querySelectorAll('a[href^="#"]').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      const href = link.getAttribute('href');
-      if (href === '#') {
-        event.preventDefault();
-        window.scrollTo({ top: 0, behavior: getScrollBehavior() });
-        return;
-      }
-      const target = document.querySelector(href);
-      if (target) {
-        event.preventDefault();
-        target.scrollIntoView({ behavior: getScrollBehavior() });
-      }
-    });
-  });
-}
-
-function initTheme() {
-  const toggleBtn = document.getElementById('theme-toggle');
-  const toggleText = document.getElementById('theme-toggle-text');
-
-  function updateToggleUI(theme) {
-    const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    if (toggleText) {
-      toggleText.textContent = isDark ? 'Light' : 'Dark';
-    }
-    if (toggleBtn) {
-      toggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
-      toggleBtn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
-    }
-  }
-
-  const savedTheme = localStorage.getItem('animosort_theme');
-  if (savedTheme === 'dark' || savedTheme === 'light') {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  }
-  updateToggleUI(savedTheme);
-
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      const activeTheme = document.documentElement.getAttribute('data-theme');
-      const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const currentlyDark = activeTheme ? activeTheme === 'dark' : isSystemDark;
-      const nextTheme = currentlyDark ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', nextTheme);
-      localStorage.setItem('animosort_theme', nextTheme);
-      updateToggleUI(nextTheme);
-    });
-  }
-
-  if (window.matchMedia) {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    mediaQuery.addEventListener('change', (e) => {
-      if (!localStorage.getItem('animosort_theme')) {
-        updateToggleUI(e.matches ? 'dark' : 'light');
-      }
-    });
-  }
-}
-
-function initReveal() {
-  const revealEls = document.querySelectorAll('.reveal');
-  if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    revealEls.forEach((el) => el.classList.add('visible'));
-    return;
-  }
-  const observer = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    }
-  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-  revealEls.forEach((el) => observer.observe(el));
-}
-
-const DAY_LABELS = { MON: 'Monday', TUE: 'Tuesday', WED: 'Wednesday', THU: 'Thursday', FRI: 'Friday', SAT: 'Saturday' };
-
-const els = {
-  form: null,
-  fileInput: null,
-  browseBtn: null,
-  dropZone: null,
-  statusRegion: null,
-  schedulePanel: null,
-  emptyState: null,
-  sessionLabel: null,
-  summaryLabel: null,
-  scheduleScroll: null,
-  scheduleCanvas: null,
-  courseLegend: null,
-  courseLegendToggle: null,
-  legendBadges: null,
-  randomizeColorsBtn: null,
-  clearColorsBtn: null,
-  replaceBtn: null,
-  clearBtn: null,
-  downloadPngBtn: null,
-  showCourseTitles: null,
-};
-
-function requireElements() {
-  const ids = {
-    form: 'eaf-form',
-    fileInput: 'eaf-file',
-    browseBtn: 'browse-btn',
-    dropZone: 'drop-zone',
-    statusRegion: 'status-region',
-    schedulePanel: 'schedule-panel',
-    emptyState: 'empty-state',
-    sessionLabel: 'session-label',
-    summaryLabel: 'summary-label',
-    scheduleScroll: 'schedule-scroll',
-    scheduleCanvas: 'schedule-canvas',
-    courseLegend: 'course-legend',
-    courseLegendToggle: 'course-legend-toggle',
-    legendBadges: 'legend-badges',
-    randomizeColorsBtn: 'randomize-colors-btn',
-    clearColorsBtn: 'clear-colors-btn',
-    replaceBtn: 'replace-btn',
-    clearBtn: 'clear-btn',
-    downloadPngBtn: 'download-png-btn',
-    showCourseTitles: 'show-course-titles',
-  };
-  for (const [key, id] of Object.entries(ids)) {
-    const node = document.getElementById(id);
-    if (!node) {
-      throw new Error(`AnimoSort failed to start: missing #${id}`);
-    }
-    els[key] = node;
-  }
-}
-
-function formatRoomLabel(meeting) {
-  const location = meeting.expandedLocation || expandLocation(meeting.location) || meeting.location;
-  return `Room: ${location}`;
-}
-
-export function formatMeetingDetails(meeting) {
-  const parts = [
+export function formatMeetingDetails(meeting, resolved = getResolvedMeeting(meeting)) {
+  const lines = formatMeetingMetadataLines(meeting, resolved);
+  return [
     meeting.courseCode,
     `Section ${meeting.section}`,
     meeting.title,
-    `Time: ${DAY_LABELS[meeting.day] || meeting.day} ${meeting.startLabel} - ${meeting.endLabel}`,
-    formatRoomLabel(meeting),
-  ];
-  return parts.join(', ');
+    `Day: ${DAY_LABELS[meeting.day] || meeting.day}`,
+    lines.locationMode,
+    lines.professor,
+    lines.time,
+  ].filter(Boolean).join(', ');
 }
 
 function formatTimeLabel(minutes) {
@@ -456,16 +279,6 @@ function formatTimeLabel(minutes) {
   const period = hours24 >= 12 ? 'PM' : 'AM';
   const hours = hours24 % 12 === 0 ? 12 : hours24 % 12;
   return `${hours}:${String(mins).padStart(2, '0')} ${period}`;
-}
-
-function setStatus(message, kind = '') {
-  els.statusRegion.textContent = message;
-  els.statusRegion.className = `status-region${kind ? ` ${kind}` : ''}`;
-  if (kind === 'error') {
-    els.statusRegion.setAttribute('role', 'alert');
-  } else {
-    els.statusRegion.setAttribute('role', 'status');
-  }
 }
 
 function setImporting(isImporting) {
@@ -478,15 +291,15 @@ function setImporting(isImporting) {
   if (isImporting) els.dropZone.classList.remove('drop-active');
 }
 
-export function renderEmptyState() {
+function resetScheduleView() {
   closeActivePopover();
   els.schedulePanel.hidden = true;
-  els.emptyState.hidden = true;
+  els.scheduleScroll.removeAttribute('data-preview-theme');
   els.sessionLabel.textContent = '';
   els.summaryLabel.textContent = '';
   els.scheduleCanvas.style.removeProperty('height');
   els.scheduleCanvas.replaceChildren();
-  if (els.legendBadges) els.legendBadges.replaceChildren();
+  els.legendBadges.replaceChildren();
   setStatus('');
 }
 
@@ -509,12 +322,10 @@ function createGuideEntries(guides) {
 }
 
 function fitScheduleBody(canvas, meetingBlocks, span) {
-  const baseHeight = 1050;
-  let bodyHeight = baseHeight;
-
+  let bodyHeight = 1050;
   for (const { block, duration } of meetingBlocks) {
     const contentHeight = block.scrollHeight + (block.offsetHeight - block.clientHeight) + 14;
-    bodyHeight = Math.max(bodyHeight, (contentHeight * span) / duration);
+    bodyHeight = Math.max(bodyHeight, (contentHeight * span) / Math.max(1, duration));
   }
   canvas.style.setProperty('--day-body-height', `${Math.ceil(bodyHeight)}px`);
 }
@@ -526,20 +337,16 @@ function fitTimetablePreview(timetable = els.scheduleCanvas?.querySelector('.tim
     els.scheduleScroll.classList.remove('is-scaled');
     return;
   }
-
   timetable.style.removeProperty('width');
   timetable.style.removeProperty('transform');
   els.scheduleCanvas.style.removeProperty('height');
   els.scheduleScroll.classList.remove('is-scaled');
-
   const availableWidth = els.scheduleScroll.clientWidth;
   const naturalWidth = Math.max(timetable.offsetWidth, timetable.scrollWidth);
   const naturalHeight = timetable.offsetHeight;
   if (!availableWidth || !naturalWidth || !naturalHeight) return;
-
   const scale = Math.min(1, availableWidth / naturalWidth);
   if (scale >= 1) return;
-
   timetable.style.width = `${naturalWidth}px`;
   const scaledNaturalHeight = timetable.offsetHeight;
   timetable.style.transform = `scale(${scale})`;
@@ -555,87 +362,127 @@ function createDayGridline(minutes, canvasStart, pixelsPerMinute, kind) {
 }
 
 function renderCourseLegend(schedule, courseColorMap) {
-  if (!els.legendBadges) return;
   els.legendBadges.replaceChildren();
-
-  const distinctCourses = [...new Set(schedule.meetings.map((m) => m.courseCode))];
-  if (!distinctCourses.length) {
-    if (els.courseLegend) els.courseLegend.hidden = true;
-    return;
-  }
-  if (els.courseLegend) els.courseLegend.hidden = false;
-
+  const distinctCourses = [...new Set(schedule.meetings.map((meeting) => normalizeCourseCode(meeting.courseCode)))];
+  els.courseLegend.hidden = !distinctCourses.length;
   for (const code of distinctCourses) {
-    const meeting = schedule.meetings.find((m) => m.courseCode === code);
+    const meeting = schedule.meetings.find((entry) => normalizeCourseCode(entry.courseCode) === code);
     const palette = courseColorMap[code] || COURSE_PALETTES[0];
-
     const badge = document.createElement('button');
     badge.type = 'button';
-    badge.className = `course-badge${palette.isCustom ? '' : ` palette-${palette.id}`}`;
-    badge.setAttribute('aria-label', `Change color for ${code}`);
-    badge.title = `Click dot to change color for ${code} (${palette.name})`;
-
-    if (palette.isCustom) {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
-        (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      const colors = isDark ? palette.dark : palette.light;
-      badge.style.setProperty('--card-border', colors.border);
-      badge.style.setProperty('--card-code', colors.code);
-      badge.style.setProperty('--card-swatch', palette.swatch);
-    }
-
+    badge.className = 'course-badge';
+    applyPaletteStyles(badge, palette);
+    badge.setAttribute('aria-label', `Customize ${meeting.courseCode} section ${meeting.section}`);
+    badge.title = `Customize ${meeting.courseCode} section ${meeting.section}`;
     const swatch = document.createElement('span');
     swatch.className = 'course-badge-swatch';
     swatch.style.background = palette.swatch;
-
     const codeSpan = document.createElement('span');
     codeSpan.className = 'course-badge-code';
-    codeSpan.textContent = code;
-
+    codeSpan.textContent = meeting.courseCode;
     const sectionSpan = document.createElement('span');
     sectionSpan.className = 'course-badge-section';
-    sectionSpan.textContent = meeting ? meeting.section : '';
-
+    sectionSpan.textContent = meeting.section;
     badge.append(swatch, codeSpan, sectionSpan);
-
-    badge.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openPalettePopover(badge, code, palette.id || palette.swatch);
-    });
-
+    badge.addEventListener('click', () => openCustomizationDialog(meeting, badge));
     els.legendBadges.appendChild(badge);
   }
 }
 
+function renderMeetingCard(meeting, courseColorMap, courseIndexes, canvasStart, pixelsPerMinute, previewTheme) {
+  const code = getCourseKey(meeting.courseCode);
+  const resolved = resolveMeetingCustomization(activeProfile(), meeting, courseIndexes.get(code) || 0, courseColorMap);
+  const lines = formatMeetingMetadataLines(meeting, resolved);
+  const block = document.createElement('div');
+  block.className = 'meeting-block';
+  applyPaletteStyles(block, resolved.palette, previewTheme);
+  block.style.top = `${meetingTop(meeting, canvasStart, pixelsPerMinute)}%`;
+  block.style.height = `${meetingHeight(meeting, pixelsPerMinute)}%`;
+  block.setAttribute('role', 'cell');
+  block.setAttribute('tabindex', '0');
+  block.setAttribute('aria-label', formatMeetingDetails(meeting, resolved));
+  block.dataset.course = code;
+  block.dataset.section = resolved.sectionKey;
+
+  const codeNode = document.createElement('strong');
+  codeNode.className = 'meeting-code';
+  codeNode.textContent = meeting.courseCode;
+  const sectionNode = document.createElement('span');
+  sectionNode.className = 'meeting-section';
+  sectionNode.textContent = meeting.section;
+  const codeGroup = document.createElement('span');
+  codeGroup.className = 'meeting-code-group';
+  codeGroup.append(codeNode, sectionNode);
+
+  const colorButton = document.createElement('button');
+  colorButton.type = 'button';
+  colorButton.className = 'meeting-color-btn';
+  colorButton.style.background = resolved.palette.swatch;
+  colorButton.title = `Customize ${meeting.courseCode} section ${meeting.section}`;
+  colorButton.setAttribute('aria-label', `Customize ${meeting.courseCode} section ${meeting.section}`);
+  colorButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    openCustomizationDialog(meeting, colorButton);
+  });
+
+  const primary = document.createElement('div');
+  primary.className = 'meeting-primary';
+  primary.append(codeGroup, colorButton);
+
+  const title = document.createElement('span');
+  title.className = 'meeting-title';
+  title.textContent = meeting.title;
+  const location = document.createElement('span');
+  location.className = 'meeting-location';
+  location.textContent = lines.locationMode;
+  const professor = document.createElement('span');
+  professor.className = 'meeting-professor';
+  if (lines.professor) professor.textContent = lines.professor;
+  const time = document.createElement('span');
+  time.className = 'meeting-time';
+  time.textContent = lines.time;
+  block.append(primary, title, location);
+  if (lines.professor) block.appendChild(professor);
+  block.appendChild(time);
+  block.addEventListener('click', () => openCustomizationDialog(meeting, block));
+  block.addEventListener('keydown', (event) => {
+    if (event.target !== block) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openCustomizationDialog(meeting, block);
+    }
+  });
+  return { block, duration: meeting.endMinutes - meeting.startMinutes };
+}
+
 export function renderSchedule(schedule) {
-  if (!schedule || !Array.isArray(schedule.meetings)) {
+  if (!schedule || !Array.isArray(schedule.meetings) || !schedule.meetings.length) {
     throw new Error('Invalid schedule passed to renderSchedule');
   }
   closeActivePopover();
   els.scheduleCanvas.replaceChildren();
-
-  const courseColorMap = buildCourseColorMap(schedule, customCourseColors);
+  const previewTheme = getPngTheme();
+  els.scheduleScroll.dataset.previewTheme = previewTheme;
+  const profile = activeProfile();
+  const courseColorMap = buildCourseColorMap(schedule, profile);
+  const courseIndexes = createCourseIndexMap(schedule);
   renderCourseLegend(schedule, courseColorMap);
-
-  const allMinutes = schedule.meetings.flatMap((m) => [m.startMinutes, m.endMinutes]);
-  const canvasStart = Math.min(...allMinutes) - 15;
-  const canvasEnd = Math.max(...allMinutes) + 15;
-  const span = canvasEnd - canvasStart;
-  const pixelsPerMinute = span > 0 ? span : 1;
-
+  const allMinutes = schedule.meetings.flatMap((meeting) => [meeting.startMinutes, meeting.endMinutes]);
+  const canvasStart = Math.max(0, Math.min(...allMinutes) - 15);
+  const canvasEnd = Math.min(1440, Math.max(...allMinutes) + 15);
+  const span = Math.max(1, canvasEnd - canvasStart);
+  const pixelsPerMinute = span;
   const canvas = document.createElement('div');
   canvas.className = 'timetable';
   canvas.setAttribute('role', 'table');
   canvas.setAttribute('aria-label', `Weekly timetable for ${schedule.session}`);
-
   const timeGutter = document.createElement('div');
   timeGutter.className = 'time-gutter';
   timeGutter.setAttribute('role', 'rowheader');
   canvas.appendChild(timeGutter);
-
   const guides = [
-    ...STANDARD_PERIODS.filter(([s, e]) => s >= canvasStart && e <= canvasEnd),
-    ...schedule.meetings.map((m) => [m.startMinutes, m.endMinutes]),
+    ...STANDARD_PERIODS.filter(([start, end]) => start >= canvasStart && end <= canvasEnd),
+    ...schedule.meetings.map((meeting) => [meeting.startMinutes, meeting.endMinutes]),
   ];
   const guideEntries = createGuideEntries(guides);
   for (const entry of guideEntries) {
@@ -648,7 +495,6 @@ export function renderSchedule(schedule) {
     guide.appendChild(label);
     timeGutter.appendChild(guide);
   }
-
   const meetingBlocks = [];
   for (const day of DAY_ORDER) {
     const column = document.createElement('div');
@@ -659,13 +505,10 @@ export function renderSchedule(schedule) {
     dayLabel.className = 'day-header';
     dayLabel.textContent = DAY_LABELS[day];
     column.appendChild(dayLabel);
-
     const body = document.createElement('div');
     body.className = 'day-body';
-    for (const entry of guideEntries) {
-      body.appendChild(createDayGridline(entry.minutes, canvasStart, pixelsPerMinute, entry.kind));
-    }
-    const dayMeetings = schedule.meetings.filter((m) => m.day === day);
+    for (const entry of guideEntries) body.appendChild(createDayGridline(entry.minutes, canvasStart, pixelsPerMinute, entry.kind));
+    const dayMeetings = schedule.meetings.filter((meeting) => meeting.day === day);
     if (!dayMeetings.length) {
       const empty = document.createElement('p');
       empty.className = 'empty-day';
@@ -673,84 +516,25 @@ export function renderSchedule(schedule) {
       body.appendChild(empty);
     } else {
       for (const meeting of dayMeetings) {
-        const palette = courseColorMap[meeting.courseCode] || COURSE_PALETTES[0];
-        const block = document.createElement('div');
-        block.className = `meeting-block${palette.isCustom ? '' : ` palette-${palette.id}`}`;
-        if (palette.isCustom) {
-          const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
-            (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          const colors = isDark ? palette.dark : palette.light;
-          block.style.setProperty('--card-bg', colors.bg);
-          block.style.setProperty('--card-border', colors.border);
-          block.style.setProperty('--card-code', colors.code);
-          block.style.setProperty('--card-title', colors.title);
-          block.style.setProperty('--card-meta', colors.meta);
-          block.style.setProperty('--card-swatch', palette.swatch);
-        }
-        block.style.top = `${meetingTop(meeting, canvasStart, pixelsPerMinute)}%`;
-        block.style.height = `${meetingHeight(meeting, pixelsPerMinute)}%`;
-        block.setAttribute('role', 'cell');
-        block.setAttribute('aria-label', formatMeetingDetails(meeting));
-        block.dataset.course = meeting.courseCode;
-        block.dataset.day = meeting.day;
-        meetingBlocks.push({ block, duration: meeting.endMinutes - meeting.startMinutes });
-
-        const code = document.createElement('strong');
-        code.className = 'meeting-code';
-        code.textContent = meeting.courseCode;
-        const section = document.createElement('span');
-        section.className = 'meeting-section';
-        section.textContent = meeting.section;
-        const codeGroup = document.createElement('span');
-        codeGroup.className = 'meeting-code-group';
-        codeGroup.append(code, section);
-
-        const colorBtn = document.createElement('button');
-        colorBtn.type = 'button';
-        colorBtn.className = 'meeting-color-btn';
-        colorBtn.style.background = palette.swatch;
-        colorBtn.title = `Click dot to change color for ${meeting.courseCode}`;
-        colorBtn.setAttribute('aria-label', `Click dot to change color for ${meeting.courseCode}`);
-        colorBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          openPalettePopover(colorBtn, meeting.courseCode, palette.id || palette.swatch);
-        });
-
-        const primary = document.createElement('div');
-        primary.className = 'meeting-primary';
-        primary.append(codeGroup, colorBtn);
-
-        const title = document.createElement('span');
-        title.className = 'meeting-title';
-        title.textContent = meeting.title;
-        const room = document.createElement('span');
-        room.className = 'meeting-room';
-        room.textContent = formatRoomLabel(meeting);
-        const time = document.createElement('span');
-        time.className = 'meeting-time';
-        time.textContent = `Time: ${meeting.startLabel} - ${meeting.endLabel}`;
-
-        block.append(primary, title, room, time);
-        body.appendChild(block);
+        const rendered = renderMeetingCard(meeting, courseColorMap, courseIndexes, canvasStart, pixelsPerMinute, previewTheme);
+        meetingBlocks.push(rendered);
+        body.appendChild(rendered.block);
       }
     }
     column.appendChild(body);
     canvas.appendChild(column);
   }
-
   canvas.classList.toggle('course-titles-hidden', !showCourseTitles);
   els.scheduleCanvas.replaceChildren(canvas);
   fitScheduleBody(canvas, meetingBlocks, span);
   fitTimetablePreview(canvas);
-
   els.sessionLabel.textContent = schedule.session;
-  const courseCount = new Set(schedule.meetings.map((m) => m.courseCode)).size;
+  const courseCount = new Set(schedule.meetings.map((meeting) => normalizeCourseCode(meeting.courseCode))).size;
   els.summaryLabel.textContent = `${courseCount} ${courseCount === 1 ? 'course' : 'courses'} · ${schedule.meetings.length} ${schedule.meetings.length === 1 ? 'meeting' : 'meetings'}`;
 }
 
 export function replaceSchedule(schedule) {
   currentSchedule = schedule;
-  els.emptyState.hidden = true;
   els.schedulePanel.hidden = false;
   const scheduleCard = els.schedulePanel.querySelector('.reveal');
   if (scheduleCard) scheduleCard.classList.add('visible');
@@ -761,11 +545,12 @@ export function replaceSchedule(schedule) {
 export function clearSchedule() {
   importGeneration += 1;
   currentSchedule = null;
+  if (editorContext) closeCustomizationDialog();
   showCourseTitles = true;
   els.showCourseTitles.checked = true;
   els.fileInput.value = '';
   els.dropZone.classList.remove('drop-active');
-  renderEmptyState();
+  resetScheduleView();
 }
 
 export async function handleFile(file) {
@@ -780,18 +565,15 @@ export async function handleFile(file) {
   setImporting(true);
   setStatus('Reading EAF locally…');
   try {
-    const schedule = await import('./eaf-parser.js').then((m) => m.parseEafFile(file));
+    const schedule = await import('./eaf-parser.js').then((module) => module.parseEafFile(file));
     if (generation !== importGeneration) return;
     replaceSchedule(schedule);
-    const courseCount = new Set(schedule.meetings.map((m) => m.courseCode)).size;
+    const courseCount = new Set(schedule.meetings.map((meeting) => normalizeCourseCode(meeting.courseCode))).size;
     setStatus(`Loaded ${schedule.session} · ${courseCount} ${courseCount === 1 ? 'course' : 'courses'} loaded locally.`);
-  } catch (err) {
+  } catch (error) {
     if (generation !== importGeneration) return;
-    if (err instanceof EafParseError) {
-      setStatus(err.message, 'error');
-    } else {
-      setStatus('Something went wrong while reading the file. Please try again with the original Archershub EAF PDF.', 'error');
-    }
+    if (error instanceof EafParseError) setStatus(error.message, 'error');
+    else setStatus('Something went wrong while reading the file. Please try again with the original Archershub EAF PDF.', 'error');
   } finally {
     if (activeImportGeneration === generation) {
       activeImportGeneration = null;
@@ -801,110 +583,304 @@ export async function handleFile(file) {
   }
 }
 
+function handleProfileSelection(profileId) {
+  try {
+    const nextStore = setActiveProfile(profileStore, profileId);
+    persistStore(nextStore, `Using “${getActiveProfile(nextStore).name}”.`);
+  } catch (error) {
+    setProfileStatus(error.message || 'That profile is not available.', 'error');
+    renderProfileControls();
+  }
+}
+
+function handleNewProfile() {
+  const requested = window.prompt('Name this customization profile:', 'New profile');
+  if (requested === null) return;
+  try {
+    const nextStore = addProfile(profileStore, createProfile(requested));
+    persistStore(nextStore, `Created “${getActiveProfile(nextStore).name}”.`);
+  } catch (error) {
+    setProfileStatus(error.message || 'Enter a profile name between 1 and 64 characters.', 'error');
+  }
+}
+
+function handleProfileRename() {
+  const requested = window.prompt('Rename this customization profile:', activeProfile().name);
+  if (requested === null) return;
+  try {
+    const nextStore = renameProfile(profileStore, profileStore.activeProfileId, requested);
+    persistStore(nextStore, `Renamed profile to “${getActiveProfile(nextStore).name}”.`);
+  } catch (error) {
+    setProfileStatus(error.message || 'Enter a profile name between 1 and 64 characters.', 'error');
+  }
+}
+
+function handleProfileDelete() {
+  if (profileStore.activeProfileId === 'default') {
+    setProfileStatus('The Default profile cannot be deleted.', 'error');
+    return;
+  }
+  const name = activeProfile().name;
+  if (!window.confirm(`Delete the “${name}” customization profile?`)) return;
+  try {
+    persistStore(deleteProfile(profileStore, profileStore.activeProfileId), `Deleted “${name}”.`);
+  } catch (error) {
+    setProfileStatus(error.message || 'That profile could not be deleted.', 'error');
+  }
+}
+
+function handleProfileReset(scope) {
+  if (scope === 'all' && !window.confirm('Reset all colors and section details in this profile?')) return;
+  const messages = {
+    colors: 'Colors reset to Plain/Neutral.',
+    details: 'Section details reset to EAF values.',
+    all: 'Everything reset to Plain/Neutral and EAF values.',
+  };
+  try {
+    updateActiveProfile((profile) => resetProfile(profile, scope), messages[scope]);
+  } catch (error) {
+    setProfileStatus(error.message || 'The profile could not be reset.', 'error');
+  }
+}
+
+function handleRandomizeColors() {
+  if (!currentSchedule) return;
+  const codes = [...new Set(currentSchedule.meetings.map((meeting) => meeting.courseCode))];
+  updateActiveProfile((profile) => randomizeCourseColors(profile, codes), 'Pastel colors randomized for this profile.');
+}
+
+async function handleCustomizationFile(file) {
+  els.customizationFile.value = '';
+  if (!file) return;
+  if (file.size > MAX_CUSTOMIZATION_FILE_SIZE) {
+    setProfileStatus('This configuration is larger than 256 KiB.', 'error');
+    return;
+  }
+  if (file.type && file.type !== 'application/json' && !/\.json$/i.test(file.name || '')) {
+    setProfileStatus('Choose an AnimoSort customization JSON file.', 'error');
+    return;
+  }
+  try {
+    const profile = parseProfileJson(await file.text(), file.name);
+    const nextStore = addProfile(profileStore, profile);
+    const importedName = getActiveProfile(nextStore).name;
+    persistStore(nextStore, `Imported “${importedName}” successfully.`);
+  } catch (error) {
+    setProfileStatus(error.message || 'The customization file could not be imported.', 'error');
+  }
+}
+
+function downloadCustomization() {
+  const profile = activeProfile();
+  const blob = new Blob([serializeProfile(profile)], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = profileFilename(profile);
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    link.remove();
+  }, 1000);
+  setProfileStatus(`Downloaded “${profile.name}”.`);
+}
+
+function getDraftColorHex(value) {
+  return normalizeHexColor(getPaletteById(value).swatch) || '#94a3b8';
+}
+
+function setEditorDraftColor(value, changed = true) {
+  const normalized = typeof value === 'string' && value.startsWith('#') ? normalizeHexColor(value) : value;
+  const palette = getPaletteById(normalized || 'plain');
+  editorContext.draftColor = normalized || 'plain';
+  if (changed) editorContext.colorChanged = true;
+  const hex = getDraftColorHex(normalized || 'plain');
+  els.customizationColor.value = hex;
+  els.customizationHex.value = hex.toUpperCase();
+  els.customizationHex.classList.remove('invalid');
+  els.customizationPaletteOptions.querySelectorAll('[data-palette]').forEach((button) => {
+    button.classList.toggle('active', button.dataset.palette === editorContext.draftColor);
+  });
+  els.customizationColor.style.setProperty('--draft-swatch', palette.swatch);
+}
+
+function renderEditorPaletteOptions() {
+  els.customizationPaletteOptions.replaceChildren();
+  const options = [{ id: 'plain', name: 'Plain / Neutral', swatch: COURSE_PALETTES[0].swatch }, ...COURSE_PALETTES.slice(1)];
+  for (const palette of options) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'customization-palette-option';
+    button.dataset.palette = palette.id;
+    button.style.background = palette.swatch;
+    button.title = palette.name;
+    button.setAttribute('aria-label', palette.name);
+    button.addEventListener('click', () => setEditorDraftColor(palette.id));
+    els.customizationPaletteOptions.appendChild(button);
+  }
+}
+
+export function closeCustomizationDialog() {
+  if (!els.customizationDialog) return;
+  const trigger = editorContext?.trigger;
+  if (typeof els.customizationDialog.close === 'function' && els.customizationDialog.open) els.customizationDialog.close();
+  else els.customizationDialog.hidden = true;
+  editorContext = null;
+  if (trigger && typeof trigger.focus === 'function') trigger.focus();
+}
+
+export function openCustomizationDialog(meeting, trigger = null) {
+  if (!currentSchedule || !meeting) return;
+  const profile = activeProfile();
+  const sectionKey = getSectionKey(meeting.courseCode, meeting.section);
+  const resolved = getResolvedMeeting(meeting);
+  const storedColor = profile.courses?.[getCourseKey(meeting.courseCode)]?.color;
+  const storedSection = profile.sections?.[sectionKey] || {};
+  editorContext = {
+    meeting,
+    trigger,
+    draftColor: storedColor || resolved.palette.id || resolved.palette.swatch,
+    colorChanged: false,
+  };
+  els.customizationContext.textContent = `${meeting.courseCode} ${meeting.section} · color applies to the course; mode and professor apply to this section.`;
+  els.customizationProfessor.value = storedSection.professor || '';
+  const mode = storedSection.mode || 'inherit';
+  els.customizationForm.querySelectorAll('input[name="customization-mode"]').forEach((radio) => {
+    radio.checked = radio.value === mode;
+  });
+  renderEditorPaletteOptions();
+  setEditorDraftColor(editorContext.draftColor, false);
+  if (typeof els.customizationDialog.showModal === 'function') els.customizationDialog.showModal();
+  else els.customizationDialog.hidden = false;
+  const initialFocus = els.customizationPaletteOptions.querySelector('.active')
+    || els.customizationPaletteOptions.querySelector('button')
+    || els.cancelCustomizationBtn;
+  initialFocus.focus();
+}
+
+function saveCustomizationDraft(event) {
+  event.preventDefault();
+  if (!editorContext) return;
+  const hex = normalizeHexColor(els.customizationHex.value);
+  if (!hex) {
+    els.customizationHex.classList.add('invalid');
+    els.customizationHex.focus();
+    return;
+  }
+  if (hex && editorContext.draftColor?.startsWith('#')) editorContext.draftColor = hex;
+  const mode = els.customizationForm.querySelector('input[name="customization-mode"]:checked')?.value || 'inherit';
+  try {
+    let next = activeProfile();
+    if (editorContext.colorChanged) next = setCourseColor(next, editorContext.meeting.courseCode, editorContext.draftColor);
+    next = setSectionCustomization(next, editorContext.meeting.courseCode, editorContext.meeting.section, {
+      mode: mode === 'inherit' ? null : mode,
+      professor: els.customizationProfessor.value,
+    });
+    persistStore({
+      ...profileStore,
+      profiles: profileStore.profiles.map((entry) => entry.id === profileStore.activeProfileId ? { ...entry, profile: next } : entry),
+    }, 'Section customization saved.');
+    closeCustomizationDialog();
+  } catch (error) {
+    setProfileStatus(error.message || 'The section customization could not be saved.', 'error');
+  }
+}
+
+function resetEditorSection() {
+  if (!editorContext) return;
+  els.customizationForm.querySelectorAll('input[name="customization-mode"]').forEach((radio) => {
+    radio.checked = radio.value === 'inherit';
+  });
+  els.customizationProfessor.value = '';
+  const profile = resetSectionCustomization(activeProfile(), editorContext.meeting.courseCode, editorContext.meeting.section);
+  const existingColor = profile.courses?.[getCourseKey(editorContext.meeting.courseCode)]?.color;
+  editorContext.draftColor = existingColor || editorContext.draftColor;
+  editorContext.colorChanged = false;
+  setEditorDraftColor(editorContext.draftColor, false);
+}
+
+function initCustomizationDialog() {
+  els.customizationForm.addEventListener('submit', saveCustomizationDraft);
+  els.cancelCustomizationBtn.addEventListener('click', closeCustomizationDialog);
+  els.resetSectionBtn.addEventListener('click', resetEditorSection);
+  els.customizationColor.addEventListener('input', () => setEditorDraftColor(els.customizationColor.value.toLowerCase()));
+  els.customizationHex.addEventListener('input', () => {
+    const value = normalizeHexColor(els.customizationHex.value);
+    if (value) setEditorDraftColor(value);
+    else els.customizationHex.classList.add('invalid');
+  });
+  els.customizationDialog.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    closeCustomizationDialog();
+  });
+}
+
 export function initApp() {
-  initTheme();
-  initNavigation();
-  initSmoothScroll();
-  initReveal();
+  if (appInitialized) return;
+  appInitialized = true;
+  initSiteChrome();
   requireElements();
+  profileStore = loadProfileStore();
+  const startupSave = saveProfileStore(profileStore);
+  setStorageWarning(!startupSave.ok);
+  renderProfileControls();
   initCourseLegendToggle();
+  initCustomizationDialog();
 
   els.form.addEventListener('submit', (event) => event.preventDefault());
-  els.fileInput.addEventListener('change', () => {
-    if (els.fileInput.files && els.fileInput.files[0]) {
-      handleFile(els.fileInput.files[0]);
-    }
-  });
-  els.browseBtn.addEventListener('click', () => {
-    if (!importInProgress) els.fileInput.click();
-  });
-
-  const prevent = (event) => event.preventDefault();
+  els.fileInput.addEventListener('change', () => { if (els.fileInput.files?.[0]) handleFile(els.fileInput.files[0]); });
+  els.browseBtn.addEventListener('click', () => { if (!importInProgress) els.fileInput.click(); });
   els.dropZone.addEventListener('dragover', (event) => {
     if (importInProgress) return;
-    prevent(event);
+    event.preventDefault();
     els.dropZone.classList.add('drop-active');
   });
   els.dropZone.addEventListener('dragleave', () => els.dropZone.classList.remove('drop-active'));
   els.dropZone.addEventListener('drop', (event) => {
-    prevent(event);
+    event.preventDefault();
     els.dropZone.classList.remove('drop-active');
-    if (importInProgress) return;
-    const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
-    if (file) handleFile(file);
+    if (!importInProgress && event.dataTransfer?.files?.[0]) handleFile(event.dataTransfer.files[0]);
   });
-  els.dropZone.addEventListener('click', () => {
-    if (!importInProgress) els.fileInput.click();
-  });
+  els.dropZone.addEventListener('click', () => { if (!importInProgress) els.fileInput.click(); });
   els.dropZone.addEventListener('keydown', (event) => {
-    if (importInProgress) return;
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (!importInProgress && (event.key === 'Enter' || event.key === ' ')) {
       event.preventDefault();
       els.fileInput.click();
     }
   });
-
-  els.replaceBtn.addEventListener('click', () => {
-    if (!importInProgress) els.fileInput.click();
-  });
+  els.replaceBtn.addEventListener('click', () => { if (!importInProgress) els.fileInput.click(); });
   els.clearBtn.addEventListener('click', clearSchedule);
-
-  if (els.randomizeColorsBtn) {
-    els.randomizeColorsBtn.addEventListener('click', () => {
-      if (!currentSchedule || !Array.isArray(currentSchedule.meetings)) return;
-      const distinctCourses = [...new Set(currentSchedule.meetings.map((m) => m.courseCode))];
-      const pastelIds = COURSE_PALETTES.slice(1).map((p) => p.id);
-      const shuffled = [...pastelIds].sort(() => Math.random() - 0.5);
-      distinctCourses.forEach((code, index) => {
-        customCourseColors[code] = shuffled[index % shuffled.length];
-      });
-      try {
-        localStorage.setItem('animosort_course_colors', JSON.stringify(customCourseColors));
-      } catch (e) {}
-      renderSchedule(currentSchedule);
-    });
-  }
-
-  if (els.clearColorsBtn) {
-    els.clearColorsBtn.addEventListener('click', () => {
-      if (!currentSchedule || !Array.isArray(currentSchedule.meetings)) return;
-      const distinctCourses = [...new Set(currentSchedule.meetings.map((m) => m.courseCode))];
-      distinctCourses.forEach((code) => {
-        customCourseColors[code] = 'plain';
-      });
-      try {
-        localStorage.setItem('animosort_course_colors', JSON.stringify(customCourseColors));
-      } catch (e) {}
-      renderSchedule(currentSchedule);
-    });
-  }
-
   els.showCourseTitles.addEventListener('change', () => {
     showCourseTitles = els.showCourseTitles.checked;
     if (currentSchedule) renderSchedule(currentSchedule);
   });
-  els.downloadPngBtn.addEventListener('click', () => {
-    if (currentSchedule) {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
-        (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      const courseColorMap = buildCourseColorMap(currentSchedule, customCourseColors);
-      downloadSchedulePng(currentSchedule, {
-        showCourseTitles,
-        courseColors: courseColorMap,
-        theme: isDark ? 'dark' : 'light',
-      }).catch(() => {
-        setStatus('The PNG could not be generated. Please try again.', 'error');
-      });
-    }
+  els.pngThemeSelect.addEventListener('change', () => {
+    if (currentSchedule) renderSchedule(currentSchedule);
   });
-
-  renderEmptyState();
+  els.downloadPngBtn.addEventListener('click', () => {
+    if (!currentSchedule) return;
+    downloadSchedulePng(currentSchedule, { showCourseTitles, profile: activeProfile(), theme: getPngTheme() })
+      .catch(() => setStatus('The PNG could not be generated. Please try again.', 'error'));
+  });
+  els.profileSelect.addEventListener('change', () => handleProfileSelection(els.profileSelect.value));
+  els.newProfileBtn.addEventListener('click', handleNewProfile);
+  els.importCustomizationBtn.addEventListener('click', () => els.customizationFile.click());
+  els.customizationFile.addEventListener('change', () => handleCustomizationFile(els.customizationFile.files?.[0]));
+  els.downloadCustomizationBtn.addEventListener('click', downloadCustomization);
+  els.renameProfileBtn.addEventListener('click', handleProfileRename);
+  els.deleteProfileBtn.addEventListener('click', handleProfileDelete);
+  els.resetColorsBtn.addEventListener('click', () => handleProfileReset('colors'));
+  els.resetDetailsBtn.addEventListener('click', () => handleProfileReset('details'));
+  els.resetEverythingBtn.addEventListener('click', () => handleProfileReset('all'));
+  els.randomizeColorsBtn.addEventListener('click', handleRandomizeColors);
+  window.addEventListener('resize', () => fitTimetablePreview(), { passive: true });
+  window.addEventListener('animosort:theme-change', () => { if (currentSchedule) renderSchedule(currentSchedule); });
+  resetScheduleView();
 }
 
 if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp, { once: true });
-  } else {
-    initApp();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initApp, { once: true });
+  else initApp();
 }

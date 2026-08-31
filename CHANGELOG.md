@@ -4,6 +4,20 @@ All notable changes to AnimoSort are documented here.
 
 ---
 
+## Unreleased — Customization profiles
+
+- Added named browser-local customization profiles with a versioned, portable JSON format.
+- Added import-before-EAF and download workflows; imports create and activate a separate profile instead of merging into the current one.
+- Added course-wide arbitrary hex colors plus section-level F2F/Online overrides and optional professor labels.
+- Unified live cards and PNG/SVG export around the same resolved metadata and color values.
+- Added scoped color/detail/full reset actions while keeping the built-in Default profile protected.
+- Added Match site, Light, and Dark choices for PNG export.
+- Added the separate [How to use](how-to-use.html) guide and shared site chrome.
+- Migrated legacy `animosort_course_colors` values into the Default profile without deleting the legacy key.
+- Added unit coverage for profile persistence, migration, reset, resolution, custom colors, and exported metadata.
+
+---
+
 ## v0.3.0 — 2026-08-30
 
 ### Night classes, responsive previews, and an auditable data path

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to use AnimoSort</title>
+  <meta name="description" content="Learn how to turn a DLSU Archershub EAF into a timetable and carry your AnimoSort customizations between devices.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <script>
+    (function() {
+      try {
+        const theme = localStorage.getItem('animosort_theme');
+        if (theme === 'dark' || theme === 'light') document.documentElement.setAttribute('data-theme', theme);
+      } catch (error) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="nav" id="mainNav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Animo<span>Sort</span></a>
+      <div class="nav-actions">
+        <button type="button" id="theme-toggle" class="nav-theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg class="sun-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <span id="theme-toggle-text" class="theme-toggle-text">Dark</span>
+        </button>
+        <a href="how-to-use.html" class="nav-help-link nav-guide-link nav-current-link" aria-current="page" aria-label="How to use AnimoSort" title="How to use AnimoSort">
+          <span class="nav-guide-icon" aria-hidden="true">?</span>
+          <span class="nav-guide-label">How to use</span>
+        </a>
+        <a href="index.html#top" class="nav-help-link nav-back-link">Back to timetable</a>
+        <a href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer" class="nav-github-link" aria-label="View source code and audit on GitHub">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="guide-shell" id="top">
+    <section class="guide-hero">
+      <p class="import-kicker">A short field guide</p>
+      <h1>How to use <em>AnimoSort</em></h1>
+      <p>Build a readable week from your official EAF, then save the way you want courses and sections to look.</p>
+    </section>
+
+    <section class="guide-grid" aria-label="AnimoSort instructions">
+      <article class="guide-card">
+        <span class="guide-number">01</span>
+        <h2>Import your EAF</h2>
+        <p>On the <a href="index.html#import-panel">timetable page</a>, choose the official DLSU Archershub EAF PDF or drop it into the import area. AnimoSort reads it in this browser and turns its meeting rows into a Monday–Saturday timetable.</p>
+        <p>Importing a new EAF replaces only the displayed schedule. Your customization profiles stay available.</p>
+      </article>
+
+      <article class="guide-card" id="customization-profiles">
+        <span class="guide-number">02</span>
+        <h2>Choose or create a profile</h2>
+        <p>The <a href="index.html#configuration-panel"><strong>Customization profiles</strong></a> panel is available before or after an EAF is loaded. Select an existing profile or use <strong>New</strong> to create a named setup.</p>
+        <p>Profiles are independent. Switching one changes the presentation without changing your EAF or the other profiles.</p>
+      </article>
+
+      <article class="guide-card">
+        <span class="guide-number">03</span>
+        <h2>Customize a timetable card</h2>
+        <p>Click a timetable card or its color dot to open the editor. Save applies the changes; Cancel discards them.</p>
+        <p>Course color applies to every meeting of that course. Mode and professor apply to the selected section.</p>
+      </article>
+
+      <article class="guide-card">
+        <span class="guide-number">04</span>
+        <h2>Understand the card lines</h2>
+        <p>Cards use one consistent order:</p>
+        <p><strong>CourseCode Section · color dot</strong><br><strong>Course title</strong><br><strong>Room: ... · F2F</strong> or <strong>Mode: Online</strong><br><strong>Professor: ...</strong> when entered<br><strong>Time: ...</strong></p>
+        <p>Professor names are manual and optional because the EAF does not provide them. Blank names stay hidden.</p>
+        <p>Long course titles, rooms, and professor names wrap onto additional lines; the timetable grows to keep the full card content inside its border.</p>
+      </article>
+
+      <article class="guide-card guide-card-wide">
+        <span class="guide-number">05</span>
+        <h2>Use colors, modes, and professors</h2>
+        <p>Presets are shortcuts. The native color picker and hex field accept an arbitrary opaque hex color, and the exact chosen color is saved in the profile and carried into the timetable and PNG export.</p>
+        <p>Choose <strong>F2F</strong> or <strong>Online</strong> when the EAF’s inferred value needs a manual correction. Choose <strong>Use EAF value</strong> to remove that section override.</p>
+      </article>
+
+      <article class="guide-card guide-card-wide">
+        <span class="guide-number">06</span>
+        <h2>Download and import a profile</h2>
+        <p>Use <strong>Download JSON</strong> to save the active profile. On another browser or device, use <strong>Import JSON</strong>; the imported profile is created separately and activated immediately.</p>
+        <p>Before downloading a timetable PNG, choose <strong>Match site</strong>, <strong>Light</strong>, or <strong>Dark</strong> from the PNG theme control. The timetable preview updates immediately to match the download.</p>
+        <p>This works before an EAF too: import a profile first, then load a future EAF and matching course/section values will apply.</p>
+      </article>
+
+      <article class="guide-card">
+        <span class="guide-number">07</span>
+        <h2>Rename, reset, or delete</h2>
+        <p>Rename profiles to keep them understandable. <strong>Reset colors</strong> returns Plain/Neutral colors; <strong>Reset section details</strong> returns EAF mode inference and removes professors; <strong>Reset everything</strong> does both while keeping the profile name.</p>
+        <p>The built-in <strong>Default</strong> profile is always kept. <strong>Reset this section</strong> clears only the selected section’s mode and professor details.</p>
+      </article>
+
+      <article class="guide-card">
+        <span class="guide-number">08</span>
+        <h2>Privacy and compatibility</h2>
+        <p>EAF parsing, profile validation, rendering, and downloads happen in the browser. Profiles use local site storage; clearing site data removes them, so keep a downloaded JSON backup.</p>
+        <p>AnimoSort supports official Archershub EAF PDFs from AY 2025–2026 Term 3 onward. Legacy <strong>Animo.sys EAFs are not supported</strong>. If an import fails, use the original PDF and keep it under 1 MiB.</p>
+      </article>
+    </section>
+
+    <section class="guide-next panel-card">
+      <p class="import-kicker">Need the tool?</p>
+      <h2>Start with your current schedule.</h2>
+      <a class="button btn-primary" href="index.html#top">Open AnimoSort</a>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initSiteChrome } from './assets/js/site.js';
+    initSiteChrome();
+  </script>
+</body>
+</html>

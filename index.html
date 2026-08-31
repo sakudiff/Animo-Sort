@@ -44,6 +44,10 @@
           </svg>
           <span id="theme-toggle-text" class="theme-toggle-text">Dark</span>
         </button>
+        <a href="how-to-use.html" class="nav-help-link nav-guide-link" aria-label="How to use AnimoSort" title="How to use AnimoSort">
+          <span class="nav-guide-icon" aria-hidden="true">?</span>
+          <span class="nav-guide-label">How to use</span>
+        </a>
         <a href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer" class="nav-github-link" aria-label="View source code and audit on GitHub">
           <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           <span>GitHub</span>
@@ -96,6 +100,38 @@
       </div>
     </section>
 
+    <section class="configuration-panel" id="configuration-panel" aria-labelledby="configuration-heading">
+      <div class="panel-card reveal">
+        <div class="panel-heading">
+          <p class="import-kicker">Keep your customizations</p>
+          <h2 id="configuration-heading">Customization profiles</h2>
+          <p class="panel-sub">Profiles are saved in this browser and can be downloaded as portable JSON files.</p>
+          <p class="profile-help"><a href="how-to-use.html#customization-profiles">Need help? Open the customization guide</a></p>
+        </div>
+        <div class="profile-controls">
+          <label for="profile-select">Active profile</label>
+          <select id="profile-select" aria-label="Active customization profile"></select>
+          <button type="button" id="new-profile-btn" class="button btn-ghost">New</button>
+          <button type="button" id="import-customization-btn" class="button btn-ghost">Import JSON</button>
+          <input id="customization-file" type="file" accept="application/json,.json" class="visually-hidden-input">
+          <button type="button" id="download-customization-btn" class="button btn-primary">Download JSON</button>
+          <button type="button" id="rename-profile-btn" class="button btn-ghost">Rename</button>
+          <button type="button" id="delete-profile-btn" class="button btn-ghost">Delete</button>
+          <details class="reset-menu">
+            <summary class="button btn-ghost">Reset</summary>
+            <div class="reset-menu-content">
+              <button type="button" id="reset-colors-btn">Reset colors</button>
+              <button type="button" id="reset-details-btn">Reset section details</button>
+              <button type="button" id="reset-everything-btn">Reset everything</button>
+            </div>
+          </details>
+        </div>
+        <p id="profile-status" class="status-region" role="status" aria-live="polite"></p>
+        <p id="profile-storage-warning" class="profile-storage-warning" hidden></p>
+        <p class="profile-storage-note">Saved only in this browser’s local site storage. Clearing browser site data removes saved profiles; download a JSON backup to move or preserve one.</p>
+      </div>
+    </section>
+
     <section class="schedule-panel" id="schedule-panel" hidden aria-labelledby="schedule-heading">
       <div class="panel-card reveal">
         <div class="panel-heading schedule-heading">
@@ -106,6 +142,14 @@
         <div class="actions" aria-label="Schedule actions">
           <button type="button" id="replace-btn" class="button btn-primary">Replace schedule</button>
           <button type="button" id="clear-btn" class="button btn-ghost">Clear schedule</button>
+          <label class="png-theme-control" for="png-theme-select">
+            <span>PNG theme</span>
+            <select id="png-theme-select" aria-label="PNG export theme">
+              <option value="match">Match site</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </label>
           <button type="button" id="download-png-btn" class="button btn-primary">Download PNG</button>
         </div>
         <div class="schedule-controls-row">
@@ -130,7 +174,6 @@
               </div>
               <div class="legend-actions">
                 <button type="button" class="legend-action-btn" id="randomize-colors-btn" title="Randomly assign pastel colors to all courses">Randomize</button>
-                <button type="button" class="legend-action-btn" id="clear-colors-btn" title="Set all courses to plain minimal style">Set All Plain</button>
               </div>
             </div>
             <div class="legend-badges" id="legend-badges"></div>
@@ -211,10 +254,33 @@
       </figure>
     </dialog>
 
-    <section class="empty-state" id="empty-state" hidden>
-      <p class="empty-title">No schedule loaded.</p>
-      <p class="empty-body">Upload an official Archershub EAF PDF to build the current-term timetable. The file is processed locally and is not uploaded.</p>
-    </section>
+    <dialog id="customization-dialog" class="customization-dialog" aria-labelledby="customization-dialog-title">
+      <form method="dialog" id="customization-form">
+        <h2 id="customization-dialog-title">Customize section</h2>
+        <p id="customization-context" class="customization-context"></p>
+        <fieldset>
+          <legend>Course color</legend>
+          <div id="customization-palette-options" class="customization-palette-options" aria-label="Preset course colors"></div>
+          <div class="customization-color-row">
+            <input id="customization-color" type="color" aria-label="Choose a custom course color" value="#94a3b8">
+            <input id="customization-hex" type="text" inputmode="text" maxlength="7" placeholder="#HEX" aria-label="Course color hex code">
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Delivery mode</legend>
+          <label><input type="radio" name="customization-mode" value="inherit"> Use EAF value</label>
+          <label><input type="radio" name="customization-mode" value="f2f"> F2F</label>
+          <label><input type="radio" name="customization-mode" value="online"> Online</label>
+        </fieldset>
+        <label for="customization-professor">Professor (optional)</label>
+        <input id="customization-professor" type="text" maxlength="100" autocomplete="off" placeholder="Add a professor name">
+        <div class="customization-dialog-actions">
+          <button type="button" id="reset-section-btn" class="button btn-ghost">Reset this section</button>
+          <button type="button" id="cancel-customization-btn" class="button btn-ghost">Cancel</button>
+          <button type="submit" id="save-customization-btn" class="button btn-primary">Save</button>
+        </div>
+      </form>
+    </dialog>
 
     <footer class="app-footer" id="privacy">
       <div class="footer-grid">
@@ -230,6 +296,7 @@
           <h2 class="footer-heading">Project</h2>
           <ul class="footer-link-list">
             <li>Made by <a href="https://github.com/sakudiff" target="_blank" rel="noopener noreferrer">sakudiff</a></li>
+            <li><a href="how-to-use.html">How to use AnimoSort</a></li>
             <li><a href="https://github.com/sakudiff/Animo-Sort/releases" target="_blank" rel="noopener noreferrer">Releases</a></li>
             <li><a href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer">GitHub source</a></li>
           </ul>
