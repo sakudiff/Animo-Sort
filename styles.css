@@ -407,13 +407,23 @@ div[id*="netlify"] {
 }
 
 .hero-about-cta.visible .hero-about-nudge {
-  animation: heroAboutNudgeIn 0.45s var(--silk) 0.25s forwards;
+  animation: heroAboutNudgeIn 0.65s var(--silk) 0.25s both;
 }
 
 @keyframes heroAboutNudgeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.94);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.015);
+  }
+
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
