@@ -104,6 +104,21 @@
         <p>EAF parsing, profile validation, rendering, and downloads happen in the browser. Profiles use local site storage; clearing site data removes them, so keep a downloaded JSON backup.</p>
         <p>AnimoSort supports official Archershub EAF PDFs from AY 2025–2026 Term 3 onward. Legacy <strong>Animo.sys EAFs are not supported</strong>. If an import fails, use the original PDF and keep it under 1 MiB.</p>
       </article>
+
+      <article class="guide-card guide-card-wide guide-calendar-card" id="google-calendar">
+        <span class="guide-number">09</span>
+        <h2>Put your timetable in Google Calendar</h2>
+        <p>An <strong>ICS</strong> (iCalendar) file is a portable calendar file. AnimoSort creates one weekly recurring event for each meeting, using your current course colors only in the timetable/PNG—not in the calendar file—and your active professor and F2F/Online details in the event text.</p>
+        <p>After an EAF is loaded, enter the <strong>term start date</strong> and <strong>term end date</strong> manually. Both dates are inclusive. A class appears on its first matching weekday on or after the start date and ends on its last matching weekday on or before the end date, so partial weeks are handled automatically. For example, a Monday class is first included on the following Monday when a term starts on Wednesday.</p>
+        <div class="guide-calendar-flow" aria-label="Google Calendar import flow">
+          <div><strong>1 · Set the range</strong><span>Enter both term dates beside the timetable.</span></div>
+          <div><strong>2 · Download</strong><span>Choose <strong>Export to Google Calendar (.ics)</strong>, read the notice, then download.</span></div>
+          <div><strong>3 · Import on a computer</strong><span>In Google Calendar, open Settings → Import &amp; export → Import, choose the .ics file and destination calendar, then select Import.</span></div>
+        </div>
+        <p class="guide-calendar-note"><strong>Using an iPhone?</strong> Download the .ics file to Files, send or move it to a computer, and import it through Google Calendar on the web. Google’s current instructions use a computer for ICS imports, even when the file was downloaded on iPhone.</p>
+        <p class="guide-calendar-note"><strong>Before you export:</strong> the notice appears on every download because importing the same file again may create duplicates. AnimoSort skips meetings with no occurrence in the selected range and reports the skipped count. If no meeting falls in the range, the download is blocked so you can correct the dates.</p>
+        <p class="guide-calendar-links"><a href="https://support.google.com/calendar/answer/37118?hl=en" target="_blank" rel="noopener noreferrer">Google’s computer import instructions</a> · <a href="https://support.google.com/calendar/answer/37118?co=GENIE.Platform%3DiOS&amp;hl=en" target="_blank" rel="noopener noreferrer">Google’s iPhone help</a></p>
+      </article>
     </section>
 
     <section class="guide-next panel-card">

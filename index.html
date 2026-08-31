@@ -151,7 +151,29 @@
             </select>
           </label>
           <button type="button" id="download-png-btn" class="button btn-primary">Download PNG</button>
+          <button type="button" id="calendar-export-toggle" class="button btn-ghost" aria-controls="calendar-export-controls" aria-expanded="false">Export to Google Calendar</button>
         </div>
+        <section class="calendar-export-controls" id="calendar-export-controls" aria-labelledby="calendar-export-heading" hidden>
+          <div class="calendar-export-heading">
+            <p class="import-kicker">Calendar handoff</p>
+            <h3 id="calendar-export-heading">Export to Google Calendar (.ics)</h3>
+            <p class="calendar-export-intro">Enter the actual start and end dates for this term. Dates are inclusive and are not saved.</p>
+            <p class="calendar-export-guide"><a href="how-to-use.html#google-calendar">How to import this .ics file into Google Calendar</a></p>
+          </div>
+          <div class="calendar-date-fields">
+            <div class="calendar-date-field">
+              <label for="calendar-start-date">Term start date</label>
+              <input id="calendar-start-date" type="date" autocomplete="off" required aria-describedby="calendar-date-help calendar-date-error">
+            </div>
+            <div class="calendar-date-field">
+              <label for="calendar-end-date">Term end date</label>
+              <input id="calendar-end-date" type="date" autocomplete="off" required aria-describedby="calendar-date-help calendar-date-error">
+            </div>
+          </div>
+          <p class="calendar-date-help" id="calendar-date-help">Classes outside this range are skipped.</p>
+          <p class="calendar-date-error" id="calendar-date-error" role="alert" hidden></p>
+          <button type="button" id="download-calendar-btn" class="button btn-primary" disabled>Export to Google Calendar (.ics)</button>
+        </section>
         <div class="schedule-controls-row">
           <label class="title-toggle" for="show-course-titles">
             <input type="checkbox" id="show-course-titles" checked>
@@ -278,6 +300,17 @@
           <button type="button" id="reset-section-btn" class="button btn-ghost">Reset this section</button>
           <button type="button" id="cancel-customization-btn" class="button btn-ghost">Cancel</button>
           <button type="submit" id="save-customization-btn" class="button btn-primary">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="calendar-export-dialog" class="calendar-export-dialog" aria-labelledby="calendar-export-dialog-title">
+      <form method="dialog" id="calendar-export-form">
+        <h2 id="calendar-export-dialog-title">Before you download your ICS file</h2>
+        <p id="calendar-export-context" class="calendar-export-context">An ICS file is a portable calendar file containing your class events. ICS importing works best on a computer. On iPhone, download this file, then send it to a computer and import it through Google Calendar Settings and Import &amp; export. Importing the same file again may create duplicate events.</p>
+        <div class="calendar-export-dialog-actions">
+          <button type="button" id="cancel-calendar-export-btn" class="button btn-ghost">Cancel</button>
+          <button type="submit" id="confirm-calendar-export-btn" class="button btn-primary">Download .ics</button>
         </div>
       </form>
     </dialog>

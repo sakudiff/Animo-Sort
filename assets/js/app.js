@@ -6,6 +6,12 @@ import {
   DAY_ORDER,
   STANDARD_PERIODS,
 } from './eaf-parser.js';
+import {
+  CalendarExportError,
+  downloadCalendarFile,
+  formatIcsCalendar,
+  validateDateRange,
+} from './calendar.js';
 import { downloadSchedulePng } from './export.js';
 import { initSiteChrome } from './site.js';
 import {
@@ -49,6 +55,10 @@ let showCourseTitles = true;
 let profileStore = loadProfileStore();
 let editorContext = null;
 let appInitialized = false;
+let calendarDateRange = { startDate: '', endDate: '' };
+let calendarDateTouched = { startDate: false, endDate: false };
+let calendarExportInProgress = false;
+let calendarDialogTrigger = null;
 
 const els = {
   form: null,
@@ -69,6 +79,17 @@ const els = {
   clearBtn: null,
   pngThemeSelect: null,
   downloadPngBtn: null,
+  calendarExportToggle: null,
+  calendarExportControls: null,
+  calendarStartDate: null,
+  calendarEndDate: null,
+  calendarDateError: null,
+  downloadCalendarBtn: null,
+  calendarExportDialog: null,
+  calendarExportForm: null,
+  calendarExportContext: null,
+  cancelCalendarExportBtn: null,
+  confirmCalendarExportBtn: null,
   showCourseTitles: null,
   profileSelect: null,
   newProfileBtn: null,
@@ -128,6 +149,17 @@ function requireElements() {
     clearBtn: 'clear-btn',
     pngThemeSelect: 'png-theme-select',
     downloadPngBtn: 'download-png-btn',
+    calendarExportToggle: 'calendar-export-toggle',
+    calendarExportControls: 'calendar-export-controls',
+    calendarStartDate: 'calendar-start-date',
+    calendarEndDate: 'calendar-end-date',
+    calendarDateError: 'calendar-date-error',
+    downloadCalendarBtn: 'download-calendar-btn',
+    calendarExportDialog: 'calendar-export-dialog',
+    calendarExportForm: 'calendar-export-form',
+    calendarExportContext: 'calendar-export-context',
+    cancelCalendarExportBtn: 'cancel-calendar-export-btn',
+    confirmCalendarExportBtn: 'confirm-calendar-export-btn',
     showCourseTitles: 'show-course-titles',
     profileSelect: 'profile-select',
     newProfileBtn: 'new-profile-btn',
@@ -173,6 +205,144 @@ function setProfileStatus(message, kind = '') {
 function setStorageWarning(isUnavailable) {
   els.profileStorageWarning.hidden = !isUnavailable;
   if (isUnavailable) els.profileStorageWarning.textContent = STORAGE_WARNING;
+}
+
+function setCalendarDateError(message = '') {
+  els.calendarDateError.textContent = message;
+  els.calendarDateError.hidden = !message;
+}
+
+function getCalendarDateInputs() {
+  return {
+    startDate: els.calendarStartDate.value,
+    endDate: els.calendarEndDate.value,
+  };
+}
+
+function updateCalendarDateState(showErrors = true) {
+  const range = getCalendarDateInputs();
+  calendarDateRange = range;
+  els.downloadCalendarBtn.disabled = true;
+  els.calendarEndDate.removeAttribute('min');
+
+  const missingFieldWasTouched = (!range.startDate && calendarDateTouched.startDate)
+    || (!range.endDate && calendarDateTouched.endDate);
+  if (!range.startDate || !range.endDate) {
+    setCalendarDateError(showErrors && missingFieldWasTouched ? 'Enter both term dates.' : '');
+    return null;
+  }
+
+  try {
+    const validated = validateDateRange(range);
+    els.calendarEndDate.min = validated.startDate;
+    els.downloadCalendarBtn.disabled = !currentSchedule;
+    setCalendarDateError('');
+    return validated;
+  } catch (error) {
+    const message = error instanceof CalendarExportError ? error.message : 'Enter a valid calendar date.';
+    setCalendarDateError(showErrors ? message : '');
+    return null;
+  }
+}
+
+function resetCalendarDateState() {
+  calendarDateRange = { startDate: '', endDate: '' };
+  calendarDateTouched = { startDate: false, endDate: false };
+  els.calendarStartDate.value = '';
+  els.calendarEndDate.value = '';
+  els.calendarEndDate.removeAttribute('min');
+  els.downloadCalendarBtn.disabled = true;
+  setCalendarDateError('');
+}
+
+function setCalendarExportOpen(isOpen) {
+  els.calendarExportControls.hidden = !isOpen;
+  els.calendarExportToggle.setAttribute('aria-expanded', String(isOpen));
+  els.calendarExportToggle.textContent = isOpen ? 'Hide calendar export' : 'Export to Google Calendar';
+}
+
+function formatCalendarDownloadStatus(result) {
+  const eventLabel = result.exportedCount === 1 ? 'event' : 'events';
+  let message = `Downloaded ${result.exportedCount} recurring ${eventLabel}.`;
+  if (result.skippedCount > 0) {
+    const meetingLabel = result.skippedCount === 1 ? 'meeting' : 'meetings';
+    message += ` Skipped ${result.skippedCount} ${meetingLabel} outside the selected term dates.`;
+  }
+  return message;
+}
+
+function closeCalendarExportDialog() {
+  if (!els.calendarExportDialog) return;
+  if (typeof els.calendarExportDialog.close === 'function') {
+    if (els.calendarExportDialog.open) els.calendarExportDialog.close();
+  } else {
+    els.calendarExportDialog.hidden = true;
+  }
+  const trigger = calendarDialogTrigger;
+  calendarDialogTrigger = null;
+  if (trigger && typeof trigger.focus === 'function') trigger.focus();
+}
+
+function openCalendarExportDialog() {
+  const validatedRange = updateCalendarDateState(true);
+  if (!currentSchedule || !validatedRange || calendarExportInProgress) return;
+  calendarDialogTrigger = els.downloadCalendarBtn;
+  els.calendarExportDialog.hidden = false;
+  if (typeof els.calendarExportDialog.showModal === 'function') els.calendarExportDialog.showModal();
+  els.cancelCalendarExportBtn.focus();
+}
+
+function setCalendarExportBusy(isBusy) {
+  calendarExportInProgress = isBusy;
+  els.confirmCalendarExportBtn.disabled = isBusy;
+  els.confirmCalendarExportBtn.textContent = isBusy ? 'Preparing .ics…' : 'Download .ics';
+}
+
+function confirmCalendarExport(event) {
+  event.preventDefault();
+  if (calendarExportInProgress || !currentSchedule) return;
+  const validatedRange = updateCalendarDateState(true);
+  if (!validatedRange) {
+    closeCalendarExportDialog();
+    return;
+  }
+  setCalendarExportBusy(true);
+  try {
+    const result = formatIcsCalendar(currentSchedule, activeProfile(), calendarDateRange);
+    downloadCalendarFile(result);
+    closeCalendarExportDialog();
+    setStatus(formatCalendarDownloadStatus(result));
+  } catch (error) {
+    closeCalendarExportDialog();
+    if (error instanceof CalendarExportError && error.code === 'NO_EVENTS_IN_RANGE') {
+      setStatus(error.message, 'error');
+    } else {
+      setStatus('The calendar file could not be downloaded. Please try again.', 'error');
+    }
+  } finally {
+    setCalendarExportBusy(false);
+  }
+}
+
+function initCalendarExport() {
+  els.calendarExportToggle.addEventListener('click', () => {
+    setCalendarExportOpen(els.calendarExportControls.hidden);
+  });
+  els.calendarStartDate.addEventListener('input', () => {
+    calendarDateTouched.startDate = true;
+    updateCalendarDateState(true);
+  });
+  els.calendarEndDate.addEventListener('input', () => {
+    calendarDateTouched.endDate = true;
+    updateCalendarDateState(true);
+  });
+  els.downloadCalendarBtn.addEventListener('click', openCalendarExportDialog);
+  els.cancelCalendarExportBtn.addEventListener('click', closeCalendarExportDialog);
+  els.calendarExportForm.addEventListener('submit', confirmCalendarExport);
+  els.calendarExportDialog.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    closeCalendarExportDialog();
+  });
 }
 
 function renderProfileControls() {
@@ -293,6 +463,9 @@ function setImporting(isImporting) {
 
 function resetScheduleView() {
   closeActivePopover();
+  closeCalendarExportDialog();
+  setCalendarExportOpen(false);
+  resetCalendarDateState();
   els.schedulePanel.hidden = true;
   els.scheduleScroll.removeAttribute('data-preview-theme');
   els.sessionLabel.textContent = '';
@@ -534,6 +707,9 @@ export function renderSchedule(schedule) {
 }
 
 export function replaceSchedule(schedule) {
+  closeCalendarExportDialog();
+  setCalendarExportOpen(false);
+  resetCalendarDateState();
   currentSchedule = schedule;
   els.schedulePanel.hidden = false;
   const scheduleCard = els.schedulePanel.querySelector('.reveal');
@@ -546,6 +722,7 @@ export function clearSchedule() {
   importGeneration += 1;
   currentSchedule = null;
   if (editorContext) closeCustomizationDialog();
+  closeCalendarExportDialog();
   showCourseTitles = true;
   els.showCourseTitles.checked = true;
   els.fileInput.value = '';
@@ -828,6 +1005,7 @@ export function initApp() {
   renderProfileControls();
   initCourseLegendToggle();
   initCustomizationDialog();
+  initCalendarExport();
 
   els.form.addEventListener('submit', (event) => event.preventDefault());
   els.fileInput.addEventListener('change', () => { if (els.fileInput.files?.[0]) handleFile(els.fileInput.files[0]); });

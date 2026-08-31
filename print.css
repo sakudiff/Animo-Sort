@@ -24,6 +24,8 @@
   #profile-status,
   #profile-storage-warning,
   .customization-dialog,
+  .calendar-export-controls,
+  .calendar-export-dialog,
   .course-legend {
     display: none !important;
   }

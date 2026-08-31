@@ -623,6 +623,145 @@ div[id*="netlify"] {
   outline-offset: 2px;
 }
 
+.calendar-export-controls {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 18px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+}
+
+.calendar-export-controls[hidden] {
+  display: none;
+}
+
+.calendar-export-heading {
+  display: grid;
+  gap: 3px;
+}
+
+.calendar-export-heading h3 {
+  color: var(--text-1);
+  font-size: 1rem;
+  letter-spacing: -0.015em;
+}
+
+.calendar-export-intro,
+.calendar-date-help {
+  color: var(--text-2);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.calendar-export-guide {
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.calendar-export-guide a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.calendar-export-guide a:hover {
+  color: var(--accent-mid);
+}
+
+.calendar-date-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.calendar-date-field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.calendar-date-field label {
+  color: var(--text-2);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.calendar-date-field input {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: 38px;
+  padding: 0;
+  text-indent: 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-1);
+  font: inherit;
+}
+
+.calendar-date-field input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.calendar-date-help {
+  margin-top: -4px;
+  color: var(--text-3);
+}
+
+.calendar-date-error {
+  color: #a30000;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.calendar-export-dialog {
+  width: min(520px, calc(100% - 28px));
+  max-height: calc(100% - 28px);
+  margin: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: var(--shadow-md);
+}
+
+.calendar-export-dialog::backdrop {
+  background: rgba(10, 20, 13, 0.62);
+  backdrop-filter: blur(5px);
+}
+
+#calendar-export-form {
+  display: grid;
+  gap: 14px;
+  padding: 24px;
+}
+
+#calendar-export-form h2 {
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.calendar-export-context {
+  color: var(--text-2);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.calendar-export-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .schedule-controls-row {
   display: flex;
   align-items: center;
@@ -1394,6 +1533,22 @@ div[id*="netlify"] {
     flex: 1;
     max-width: 12rem;
     text-align: right;
+  }
+
+  .calendar-date-fields {
+    grid-template-columns: 1fr;
+  }
+
+  #calendar-export-form {
+    padding: 18px;
+  }
+
+  .calendar-export-dialog-actions {
+    justify-content: stretch;
+  }
+
+  .calendar-export-dialog-actions .button {
+    flex: 1 1 auto;
   }
 
   .schedule-panel {
@@ -2947,6 +3102,41 @@ div[id*="netlify"] {
   color: var(--text-1);
 }
 
+.guide-calendar-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.guide-calendar-flow > div {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-alt);
+}
+
+.guide-calendar-flow strong {
+  font-size: 0.82rem;
+}
+
+.guide-calendar-flow span {
+  color: var(--text-2);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.guide-calendar-note {
+  margin-top: 14px !important;
+}
+
+.guide-calendar-links {
+  margin-top: 14px !important;
+}
+
 .guide-next {
   display: flex;
   align-items: center;
@@ -2976,6 +3166,10 @@ div[id*="netlify"] {
 
   .guide-card-wide {
     grid-column: auto;
+  }
+
+  .guide-calendar-flow {
+    grid-template-columns: 1fr;
   }
 
   .guide-next {
