@@ -157,6 +157,22 @@ function initReveal() {
   revealElements.forEach((element) => observer.observe(element));
 }
 
+function initHeroAboutNudge() {
+  const callout = document.querySelector('.hero-about-cta');
+  if (!callout) return;
+
+  const setInView = (isInView) => callout.classList.toggle('is-in-view', isInView);
+  if (!('IntersectionObserver' in window)) {
+    setInView(true);
+    return;
+  }
+
+  const observer = new IntersectionObserver(([entry]) => {
+    setInView(entry.isIntersecting);
+  }, { threshold: 0 });
+  observer.observe(callout);
+}
+
 export function initSiteChrome() {
   if (typeof document === 'undefined' || typeof window === 'undefined') return;
   if (document.documentElement.dataset.siteChromeInitialized === 'true') return;
@@ -166,4 +182,5 @@ export function initSiteChrome() {
   initMenu();
   initSmoothScroll();
   initReveal();
+  initHeroAboutNudge();
 }

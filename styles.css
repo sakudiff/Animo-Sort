@@ -406,23 +406,27 @@ div[id*="netlify"] {
   transform: translateX(-50%) rotate(45deg);
 }
 
-.hero-about-cta.visible .hero-about-nudge {
-  animation: heroAboutNudgeIn 0.65s var(--silk) 0.25s both;
+.hero-about-cta.is-in-view .hero-about-nudge {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  animation: heroAboutNudgeAttention 3.6s ease-in-out 0.7s infinite;
 }
 
-@keyframes heroAboutNudgeIn {
+@keyframes heroAboutNudgeAttention {
   0% {
-    opacity: 0;
-    transform: translateY(6px) scale(0.94);
+    transform: translateY(0) scale(1);
   }
 
-  70% {
-    opacity: 1;
-    transform: translateY(-2px) scale(1.015);
+  72% {
+    transform: translateY(0) scale(1);
   }
 
-  to {
-    opacity: 1;
+  79% {
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  86%,
+  100% {
     transform: translateY(0) scale(1);
   }
 }
