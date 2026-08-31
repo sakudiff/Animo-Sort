@@ -8,6 +8,12 @@ All notable changes to AnimoSort are documented here.
 
 No changes yet.
 
+## v0.4.2 - 2026-09-01
+
+This patch keeps the illustrative Archershub receipt faithful to the requested
+received-order failure: the Term 3 rows are deliberately not sorted by day or
+time, while the AnimoSort output remains the corrected timetable.
+
 ## v0.4.1 - 2026-09-01
 
 This patch refreshes the About-page comparison with the supplied AY 2025-2026
