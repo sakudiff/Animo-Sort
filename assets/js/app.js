@@ -247,8 +247,7 @@ function setCustomizationOpen(isOpen, shouldFocus = false) {
   els.configurationPanel.hidden = !isOpen;
   els.customizeProfileToggle.setAttribute('aria-expanded', String(isOpen));
   if (!isOpen || !shouldFocus) return;
-  const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-  window.requestAnimationFrame(() => els.configurationPanel.scrollIntoView({ behavior, block: 'start' }));
+  window.requestAnimationFrame(() => els.configurationPanel.scrollIntoView({ behavior: 'auto', block: 'nearest' }));
 }
 
 function setStorageWarning(isUnavailable) {
@@ -397,12 +396,36 @@ function initCalendarExport() {
 function renderProfileControls() {
   if (!els.profileSelect || !profileStore) return;
   els.profileSelect.replaceChildren();
+  const optionsContainer = document.getElementById('profile-select-options');
+  const labelEl = document.getElementById('profile-select-label');
+  if (optionsContainer) optionsContainer.replaceChildren();
+
   for (const entry of profileStore.profiles) {
+    const isSelected = entry.id === profileStore.activeProfileId;
     const option = document.createElement('option');
     option.value = entry.id;
     option.textContent = entry.profile.name;
-    option.selected = entry.id === profileStore.activeProfileId;
+    option.selected = isSelected;
     els.profileSelect.appendChild(option);
+
+    if (optionsContainer) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `custom-select-option${isSelected ? ' is-active' : ''}`;
+      btn.setAttribute('role', 'option');
+      btn.setAttribute('aria-selected', String(isSelected));
+      btn.textContent = entry.profile.name;
+      btn.addEventListener('click', () => {
+        const menu = document.getElementById('profile-select-menu');
+        if (menu) menu.open = false;
+        handleProfileSelection(entry.id);
+      });
+      optionsContainer.appendChild(btn);
+    }
+
+    if (isSelected && labelEl) {
+      labelEl.textContent = entry.profile.name;
+    }
   }
   els.deleteProfileBtn.title = profileStore.activeProfileId === 'default'
     ? 'The Default profile cannot be deleted'
@@ -560,12 +583,14 @@ function fitTimetablePreview(timetable = els.scheduleCanvas?.querySelector('.tim
   if (!els.scheduleCanvas || !els.scheduleScroll) return;
   if (!timetable) {
     els.scheduleCanvas.style.removeProperty('height');
+    els.scheduleCanvas.style.removeProperty('overflow');
     els.scheduleScroll.classList.remove('is-scaled');
     return;
   }
   timetable.style.removeProperty('width');
   timetable.style.removeProperty('transform');
   els.scheduleCanvas.style.removeProperty('height');
+  els.scheduleCanvas.style.removeProperty('overflow');
   els.scheduleScroll.classList.remove('is-scaled');
   const availableWidth = els.scheduleScroll.clientWidth;
   const naturalWidth = Math.max(timetable.offsetWidth, timetable.scrollWidth);
@@ -577,6 +602,7 @@ function fitTimetablePreview(timetable = els.scheduleCanvas?.querySelector('.tim
   const scaledNaturalHeight = timetable.offsetHeight;
   timetable.style.transform = `scale(${scale})`;
   els.scheduleCanvas.style.height = `${Math.ceil(scaledNaturalHeight * scale)}px`;
+  els.scheduleCanvas.style.overflow = 'hidden';
   els.scheduleScroll.classList.add('is-scaled');
 }
 
@@ -1119,7 +1145,34 @@ export function initApp() {
   els.resetColorsBtn.addEventListener('click', () => handleProfileReset('colors'));
   els.resetDetailsBtn.addEventListener('click', () => handleProfileReset('details'));
   els.resetEverythingBtn.addEventListener('click', () => handleProfileReset('all'));
-  els.randomizeColorsBtn.addEventListener('click', handleRandomizeColors);
+  const pngThemeMenu = document.getElementById('png-theme-menu');
+  const pngThemeLabel = document.getElementById('png-theme-label');
+  const pngThemeButtons = document.querySelectorAll('#png-theme-options button');
+  pngThemeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.themeValue;
+      if (els.pngThemeSelect) {
+        els.pngThemeSelect.value = val;
+        els.pngThemeSelect.dispatchEvent(new Event('change'));
+      }
+      pngThemeButtons.forEach((b) => {
+        const active = b === btn;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-selected', String(active));
+      });
+      if (pngThemeLabel) pngThemeLabel.textContent = btn.textContent;
+      if (pngThemeMenu) pngThemeMenu.open = false;
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    document.querySelectorAll('.custom-select-menu[open], .reset-menu[open]').forEach((menu) => {
+      if (!menu.contains(event.target)) {
+        menu.open = false;
+      }
+    });
+  });
+
   window.addEventListener('resize', () => fitTimetablePreview(), { passive: true });
   window.addEventListener('animosort:theme-change', () => { if (currentSchedule) renderSchedule(currentSchedule); });
   resetScheduleView();

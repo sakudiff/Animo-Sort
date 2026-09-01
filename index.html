@@ -18,7 +18,7 @@
       } catch (e) {}
     })();
   </script>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=0.4.7">
   <link rel="stylesheet" href="print.css" media="print">
 </head>
 <body>
@@ -71,6 +71,10 @@
           <p class="product-eyebrow reveal reveal-delay-1">Your week starts here</p>
           <h1 class="hero-title reveal reveal-delay-1" id="import-heading">Turn your EAF into a week.<br><em>at a glance.</em></h1>
           <p class="hero-sub reveal reveal-delay-2">Choose the official PDF. <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span> sorts the rest.</p>
+          <div class="hero-about-cta reveal reveal-delay-3" aria-label="Learn more about AnimoSort">
+            <a class="hero-about-link text-link" href="about.html">Learn more about <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a>
+            <a class="hero-architecture-link text-link" href="about.html#pipeline">See how the code works <span aria-hidden="true">↗</span></a>
+          </div>
         </div>
 
         <div class="product-action reveal reveal-delay-2">
@@ -101,48 +105,6 @@
             <div id="status-region" class="status-region" role="status" aria-live="polite"></div>
           </form>
         </div>
-
-        <div class="hero-about-cta reveal reveal-delay-3" aria-label="Learn more about AnimoSort">
-          <a class="hero-about-link text-link" href="about.html">Learn more about <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a>
-          <a class="hero-architecture-link text-link" href="about.html#pipeline">See how the code works <span aria-hidden="true">↗</span></a>
-        </div>
-      </div>
-    </section>
-
-    <section class="configuration-panel" id="configuration-panel" aria-labelledby="configuration-heading" hidden>
-      <div class="panel-card reveal">
-        <div class="panel-heading">
-          <div class="configuration-heading-row">
-            <div>
-              <p class="import-kicker">Make it yours</p>
-              <h2 id="configuration-heading">Customize your timetable</h2>
-            </div>
-            <button type="button" id="hide-customization-btn" class="button btn-ghost">Done</button>
-          </div>
-          <p class="panel-sub">Choose a profile, update subjects from the timetable, or carry your settings to another device.</p>
-          <p class="profile-help"><a class="text-link" href="how-to-use.html#customization-profiles">Need help? Open the customization guide</a></p>
-        </div>
-        <div class="profile-controls">
-          <label for="profile-select">Active profile</label>
-          <select id="profile-select" aria-label="Active customization profile"></select>
-          <button type="button" id="new-profile-btn" class="button btn-ghost">New</button>
-          <button type="button" id="import-customization-btn" class="button btn-ghost">Import JSON</button>
-          <input id="customization-file" type="file" accept="application/json,.json" class="visually-hidden-input">
-          <button type="button" id="download-customization-btn" class="button btn-primary">Download JSON</button>
-          <button type="button" id="rename-profile-btn" class="button btn-ghost">Rename</button>
-          <button type="button" id="delete-profile-btn" class="button btn-ghost">Delete</button>
-          <details class="reset-menu">
-            <summary class="button btn-ghost">Reset</summary>
-            <div class="reset-menu-content">
-              <button type="button" id="reset-colors-btn">Reset colors</button>
-              <button type="button" id="reset-details-btn">Reset section details</button>
-              <button type="button" id="reset-everything-btn">Reset everything</button>
-            </div>
-          </details>
-        </div>
-        <p id="profile-status" class="status-region" role="status" aria-live="polite"></p>
-        <p id="profile-storage-warning" class="profile-storage-warning" hidden></p>
-        <p class="profile-storage-note">Saved only in this browser’s local site storage. Clearing browser site data removes saved profiles; download a JSON backup to move or preserve one.</p>
       </div>
     </section>
 
@@ -158,19 +120,72 @@
           <button type="button" id="customize-profile-toggle" class="button btn-ghost" aria-controls="configuration-panel" aria-expanded="false">Customize</button>
           <button type="button" id="download-png-btn" class="button btn-primary">Download PNG</button>
           <button type="button" id="calendar-export-toggle" class="button btn-ghost" aria-controls="calendar-export-controls" aria-expanded="false">Add to Calendar</button>
-          <label class="png-theme-control" for="png-theme-select">
-            <span>PNG theme</span>
-            <select id="png-theme-select" aria-label="PNG export theme">
-              <option value="match">Match site</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
-          </label>
+          <details class="custom-select-menu png-theme-menu" id="png-theme-menu">
+            <summary class="png-theme-trigger" id="png-theme-trigger" aria-label="PNG export theme">
+              <span>PNG theme</span>
+              <span class="png-theme-value" id="png-theme-label">Match site</span>
+              <svg class="custom-select-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </summary>
+            <div class="custom-select-dropdown png-theme-options" id="png-theme-options" role="listbox">
+              <button type="button" class="custom-select-option is-active" data-theme-value="match" role="option" aria-selected="true">Match site</button>
+              <button type="button" class="custom-select-option" data-theme-value="light" role="option" aria-selected="false">Light</button>
+              <button type="button" class="custom-select-option" data-theme-value="dark" role="option" aria-selected="false">Dark</button>
+            </div>
+          </details>
+          <select id="png-theme-select" class="visually-hidden-input" aria-hidden="true" tabindex="-1">
+            <option value="match" selected>Match site</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
           <div class="schedule-file-actions">
             <button type="button" id="replace-btn" class="text-button">Use another EAF</button>
             <button type="button" id="clear-btn" class="text-button text-button-danger">Clear</button>
           </div>
         </div>
+
+        <section class="configuration-panel customization-drawer" id="configuration-panel" aria-labelledby="configuration-heading" hidden>
+          <div class="configuration-heading-row">
+            <div>
+              <p class="import-kicker">Make it yours</p>
+              <h3 id="configuration-heading" class="configuration-title">Customize your timetable</h3>
+            </div>
+            <button type="button" id="hide-customization-btn" class="button btn-ghost">Done</button>
+          </div>
+          <p class="panel-sub">Choose a profile, update subjects from the timetable, or carry your settings to another device.</p>
+          <p class="profile-help"><a class="text-link" href="how-to-use.html#customization-profiles">Need help? Open the customization guide</a></p>
+          <div class="profile-controls">
+            <div class="profile-select-group">
+              <label for="profile-select-trigger">Active profile</label>
+              <details class="custom-select-menu profile-select-menu" id="profile-select-menu">
+                <summary class="custom-select-trigger" id="profile-select-trigger" aria-haspopup="listbox" aria-label="Active customization profile">
+                  <span class="custom-select-value" id="profile-select-label">Default</span>
+                  <svg class="custom-select-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </summary>
+                <div class="custom-select-dropdown" id="profile-select-options" role="listbox"></div>
+              </details>
+              <select id="profile-select" class="visually-hidden-input" aria-hidden="true" tabindex="-1"></select>
+            </div>
+            <div class="profile-action-group">
+              <button type="button" id="download-customization-btn" class="button btn-primary">Download JSON</button>
+              <button type="button" id="new-profile-btn" class="button btn-ghost">New</button>
+              <button type="button" id="import-customization-btn" class="button btn-ghost">Import JSON</button>
+              <button type="button" id="rename-profile-btn" class="button btn-ghost">Rename</button>
+              <button type="button" id="delete-profile-btn" class="button btn-ghost">Delete</button>
+              <details class="reset-menu">
+                <summary class="button btn-ghost">Reset</summary>
+                <div class="reset-menu-content">
+                  <button type="button" id="reset-colors-btn">Reset colors</button>
+                  <button type="button" id="reset-details-btn">Reset section details</button>
+                  <button type="button" id="reset-everything-btn">Reset everything</button>
+                </div>
+              </details>
+            </div>
+            <input id="customization-file" type="file" accept="application/json,.json" class="visually-hidden-input" hidden>
+          </div>
+          <p id="profile-status" class="status-region" role="status" aria-live="polite"></p>
+          <p id="profile-storage-warning" class="profile-storage-warning" hidden></p>
+          <p class="profile-storage-note">Saved only in this browser’s local site storage. Clearing browser site data removes saved profiles; download a JSON backup to move or preserve one.</p>
+        </section>
         <section class="calendar-export-controls" id="calendar-export-controls" aria-labelledby="calendar-export-heading" hidden>
           <div class="calendar-export-heading">
             <p class="import-kicker">Calendar handoff</p>
@@ -265,33 +280,35 @@
     </dialog>
 
     <footer class="app-footer" id="privacy">
-      <div class="footer-grid">
-        <section class="footer-group">
-          <h2 class="footer-heading"><a class="text-link" href="about.html">About <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a></h2>
-          <p>An independent tool, not affiliated with Archershub or DLSU. Your EAF is processed in the browser and never uploaded, stored, or shared.</p>
-          <a class="footer-more-link text-link" href="about.html">Learn more about <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a>
-        </section>
-        <section class="footer-group">
-          <h2 class="footer-heading">Compatibility</h2>
-          <p>Supports official DLSU Archershub EAFs starting AY 2025-2026 Term 3. Legacy Animo.sys formats are not supported.</p>
-        </section>
-        <section class="footer-group">
-          <h2 class="footer-heading">Project</h2>
-          <ul class="footer-link-list">
-            <li>Made by <a class="text-link" href="https://github.com/sakudiff" target="_blank" rel="noopener noreferrer">sakudiff</a></li>
-            <li><a class="text-link" href="how-to-use.html">How to use <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a></li>
-            <li><a class="text-link" href="https://github.com/sakudiff/Animo-Sort/releases" target="_blank" rel="noopener noreferrer">Releases</a></li>
-            <li><a class="text-link" href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer">GitHub source</a></li>
-          </ul>
-        </section>
-      </div>
-      <div class="footer-bottom">
-        <p>Open source under the <a class="text-link" href="https://github.com/sakudiff/Animo-Sort/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>.</p>
-        <p>View source, self-host, or audit on GitHub.</p>
+      <div class="footer-inner">
+        <div class="footer-grid">
+          <section class="footer-group">
+            <h2 class="footer-heading"><a class="text-link" href="about.html">About <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a></h2>
+            <p>An independent tool, not affiliated with Archershub or DLSU. Your EAF is processed in the browser and never uploaded, stored, or shared.</p>
+            <a class="footer-more-link text-link" href="about.html">Learn more about <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a>
+          </section>
+          <section class="footer-group">
+            <h2 class="footer-heading">Compatibility</h2>
+            <p>Supports official DLSU Archershub EAFs starting AY 2025-2026 Term 3. Legacy Animo.sys formats are not supported.</p>
+          </section>
+          <section class="footer-group">
+            <h2 class="footer-heading">Project</h2>
+            <ul class="footer-link-list">
+              <li>Made by <a class="text-link" href="https://github.com/sakudiff" target="_blank" rel="noopener noreferrer">sakudiff</a></li>
+              <li><a class="text-link" href="how-to-use.html">How to use <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a></li>
+              <li><a class="text-link" href="https://github.com/sakudiff/Animo-Sort/releases" target="_blank" rel="noopener noreferrer">Releases</a></li>
+              <li><a class="text-link" href="https://github.com/sakudiff/Animo-Sort" target="_blank" rel="noopener noreferrer">GitHub source</a></li>
+            </ul>
+          </section>
+        </div>
+        <div class="footer-bottom">
+          <p>Open source under the <a class="text-link" href="https://github.com/sakudiff/Animo-Sort/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>.</p>
+          <p>View source, self-host, or audit on GitHub.</p>
+        </div>
       </div>
     </footer>
   </main>
 
-  <script type="module" src="assets/js/app.js"></script>
+  <script type="module" src="assets/js/app.js?v=0.4.7"></script>
 </body>
 </html>

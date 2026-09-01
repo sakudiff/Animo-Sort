@@ -8,6 +8,24 @@ All notable changes to AnimoSort are documented here.
 
 No changes yet.
 
+## v0.4.1 - 2026-09-01
+
+### Mobile UI and dropdown stabilization
+
+- Replaced native select controls for Active profile and PNG export theme with
+  accessible, DOM-rendered custom dropdown menus using details and summary
+  elements. This resolves WebKit popover coordinate misalignment on iOS Safari
+  when opening controls inside dynamically unhidden drawer containers.
+- Re-architected the hero call-to-action layout by moving the About and
+  architecture links inside the product intro block directly below the subtitle,
+  streamlining the visual hierarchy across mobile and desktop viewports.
+- Enhanced the customization drawer action buttons for mobile screens with a
+  responsive two-column grid and 44px tap targets adhering to Apple HIG.
+- Added strict horizontal overflow constraints on the root document and preview
+  canvas to prevent layout width expansion on mobile devices.
+- Added click-outside dismissal and chevron rotation for all custom select
+  components.
+
 ## v0.4.0 - 2026-08-31
 
 This release adds a private, browser-local customization workflow, a manual
