@@ -94,6 +94,11 @@ const els = {
   cancelCalendarExportBtn: null,
   confirmCalendarExportBtn: null,
   showCourseTitles: null,
+  customizeProfileToggle: null,
+  hideCustomizationBtn: null,
+  quickImportCustomizationBtn: null,
+  quickProfileStatus: null,
+  configurationPanel: null,
   profileSelect: null,
   newProfileBtn: null,
   importCustomizationBtn: null,
@@ -167,6 +172,11 @@ function requireElements() {
     cancelCalendarExportBtn: 'cancel-calendar-export-btn',
     confirmCalendarExportBtn: 'confirm-calendar-export-btn',
     showCourseTitles: 'show-course-titles',
+    customizeProfileToggle: 'customize-profile-toggle',
+    hideCustomizationBtn: 'hide-customization-btn',
+    quickImportCustomizationBtn: 'quick-import-customization-btn',
+    quickProfileStatus: 'quick-profile-status',
+    configurationPanel: 'configuration-panel',
     profileSelect: 'profile-select',
     newProfileBtn: 'new-profile-btn',
     importCustomizationBtn: 'import-customization-btn',
@@ -226,9 +236,18 @@ function setImportProgress(progress = null) {
 }
 
 function setProfileStatus(message, kind = '') {
-  els.profileStatus.textContent = message;
-  els.profileStatus.className = `status-region${kind ? ` ${kind}` : ''}`;
-  els.profileStatus.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+  for (const region of [els.profileStatus, els.quickProfileStatus]) {
+    region.textContent = message;
+    region.className = `status-region${region === els.quickProfileStatus ? ' profile-shortcut-status' : ''}${kind ? ` ${kind}` : ''}`;
+    region.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+  }
+}
+
+function setCustomizationOpen(isOpen, shouldFocus = false) {
+  els.configurationPanel.hidden = !isOpen;
+  els.customizeProfileToggle.setAttribute('aria-expanded', String(isOpen));
+  if (!isOpen || !shouldFocus) return;
+  window.requestAnimationFrame(() => els.configurationPanel.scrollIntoView({ behavior: 'auto', block: 'nearest' }));
 }
 
 function setStorageWarning(isUnavailable) {
@@ -287,7 +306,7 @@ function resetCalendarDateState() {
 function setCalendarExportOpen(isOpen) {
   els.calendarExportControls.hidden = !isOpen;
   els.calendarExportToggle.setAttribute('aria-expanded', String(isOpen));
-  els.calendarExportToggle.textContent = isOpen ? 'Hide calendar export' : 'Export to Google Calendar';
+  els.calendarExportToggle.textContent = isOpen ? 'Hide calendar' : 'Add to Calendar';
 }
 
 function formatCalendarDownloadStatus(result) {
@@ -377,12 +396,36 @@ function initCalendarExport() {
 function renderProfileControls() {
   if (!els.profileSelect || !profileStore) return;
   els.profileSelect.replaceChildren();
+  const optionsContainer = document.getElementById('profile-select-options');
+  const labelEl = document.getElementById('profile-select-label');
+  if (optionsContainer) optionsContainer.replaceChildren();
+
   for (const entry of profileStore.profiles) {
+    const isSelected = entry.id === profileStore.activeProfileId;
     const option = document.createElement('option');
     option.value = entry.id;
     option.textContent = entry.profile.name;
-    option.selected = entry.id === profileStore.activeProfileId;
+    option.selected = isSelected;
     els.profileSelect.appendChild(option);
+
+    if (optionsContainer) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `custom-select-option${isSelected ? ' is-active' : ''}`;
+      btn.setAttribute('role', 'option');
+      btn.setAttribute('aria-selected', String(isSelected));
+      btn.textContent = entry.profile.name;
+      btn.addEventListener('click', () => {
+        const menu = document.getElementById('profile-select-menu');
+        if (menu) menu.open = false;
+        handleProfileSelection(entry.id);
+      });
+      optionsContainer.appendChild(btn);
+    }
+
+    if (isSelected && labelEl) {
+      labelEl.textContent = entry.profile.name;
+    }
   }
   els.deleteProfileBtn.title = profileStore.activeProfileId === 'default'
     ? 'The Default profile cannot be deleted'
@@ -498,6 +541,8 @@ function resetScheduleView() {
   setCalendarExportOpen(false);
   resetCalendarDateState();
   els.schedulePanel.hidden = true;
+  document.body.classList.remove('has-schedule');
+  setCustomizationOpen(false);
   els.scheduleScroll.removeAttribute('data-preview-theme');
   els.sessionLabel.textContent = '';
   els.summaryLabel.textContent = '';
@@ -538,12 +583,14 @@ function fitTimetablePreview(timetable = els.scheduleCanvas?.querySelector('.tim
   if (!els.scheduleCanvas || !els.scheduleScroll) return;
   if (!timetable) {
     els.scheduleCanvas.style.removeProperty('height');
+    els.scheduleCanvas.style.removeProperty('overflow');
     els.scheduleScroll.classList.remove('is-scaled');
     return;
   }
   timetable.style.removeProperty('width');
   timetable.style.removeProperty('transform');
   els.scheduleCanvas.style.removeProperty('height');
+  els.scheduleCanvas.style.removeProperty('overflow');
   els.scheduleScroll.classList.remove('is-scaled');
   const availableWidth = els.scheduleScroll.clientWidth;
   const naturalWidth = Math.max(timetable.offsetWidth, timetable.scrollWidth);
@@ -555,6 +602,7 @@ function fitTimetablePreview(timetable = els.scheduleCanvas?.querySelector('.tim
   const scaledNaturalHeight = timetable.offsetHeight;
   timetable.style.transform = `scale(${scale})`;
   els.scheduleCanvas.style.height = `${Math.ceil(scaledNaturalHeight * scale)}px`;
+  els.scheduleCanvas.style.overflow = 'hidden';
   els.scheduleScroll.classList.add('is-scaled');
 }
 
@@ -743,10 +791,14 @@ export function replaceSchedule(schedule) {
   resetCalendarDateState();
   currentSchedule = schedule;
   els.schedulePanel.hidden = false;
+  document.body.classList.add('has-schedule');
+  setCustomizationOpen(false);
   const scheduleCard = els.schedulePanel.querySelector('.reveal');
   if (scheduleCard) scheduleCard.classList.add('visible');
   renderSchedule(schedule);
   setStatus('');
+  const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  window.requestAnimationFrame(() => els.schedulePanel.scrollIntoView({ behavior, block: 'start' }));
 }
 
 export function clearSchedule() {
@@ -1070,6 +1122,13 @@ export function initApp() {
   els.pngThemeSelect.addEventListener('change', () => {
     if (currentSchedule) renderSchedule(currentSchedule);
   });
+  els.customizeProfileToggle.addEventListener('click', () => {
+    setCustomizationOpen(els.configurationPanel.hidden, true);
+  });
+  els.hideCustomizationBtn.addEventListener('click', () => {
+    setCustomizationOpen(false);
+    els.customizeProfileToggle.focus();
+  });
   els.downloadPngBtn.addEventListener('click', () => {
     if (!currentSchedule) return;
     downloadSchedulePng(currentSchedule, { showCourseTitles, profile: activeProfile(), theme: getPngTheme() })
@@ -1077,6 +1136,7 @@ export function initApp() {
   });
   els.profileSelect.addEventListener('change', () => handleProfileSelection(els.profileSelect.value));
   els.newProfileBtn.addEventListener('click', handleNewProfile);
+  els.quickImportCustomizationBtn.addEventListener('click', () => els.customizationFile.click());
   els.importCustomizationBtn.addEventListener('click', () => els.customizationFile.click());
   els.customizationFile.addEventListener('change', () => handleCustomizationFile(els.customizationFile.files?.[0]));
   els.downloadCustomizationBtn.addEventListener('click', downloadCustomization);
@@ -1085,7 +1145,34 @@ export function initApp() {
   els.resetColorsBtn.addEventListener('click', () => handleProfileReset('colors'));
   els.resetDetailsBtn.addEventListener('click', () => handleProfileReset('details'));
   els.resetEverythingBtn.addEventListener('click', () => handleProfileReset('all'));
-  els.randomizeColorsBtn.addEventListener('click', handleRandomizeColors);
+  const pngThemeMenu = document.getElementById('png-theme-menu');
+  const pngThemeLabel = document.getElementById('png-theme-label');
+  const pngThemeButtons = document.querySelectorAll('#png-theme-options button');
+  pngThemeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.themeValue;
+      if (els.pngThemeSelect) {
+        els.pngThemeSelect.value = val;
+        els.pngThemeSelect.dispatchEvent(new Event('change'));
+      }
+      pngThemeButtons.forEach((b) => {
+        const active = b === btn;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-selected', String(active));
+      });
+      if (pngThemeLabel) pngThemeLabel.textContent = btn.textContent;
+      if (pngThemeMenu) pngThemeMenu.open = false;
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    document.querySelectorAll('.custom-select-menu[open], .reset-menu[open]').forEach((menu) => {
+      if (!menu.contains(event.target)) {
+        menu.open = false;
+      }
+    });
+  });
+
   window.addEventListener('resize', () => fitTimetablePreview(), { passive: true });
   window.addEventListener('animosort:theme-change', () => { if (currentSchedule) renderSchedule(currentSchedule); });
   resetScheduleView();

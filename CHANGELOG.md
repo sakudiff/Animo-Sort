@@ -8,25 +8,56 @@ All notable changes to AnimoSort are documented here.
 
 No changes yet.
 
-## v0.4.2 - 2026-09-01
-
-This patch keeps the illustrative Archershub receipt faithful to the requested
-received-order failure: the Term 3 rows are deliberately not sorted by day or
-time, while the AnimoSort output remains the corrected timetable.
-
 ## v0.4.1 - 2026-09-01
 
-This patch refreshes the About-page comparison with the supplied AY 2025-2026
-Term 3 timetable while preserving the blank Archershub source receipt.
+This release stabilizes mobile viewport layouts, resolves WebKit dropdown
+popover detachment on iOS Safari, and refines the landing page reading flow.
 
-### About page example
+### Custom select dropdowns and WebKit popover fix
 
-- Replaced the AnimoSort after image with the supplied 8-course, 15-meeting
-  Term 3 timetable and kept its expandable viewer behavior.
-- Updated the hypothetical Archershub rows with the eight OCR-verified course
-  codes and first meeting times in non-chronological received order.
-- Made the changelog's product references open the deployed website and added
-  matching GitHub source-file links for auditability.
+- Replaced native select controls for Active profile and PNG export theme with
+  accessible, DOM-rendered custom dropdown menus using details and summary
+  elements. This resolves WebKit popover coordinate misalignment on iOS Safari
+  when opening controls inside dynamically unhidden drawer containers.
+- Retained underlying hidden select elements in the DOM for automated tests and
+  form compatibility while presenting styled options with active indicators and
+  checkmarks.
+- Added global outside-click dismissal and animated chevron rotation across all
+  custom select components.
+
+### Hero reading flow and navigation alignment
+
+- Moved the About and architecture links directly inside the product intro
+  block below the subtitle and above the upload form, consolidating the pitch
+  and documentation entry points into a single cohesive reading column.
+- Updated grid template areas across desktop and mobile layouts so the hero text
+  hierarchy renders consistently without awkward vertical whitespace.
+
+### Mobile customization drawer and touch targets
+
+- Structured customization action buttons into a responsive two-column grid on
+  narrow viewports with 44px minimum tap targets complying with Apple HIG.
+- Placed the primary Download JSON action as a prominent full-width button at
+  the top of the action grid.
+- Resolved excessive vertical spacing caused by desktop flex-basis rules
+  operating along the column orientation on mobile screens.
+- Suppressed empty status and feedback regions to eliminate phantom vertical
+  padding.
+
+### Viewport bounds and layout containment
+
+- Enforced strict horizontal overflow constraints on root document and shell
+  elements to prevent the 1096px timetable canvas from expanding the mobile
+  viewport layout box.
+- Constrained the preview canvas bounding box during timetable scaling to ensure
+  touch coordinates remain accurate.
+- Switched customization drawer scroll alignment to instant behavior to avoid
+  touch coordinate lag during animated transitions.
+
+### Guide and documentation polish
+
+- Streamlined task-based guidance in the How to Use guide for importing,
+  profile management, and calendar export workflows.
 
 ## v0.4.0 - 2026-08-31
 
@@ -95,6 +126,9 @@ trace animation.
   screenshot. The source receipt and generated AnimoSort output are clickable
   and expandable so the evidence can be inspected without permanently taking
   over the page.
+- Updated the after image with the supplied AY 2025-2026 Term 3 output and
+  synchronized the hypothetical Archershub rows with its 8 courses, 15
+  meetings, and non-chronological received order.
 - Added import guidance that explains the supported official Archershub EAF,
   local-only processing, and the file-size/format constraints.
 - Replaced the generic import loading treatment with an accessible progress bar
