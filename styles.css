@@ -4197,3 +4197,385 @@ main a.guide-task-choice {
     font-size: 0.72rem;
   }
 }
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  max-width: none;
+  padding: 0;
+}
+
+.product-entry {
+  order: 1;
+  min-height: 100svh;
+  padding: 124px 32px 44px;
+  background:
+    radial-gradient(circle at 72% 36%, rgba(8, 120, 48, 0.09), transparent 28rem),
+    var(--bg);
+}
+
+.product-entry-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+  grid-template-areas:
+    "intro action"
+    "links action";
+  align-items: center;
+  gap: 18px clamp(48px, 7vw, 104px);
+  width: min(100%, 1080px);
+  min-height: calc(100svh - 168px);
+  margin: 0 auto;
+}
+
+.product-intro {
+  grid-area: intro;
+  align-self: end;
+}
+
+.product-eyebrow {
+  margin-bottom: 18px;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.product-entry .hero-title {
+  max-width: 650px;
+  font-size: clamp(3.4rem, 6vw, 5.6rem);
+  letter-spacing: -0.06em;
+  line-height: 0.96;
+}
+
+.product-entry .hero-sub {
+  max-width: 520px;
+  margin: 25px 0 0;
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  line-height: 1.55;
+}
+
+.product-action {
+  grid-area: action;
+  align-self: center;
+  padding: 28px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.product-primary-action {
+  width: 100%;
+  min-height: 54px;
+  font-size: 0.98rem;
+}
+
+.product-action .drop-zone {
+  min-height: 64px;
+  margin-top: 10px;
+  padding: 19px 14px;
+  border-width: 1px;
+  border-style: solid;
+  background: color-mix(in srgb, var(--surface) 76%, transparent);
+  font-size: 0.82rem;
+}
+
+.product-action .import-privacy {
+  display: flex;
+  justify-content: center;
+  margin: 17px 0 0;
+  color: var(--text-2);
+}
+
+.profile-shortcut {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 14px;
+  color: var(--text-3);
+  font-size: 0.78rem;
+}
+
+.text-button {
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.text-button:hover,
+.text-button:focus-visible {
+  color: var(--accent-mid);
+}
+
+.text-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.text-button-danger {
+  color: var(--text-3);
+}
+
+.profile-shortcut-status:not(:empty) {
+  margin-top: 10px;
+  font-size: 0.76rem;
+  text-align: center;
+}
+
+.product-action .import-support {
+  margin-top: 16px;
+  padding-top: 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: 0.78rem;
+}
+
+.product-action .import-support summary {
+  padding-top: 14px;
+  color: var(--text-2);
+  cursor: pointer;
+  font-weight: 700;
+  list-style-position: inside;
+}
+
+.import-support-content {
+  display: grid;
+  gap: 8px;
+  padding: 12px 0 2px 17px;
+  line-height: 1.45;
+}
+
+.import-support-content .import-compatibility-note {
+  margin: 2px 0 0;
+  padding-top: 9px;
+}
+
+.product-entry .status-region:not(:empty) {
+  margin-top: 12px;
+}
+
+.product-entry .hero-about-cta {
+  grid-area: links;
+  align-self: start;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 0;
+}
+
+.product-entry .hero-about-link,
+.product-entry .hero-architecture-link {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.schedule-panel {
+  order: 2;
+}
+
+.configuration-panel {
+  order: 3;
+}
+
+.app-footer {
+  order: 4;
+}
+
+.configuration-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.configuration-heading-row .import-kicker,
+.schedule-heading .import-kicker {
+  margin-bottom: 8px;
+}
+
+.schedule-heading h2 {
+  font-size: clamp(1.7rem, 4vw, 2.6rem);
+}
+
+.schedule-panel .actions {
+  align-items: center;
+}
+
+.schedule-file-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  font-size: 0.8rem;
+}
+
+body.has-schedule .product-entry {
+  display: none;
+}
+
+body.has-schedule .schedule-panel {
+  padding-top: 112px;
+}
+
+:root[data-theme="dark"] .product-entry {
+  background:
+    radial-gradient(circle at 72% 36%, rgba(20, 191, 78, 0.12), transparent 28rem),
+    var(--bg);
+}
+
+:root[data-theme="dark"] .product-action .drop-zone {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .product-entry {
+    background:
+      radial-gradient(circle at 72% 36%, rgba(20, 191, 78, 0.12), transparent 28rem),
+      var(--bg);
+  }
+
+  :root:not([data-theme="light"]) .product-action .drop-zone {
+    background: rgba(255, 255, 255, 0.025);
+  }
+}
+
+@media (max-width: 900px) {
+  .product-entry {
+    min-height: auto;
+    padding: 112px 20px 36px;
+  }
+
+  .product-entry-inner {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "intro"
+      "action"
+      "links";
+    gap: 26px;
+    min-height: 0;
+  }
+
+  .product-intro {
+    align-self: auto;
+    text-align: center;
+  }
+
+  .product-entry .hero-title,
+  .product-entry .hero-sub {
+    margin-inline: auto;
+  }
+
+  .product-action {
+    width: min(100%, 520px);
+    margin: 0 auto;
+  }
+
+  .product-entry .hero-about-cta {
+    align-items: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .product-entry {
+    min-height: 100svh;
+    padding: 94px 16px 24px;
+  }
+
+  .product-entry-inner {
+    align-content: start;
+    gap: 18px;
+  }
+
+  .product-eyebrow {
+    margin-bottom: 10px;
+    font-size: 0.64rem;
+  }
+
+  .product-entry .hero-title {
+    font-size: clamp(2.5rem, 11.7vw, 3.3rem);
+    line-height: 0.98;
+  }
+
+  .product-entry .hero-sub {
+    margin-top: 13px;
+    font-size: 0.91rem;
+  }
+
+  .product-action {
+    padding: 18px 0;
+  }
+
+  .product-primary-action {
+    min-height: 50px;
+  }
+
+  .product-action .drop-zone {
+    min-height: 48px;
+    padding: 13px 10px;
+  }
+
+  .product-action .import-privacy {
+    margin-top: 12px;
+    font-size: 0.72rem;
+  }
+
+  .profile-shortcut {
+    margin-top: 11px;
+    font-size: 0.74rem;
+  }
+
+  .product-action .import-support {
+    margin-top: 12px;
+  }
+
+  .product-entry .hero-about-cta {
+    gap: 6px;
+  }
+
+  .configuration-heading-row {
+    gap: 12px;
+  }
+
+  .schedule-panel .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .schedule-panel .actions > .button,
+  .schedule-panel .actions > .png-theme-control,
+  .schedule-file-actions {
+    width: 100%;
+  }
+
+  .schedule-panel .actions > .button {
+    min-height: 44px;
+  }
+
+  .schedule-panel .actions > #calendar-export-toggle {
+    grid-column: 1 / -1;
+  }
+
+  .schedule-panel .actions > .png-theme-control,
+  .schedule-file-actions {
+    grid-column: 1 / -1;
+  }
+
+  .schedule-file-actions {
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  body.has-schedule .schedule-panel {
+    margin-inline: 0;
+    padding-top: 94px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-entry,
+  .product-action,
+  .drop-zone {
+    scroll-behavior: auto;
+  }
+}

@@ -65,64 +65,61 @@
   </nav>
 
   <main class="app-shell" id="top">
-    <section class="hero">
-      <div class="hero-inner">
-        <h1 class="hero-title reveal reveal-delay-1">
-          Turn your EAF into a week<br><em>at a glance.</em>
-        </h1>
-        <p class="hero-sub reveal reveal-delay-2">
-          <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span> reads your official Archershub Enrollment Assessment Form locally,
-          then lays out the current term as a clean Monday through Saturday timetable.
-          No uploads. No accounts. No schedule data ever leaves your browser.
-        </p>
-        <div class="hero-about-cta reveal reveal-delay-3">
-          <span class="hero-about-nudge" aria-hidden="true">Click to learn more</span>
+    <section class="product-entry import-panel" id="import-panel" aria-labelledby="import-heading">
+      <div class="product-entry-inner">
+        <div class="product-intro">
+          <p class="product-eyebrow reveal reveal-delay-1">Your week starts here</p>
+          <h1 class="hero-title reveal reveal-delay-1" id="import-heading">Turn your EAF into a week.<br><em>at a glance.</em></h1>
+          <p class="hero-sub reveal reveal-delay-2">Choose the official PDF. <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span> sorts the rest.</p>
+        </div>
+
+        <div class="product-action reveal reveal-delay-2">
+          <form id="eaf-form" novalidate>
+            <input type="file" id="eaf-file" name="eaf" accept="application/pdf" aria-label="Choose official Archershub EAF PDF" aria-describedby="import-hint" class="visually-hidden-input">
+            <button type="button" id="browse-btn" class="button btn-primary product-primary-action">Choose EAF PDF</button>
+            <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Drop an Archershub EAF PDF here or press Enter to choose a file">
+              <p id="drop-zone-text" class="drop-zone-text">or drop the PDF here</p>
+              <div id="import-progress" class="import-progress" hidden role="progressbar" aria-labelledby="import-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="Preparing local import">
+                <div class="import-progress-track" aria-hidden="true"><span id="import-progress-fill" class="import-progress-fill"></span><span id="import-progress-empty" class="import-progress-empty"></span></div>
+                <p id="import-progress-label" class="import-progress-label">Preparing local import</p>
+              </div>
+            </div>
+            <p class="import-privacy"><span class="import-privacy-dot" aria-hidden="true"></span><span>Processed on this device. Nothing is uploaded.</span></p>
+            <div class="profile-shortcut">
+              <span>Have a saved profile?</span>
+              <button type="button" id="quick-import-customization-btn" class="text-button">Import it</button>
+            </div>
+            <p id="quick-profile-status" class="status-region profile-shortcut-status" role="status" aria-live="polite"></p>
+            <details class="import-support" id="import-hint">
+              <summary>File requirements</summary>
+              <div class="import-support-content">
+                <p>Official DLSU Archershub EAF, AY 2025-2026 Term 3 onward, as a PDF up to 1 MiB.</p>
+                <a class="text-link" href="https://archershub.dlsu.edu.ph/" target="_blank" rel="noopener noreferrer">Get yours from Archershub</a>
+                <p class="import-compatibility-note">Legacy Animo.sys EAFs are not supported.</p>
+              </div>
+            </details>
+            <div id="status-region" class="status-region" role="status" aria-live="polite"></div>
+          </form>
+        </div>
+
+        <div class="hero-about-cta reveal reveal-delay-3" aria-label="Learn more about AnimoSort">
           <a class="hero-about-link text-link" href="about.html">Learn more about <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a>
           <a class="hero-architecture-link text-link" href="about.html#pipeline">See how the code works <span aria-hidden="true">↗</span></a>
         </div>
       </div>
     </section>
 
-    <section class="import-panel" id="import-panel" aria-labelledby="import-heading">
-      <div class="panel-card reveal">
-        <div class="import-layout">
-          <div class="import-copy">
-            <p class="import-kicker">Start with the document you already have</p>
-            <div class="panel-heading">
-              <h2 id="import-heading">Import your EAF</h2>
-              <p class="panel-sub">Drop the official Archershub PDF here. It stays on this device while <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span> turns it into a week.</p>
-            </div>
-            <div class="import-privacy"><span class="import-privacy-dot" aria-hidden="true"></span><span>Processed locally in your browser</span></div>
-          </div>
-          <form id="eaf-form" novalidate>
-            <label for="eaf-file" class="file-label">Choose your official EAF</label>
-            <div class="file-row">
-              <input type="file" id="eaf-file" name="eaf" accept="application/pdf" aria-describedby="import-hint" class="visually-hidden-input">
-              <button type="button" id="browse-btn" class="button btn-primary">Browse files</button>
-            </div>
-            <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Drop an Archershub EAF PDF here or press Enter to choose a file">
-              <p id="drop-zone-text" class="drop-zone-text">Or drop the PDF here</p>
-              <div id="import-progress" class="import-progress" hidden role="progressbar" aria-labelledby="import-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="Preparing local import">
-                <div class="import-progress-track" aria-hidden="true"><span id="import-progress-fill" class="import-progress-fill"></span><span id="import-progress-empty" class="import-progress-empty"></span></div>
-                <p id="import-progress-label" class="import-progress-label">Preparing local import</p>
-              </div>
-            </div>
-            <div class="import-support" id="import-hint">
-              <div class="import-support-main"><strong>Supported format</strong><span>Official DLSU Archershub EAF · AY 2025-2026 Term 3 onward · PDF up to 1 MiB.</span><a class="text-link" href="https://archershub.dlsu.edu.ph/" target="_blank" rel="noopener noreferrer">Get yours from Archershub</a></div>
-              <p class="import-compatibility-note"><strong>Legacy formats</strong> Animo.sys EAFs aren’t supported.</p>
-            </div>
-            <div id="status-region" class="status-region" role="status" aria-live="polite"></div>
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <section class="configuration-panel" id="configuration-panel" aria-labelledby="configuration-heading">
+    <section class="configuration-panel" id="configuration-panel" aria-labelledby="configuration-heading" hidden>
       <div class="panel-card reveal">
         <div class="panel-heading">
-          <p class="import-kicker">Keep your customizations</p>
-          <h2 id="configuration-heading">Customization profiles</h2>
-          <p class="panel-sub">Profiles are saved in this browser and can be downloaded as portable JSON files.</p>
+          <div class="configuration-heading-row">
+            <div>
+              <p class="import-kicker">Make it yours</p>
+              <h2 id="configuration-heading">Customize your timetable</h2>
+            </div>
+            <button type="button" id="hide-customization-btn" class="button btn-ghost">Done</button>
+          </div>
+          <p class="panel-sub">Choose a profile, update subjects from the timetable, or carry your settings to another device.</p>
           <p class="profile-help"><a class="text-link" href="how-to-use.html#customization-profiles">Need help? Open the customization guide</a></p>
         </div>
         <div class="profile-controls">
@@ -152,13 +149,15 @@
     <section class="schedule-panel" id="schedule-panel" hidden aria-labelledby="schedule-heading">
       <div class="panel-card reveal">
         <div class="panel-heading schedule-heading">
-          <h2 id="schedule-heading">Weekly timetable</h2>
+          <p class="import-kicker">Timetable ready</p>
+          <h2 id="schedule-heading">Your week is ready.</h2>
           <p id="session-label" class="session-label"></p>
           <p id="summary-label" class="summary-label"></p>
         </div>
         <div class="actions" aria-label="Schedule actions">
-          <button type="button" id="replace-btn" class="button btn-primary">Replace schedule</button>
-          <button type="button" id="clear-btn" class="button btn-ghost">Clear schedule</button>
+          <button type="button" id="customize-profile-toggle" class="button btn-ghost" aria-controls="configuration-panel" aria-expanded="false">Customize</button>
+          <button type="button" id="download-png-btn" class="button btn-primary">Download PNG</button>
+          <button type="button" id="calendar-export-toggle" class="button btn-ghost" aria-controls="calendar-export-controls" aria-expanded="false">Add to Calendar</button>
           <label class="png-theme-control" for="png-theme-select">
             <span>PNG theme</span>
             <select id="png-theme-select" aria-label="PNG export theme">
@@ -167,8 +166,10 @@
               <option value="dark">Dark</option>
             </select>
           </label>
-          <button type="button" id="download-png-btn" class="button btn-primary">Download PNG</button>
-          <button type="button" id="calendar-export-toggle" class="button btn-ghost" aria-controls="calendar-export-controls" aria-expanded="false">Export to Google Calendar</button>
+          <div class="schedule-file-actions">
+            <button type="button" id="replace-btn" class="text-button">Use another EAF</button>
+            <button type="button" id="clear-btn" class="text-button text-button-danger">Clear</button>
+          </div>
         </div>
         <section class="calendar-export-controls" id="calendar-export-controls" aria-labelledby="calendar-export-heading" hidden>
           <div class="calendar-export-heading">
