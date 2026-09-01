@@ -10,21 +10,54 @@ No changes yet.
 
 ## v0.4.1 - 2026-09-01
 
-### Mobile UI and dropdown stabilization
+This release stabilizes mobile viewport layouts, resolves WebKit dropdown
+popover detachment on iOS Safari, and refines the landing page reading flow.
+
+### Custom select dropdowns and WebKit popover fix
 
 - Replaced native select controls for Active profile and PNG export theme with
   accessible, DOM-rendered custom dropdown menus using details and summary
   elements. This resolves WebKit popover coordinate misalignment on iOS Safari
   when opening controls inside dynamically unhidden drawer containers.
-- Re-architected the hero call-to-action layout by moving the About and
-  architecture links inside the product intro block directly below the subtitle,
-  streamlining the visual hierarchy across mobile and desktop viewports.
-- Enhanced the customization drawer action buttons for mobile screens with a
-  responsive two-column grid and 44px tap targets adhering to Apple HIG.
-- Added strict horizontal overflow constraints on the root document and preview
-  canvas to prevent layout width expansion on mobile devices.
-- Added click-outside dismissal and chevron rotation for all custom select
-  components.
+- Retained underlying hidden select elements in the DOM for automated tests and
+  form compatibility while presenting styled options with active indicators and
+  checkmarks.
+- Added global outside-click dismissal and animated chevron rotation across all
+  custom select components.
+
+### Hero reading flow and navigation alignment
+
+- Moved the About and architecture links directly inside the product intro
+  block below the subtitle and above the upload form, consolidating the pitch
+  and documentation entry points into a single cohesive reading column.
+- Updated grid template areas across desktop and mobile layouts so the hero text
+  hierarchy renders consistently without awkward vertical whitespace.
+
+### Mobile customization drawer and touch targets
+
+- Structured customization action buttons into a responsive two-column grid on
+  narrow viewports with 44px minimum tap targets complying with Apple HIG.
+- Placed the primary Download JSON action as a prominent full-width button at
+  the top of the action grid.
+- Resolved excessive vertical spacing caused by desktop flex-basis rules
+  operating along the column orientation on mobile screens.
+- Suppressed empty status and feedback regions to eliminate phantom vertical
+  padding.
+
+### Viewport bounds and layout containment
+
+- Enforced strict horizontal overflow constraints on root document and shell
+  elements to prevent the 1096px timetable canvas from expanding the mobile
+  viewport layout box.
+- Constrained the preview canvas bounding box during timetable scaling to ensure
+  touch coordinates remain accurate.
+- Switched customization drawer scroll alignment to instant behavior to avoid
+  touch coordinate lag during animated transitions.
+
+### Guide and documentation polish
+
+- Streamlined task-based guidance in the How to Use guide for importing,
+  profile management, and calendar export workflows.
 
 ## v0.4.0 - 2026-08-31
 
