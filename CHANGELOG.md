@@ -8,7 +8,7 @@ All notable changes to AnimoSort are documented here.
 
 No changes yet.
 
-## v0.4.1 - 2026-09-01
+## v0.4.3 - 2026-09-01
 
 This release stabilizes mobile viewport layouts, resolves WebKit dropdown
 popover detachment on iOS Safari, and refines the landing page reading flow.
