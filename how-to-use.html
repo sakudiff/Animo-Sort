@@ -49,98 +49,216 @@
   </nav>
 
   <main class="guide-shell" id="top">
-    <section class="guide-hero">
-      <p class="import-kicker">A short field guide</p>
-      <h1>How to use <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></h1>
-      <p>Build a readable week from your official EAF, then save the way you want courses and sections to look.</p>
+    <section class="guide-hero" aria-labelledby="guide-title">
+      <p class="import-kicker">Pick a task</p>
+      <h1 id="guide-title">What do you want to do?</h1>
+      <p>Choose one. You do not need to read everything.</p>
+
+      <nav class="guide-task-picker" aria-label="Choose a help topic">
+        <a class="guide-task-choice is-active" href="#make-timetable" data-guide-target="make-timetable" aria-current="true">
+          <span class="guide-task-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"></path><path d="M14 3v5h5M9.5 12h6M9.5 16h6"></path></svg>
+          </span>
+          <span class="guide-task-copy"><strong>Make my timetable</strong><span>Official EAF to a readable week</span></span>
+          <span class="guide-task-time">About 1 min</span>
+          <span class="guide-task-arrow" aria-hidden="true">›</span>
+        </a>
+        <a class="guide-task-choice" href="#customization-profiles" data-guide-target="customization-profiles">
+          <span class="guide-task-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M7 14v6"></path></svg>
+          </span>
+          <span class="guide-task-copy"><strong>Customize and save</strong><span>Colors, details, profiles, and PNG</span></span>
+          <span class="guide-task-time">About 2 min</span>
+          <span class="guide-task-arrow" aria-hidden="true">›</span>
+        </a>
+        <a class="guide-task-choice" href="#google-calendar" data-guide-target="google-calendar">
+          <span class="guide-task-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path></svg>
+          </span>
+          <span class="guide-task-copy"><strong>Add to Google Calendar</strong><span>Download and import an .ics file</span></span>
+          <span class="guide-task-time">About 2 min</span>
+          <span class="guide-task-arrow" aria-hidden="true">›</span>
+        </a>
+      </nav>
     </section>
 
-    <section class="guide-grid" aria-label="AnimoSort instructions">
-      <article class="guide-card">
-        <span class="guide-number">01</span>
-        <h2>Import your EAF</h2>
-        <p>On the <a class="text-link" href="index.html#import-panel">timetable page</a>, choose the official DLSU Archershub EAF PDF or drop it into the import area. <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span> reads it in this browser and turns its meeting rows into a Monday to Saturday timetable.</p>
-        <p>Importing a new EAF replaces only the displayed schedule. Your customization profiles stay available.</p>
-      </article>
-
-      <article class="guide-card" id="customization-profiles">
-        <span class="guide-number">02</span>
-        <h2>Choose or create a profile</h2>
-        <p>The <a class="text-link" href="index.html#configuration-panel"><strong>Customization profiles</strong></a> panel is available before or after an EAF is loaded. Select an existing profile or use <strong>New</strong> to create a named setup.</p>
-        <p>Profiles are independent. Switching one changes the presentation without changing your EAF or the other profiles.</p>
-      </article>
-
-      <article class="guide-card">
-        <span class="guide-number">03</span>
-        <h2>Customize a timetable card</h2>
-        <p>Click a timetable card or its color dot to open the editor. Save applies the changes; Cancel discards them.</p>
-        <p>Course color applies to every meeting of that course. Mode and professor apply to the selected section.</p>
-      </article>
-
-      <article class="guide-card">
-        <span class="guide-number">04</span>
-        <h2>Understand the card lines</h2>
-        <p>Cards use one consistent order:</p>
-        <p><strong>CourseCode Section · color dot</strong><br><strong>Course title</strong><br><strong>Room: ... · F2F</strong> or <strong>Mode: Online</strong><br><strong>Professor: ...</strong> when entered<br><strong>Time: ...</strong></p>
-        <p>Professor names are manual and optional because the EAF does not provide them. Blank names stay hidden.</p>
-        <p>Long course titles, rooms, and professor names wrap onto additional lines; the timetable grows to keep the full card content inside its border.</p>
-      </article>
-
-      <article class="guide-card guide-card-wide">
-        <span class="guide-number">05</span>
-        <h2>Use colors, modes, and professors</h2>
-        <p>Presets are shortcuts. The native color picker and hex field accept an arbitrary opaque hex color, and the exact chosen color is saved in the profile and carried into the timetable and PNG export.</p>
-        <p>Choose <strong>F2F</strong> or <strong>Online</strong> when the EAF’s inferred value needs a manual correction. Choose <strong>Use EAF value</strong> to remove that section override.</p>
-      </article>
-
-      <article class="guide-card guide-card-wide">
-        <span class="guide-number">06</span>
-        <h2>Download and import a profile</h2>
-        <p>Use <strong>Download JSON</strong> to save the active profile. On another browser or device, use <strong>Import JSON</strong>; the imported profile is created separately and activated immediately.</p>
-        <p>Before downloading a timetable PNG, choose <strong>Match site</strong>, <strong>Light</strong>, or <strong>Dark</strong> from the PNG theme control. The timetable preview updates immediately to match the download.</p>
-        <p>This works before an EAF too: import a profile first, then load a future EAF and matching course/section values will apply.</p>
-      </article>
-
-      <article class="guide-card">
-        <span class="guide-number">07</span>
-        <h2>Rename, reset, or delete</h2>
-        <p>Rename profiles to keep them understandable. <strong>Reset colors</strong> returns Plain/Neutral colors; <strong>Reset section details</strong> returns EAF mode inference and removes professors; <strong>Reset everything</strong> does both while keeping the profile name.</p>
-        <p>The built-in <strong>Default</strong> profile is always kept. <strong>Reset this section</strong> clears only the selected section’s mode and professor details.</p>
-      </article>
-
-      <article class="guide-card">
-        <span class="guide-number">08</span>
-        <h2>Privacy and compatibility</h2>
-        <p>EAF parsing, profile validation, rendering, and downloads happen in the browser. Profiles use local site storage; clearing site data removes them, so keep a downloaded JSON backup.</p>
-        <p><span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span> supports official Archershub EAF PDFs from AY 2025-2026 Term 3 onward. Legacy <strong>Animo.sys EAFs are not supported</strong>. If an import fails, use the original PDF and keep it under 1 MiB.</p>
-      </article>
-
-      <article class="guide-card guide-card-wide guide-calendar-card" id="google-calendar">
-        <span class="guide-number">09</span>
-        <h2>Put your timetable in Google Calendar</h2>
-        <p>An <strong>ICS</strong> (iCalendar) file is a portable calendar file. <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span> creates one weekly recurring event for each meeting, using your current course colors only in the timetable/PNG - not in the calendar file - and your active professor and F2F/Online details in the event text.</p>
-        <p>After an EAF is loaded, enter the <strong>term start date</strong> and <strong>term end date</strong> manually. Both dates are inclusive. A class appears on its first matching weekday on or after the start date and ends on its last matching weekday on or before the end date, so partial weeks are handled automatically. For example, a Monday class is first included on the following Monday when a term starts on Wednesday.</p>
-        <div class="guide-calendar-flow" aria-label="Google Calendar import flow">
-          <div><strong>1 · Set the range</strong><span>Enter both term dates beside the timetable.</span></div>
-          <div><strong>2 · Download</strong><span>Choose <strong>Export to Google Calendar (.ics)</strong>, read the notice, then download.</span></div>
-          <div><strong>3 · Import on a computer</strong><span>In Google Calendar, open Settings → Import &amp; export → Import, choose the .ics file and destination calendar, then select Import.</span></div>
+    <section class="guide-topic-list" aria-label="Task guides">
+      <details class="guide-topic" id="make-timetable" open>
+        <summary>
+          <span class="guide-topic-heading"><span class="guide-topic-label">Quick start</span><strong>Turn your EAF into a timetable</strong></span>
+          <span class="guide-topic-duration">About 1 minute</span>
+          <span class="guide-disclosure" aria-hidden="true"></span>
+        </summary>
+        <div class="guide-topic-body">
+          <ol class="guide-path" aria-label="EAF import steps">
+            <li><span class="guide-step-number">1</span><strong>Get your EAF</strong><span>Download the official Archershub EAF PDF.</span></li>
+            <li><span class="guide-step-number">2</span><strong>Drop the PDF</strong><span>Choose Browse files or drag it into the import area.</span></li>
+            <li><span class="guide-step-number">3</span><strong>Use your week</strong><span>Edit a class, download a PNG, or export your calendar.</span></li>
+          </ol>
+          <div class="guide-topic-footer">
+            <p>Importing another EAF replaces the displayed schedule. Your saved profiles stay available.</p>
+            <a class="button btn-primary" href="index.html#import-panel">Open timetable</a>
+          </div>
         </div>
-        <p class="guide-calendar-note"><strong>Using an iPhone?</strong> Download the .ics file to Files, send or move it to a computer, and import it through Google Calendar on the web. Google’s current instructions use a computer for ICS imports, even when the file was downloaded on iPhone.</p>
-        <p class="guide-calendar-note"><strong>Before you export:</strong> the notice appears on every download because importing the same file again may create duplicates. <span class="brand-mark brand-mark--inline"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span> skips meetings with no occurrence in the selected range and reports the skipped count. If no meeting falls in the range, the download is blocked so you can correct the dates.</p>
-        <p class="guide-calendar-links"><a class="text-link" href="https://support.google.com/calendar/answer/37118?hl=en" target="_blank" rel="noopener noreferrer">Google’s computer import instructions</a> · <a class="text-link" href="https://support.google.com/calendar/answer/37118?co=GENIE.Platform%3DiOS&amp;hl=en" target="_blank" rel="noopener noreferrer">Google’s iPhone help</a></p>
-      </article>
+      </details>
+
+      <details class="guide-topic" id="customization-profiles">
+        <summary>
+          <span class="guide-topic-heading"><span class="guide-topic-label">Customize</span><strong>Make the timetable yours</strong></span>
+          <span class="guide-topic-duration">About 2 minutes</span>
+          <span class="guide-disclosure" aria-hidden="true"></span>
+        </summary>
+        <div class="guide-topic-body">
+          <ol class="guide-path" aria-label="Customization steps">
+            <li><span class="guide-step-number">1</span><strong>Choose a profile</strong><span>Select one or choose New to create a named setup.</span></li>
+            <li><span class="guide-step-number">2</span><strong>Select a class</strong><span>Choose a timetable card or its color dot to open the editor.</span></li>
+            <li><span class="guide-step-number">3</span><strong>Save your changes</strong><span>Set the color, mode, or professor, then choose Save.</span></li>
+          </ol>
+          <div class="guide-compact-grid">
+            <article><span class="guide-mini-label">Move it</span><h3>Use the profile elsewhere</h3><p>Choose <strong>Download JSON</strong>. On another browser or device, choose <strong>Import JSON</strong>. The imported copy becomes active without changing your other profiles.</p></article>
+            <article><span class="guide-mini-label">Export it</span><h3>Match your PNG</h3><p>Choose <strong>Match site</strong>, <strong>Light</strong>, or <strong>Dark</strong>. The preview changes first, so the downloaded PNG looks as expected.</p></article>
+          </div>
+          <div class="guide-topic-footer">
+            <p>You can import a profile before loading an EAF. Matching courses and sections pick up the saved details later.</p>
+            <a class="button btn-primary" href="index.html#configuration-panel">Open customization</a>
+          </div>
+        </div>
+      </details>
+
+      <details class="guide-topic" id="google-calendar">
+        <summary>
+          <span class="guide-topic-heading"><span class="guide-topic-label">Calendar handoff</span><strong>Put your classes in Google Calendar</strong></span>
+          <span class="guide-topic-duration">About 2 minutes</span>
+          <span class="guide-disclosure" aria-hidden="true"></span>
+        </summary>
+        <div class="guide-topic-body">
+          <p class="guide-topic-intro"><strong>An .ics file</strong> is a calendar file. AnimoSort creates weekly class events with your current professor and F2F or Online details.</p>
+          <ol class="guide-path" aria-label="Google Calendar export steps">
+            <li><span class="guide-step-number">1</span><strong>Enter the term dates</strong><span>Use the real first and last day of the term. Both dates are included.</span></li>
+            <li><span class="guide-step-number">2</span><strong>Download the .ics file</strong><span>Choose Export to Google Calendar (.ics), read the notice, then download.</span></li>
+            <li><span class="guide-step-number">3</span><strong>Import on a computer</strong><span>In Google Calendar, open Settings, then Import &amp; export, then Import.</span></li>
+          </ol>
+          <aside class="guide-callout guide-callout-primary"><strong>Using an iPhone?</strong><span>Save the .ics file to Files, then send or move it to a computer. Google Calendar currently imports .ics files through its desktop website.</span></aside>
+          <aside class="guide-callout"><strong>Avoid duplicates</strong><span>Import each file once. Importing the same file again can create another copy of every class.</span></aside>
+          <div class="guide-topic-footer">
+            <p>Classes outside the selected dates are skipped. If no class falls inside the range, AnimoSort blocks the download so you can fix the dates.</p>
+            <p class="guide-calendar-links"><a class="text-link" href="https://support.google.com/calendar/answer/37118?hl=en" target="_blank" rel="noopener noreferrer">Read Google’s import instructions</a></p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section class="guide-more" aria-labelledby="guide-more-title">
+      <div class="guide-section-heading">
+        <p class="import-kicker">Only if you need it</p>
+        <h2 id="guide-more-title">More help</h2>
+        <p>Open one answer at a time.</p>
+      </div>
+
+      <div class="guide-help-list">
+        <details>
+          <summary><span><strong>How do class details work?</strong><small>Colors, mode, professor, and long text</small></span><span class="guide-disclosure" aria-hidden="true"></span></summary>
+          <div class="guide-help-answer">
+            <p>A course color applies to every meeting of that course. Mode and professor apply only to the selected section. Choose <strong>Use EAF value</strong> to remove a manual mode override.</p>
+            <p>The color picker and hex field accept any opaque hex color. Professor names are optional and stay hidden when blank. Long details wrap, and the card grows to keep them inside its border.</p>
+            <div class="guide-card-sample" aria-label="Timetable card line order"><strong>CourseCode Section · color dot</strong><span>Course title</span><span>Room · F2F or Mode: Online</span><span>Professor, when entered</span><span>Time</span></div>
+          </div>
+        </details>
+
+        <details>
+          <summary><span><strong>What do the reset buttons change?</strong><small>Clear only what you intend to clear</small></span><span class="guide-disclosure" aria-hidden="true"></span></summary>
+          <div class="guide-help-answer guide-reset-list">
+            <p><strong>Reset colors</strong><span>Returns the profile to Plain or Neutral colors.</span></p>
+            <p><strong>Reset section details</strong><span>Uses the EAF’s mode again and removes professors.</span></p>
+            <p><strong>Reset everything</strong><span>Does both while keeping the profile name.</span></p>
+            <p><strong>Reset this section</strong><span>Clears only the selected section’s mode and professor.</span></p>
+            <p>The built-in <strong>Default</strong> profile cannot be deleted.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary><span><strong>Why did my EAF import fail?</strong><small>Check the file before trying again</small></span><span class="guide-disclosure" aria-hidden="true"></span></summary>
+          <div class="guide-help-answer">
+            <ul class="guide-check-list">
+              <li>Use the original official Archershub EAF PDF.</li>
+              <li>Keep the file under 1 MiB.</li>
+              <li>Use an EAF from AY 2025-2026 Term 3 or later.</li>
+              <li>Legacy Animo.sys EAFs are not supported.</li>
+            </ul>
+            <a class="text-link" href="index.html#import-panel">Try the import again</a>
+          </div>
+        </details>
+
+        <details>
+          <summary><span><strong>Where is my information stored?</strong><small>Privacy, profiles, and backups</small></span><span class="guide-disclosure" aria-hidden="true"></span></summary>
+          <div class="guide-help-answer">
+            <p>EAF parsing, profile validation, timetable rendering, and downloads happen in your browser. The EAF is not uploaded.</p>
+            <p>Profiles use this site’s local storage. Clearing site data removes them, so download a JSON backup for profiles you want to keep.</p>
+          </div>
+        </details>
+      </div>
     </section>
 
     <section class="guide-next panel-card">
-      <p class="import-kicker">Need the tool?</p>
-      <h2>Start with your current schedule.</h2>
-      <a class="button btn-primary" href="index.html#top">Open <span class="brand-mark brand-mark--inline brand-mark--on-accent"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a>
+      <div><p class="import-kicker">Ready?</p><h2>Turn your EAF into a week.</h2></div>
+      <a class="button btn-primary" href="index.html#import-panel">Open <span class="brand-mark brand-mark--inline brand-mark--on-accent"><span class="brand-animo">Animo</span><span class="brand-sort">Sort</span></span></a>
     </section>
   </main>
 
   <script type="module">
     import { initSiteChrome } from './assets/js/site.js';
     initSiteChrome();
+
+    const taskChoices = [...document.querySelectorAll('[data-guide-target]')];
+    const taskTopics = [...document.querySelectorAll('.guide-topic')];
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function setActiveTask(targetId) {
+      for (const choice of taskChoices) {
+        const isActive = choice.dataset.guideTarget === targetId;
+        choice.classList.toggle('is-active', isActive);
+        if (isActive) choice.setAttribute('aria-current', 'true');
+        else choice.removeAttribute('aria-current');
+      }
+    }
+
+    function openTask(targetId, shouldScroll) {
+      const target = document.getElementById(targetId);
+      if (!(target instanceof HTMLDetailsElement)) return;
+
+      for (const topic of taskTopics) topic.open = topic === target;
+      setActiveTask(targetId);
+
+      if (!shouldScroll) return;
+      target.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
+      target.querySelector('summary')?.focus({ preventScroll: true });
+    }
+
+    for (const choice of taskChoices) {
+      choice.addEventListener('click', (event) => {
+        event.preventDefault();
+        const targetId = choice.dataset.guideTarget;
+        if (!targetId) return;
+        history.replaceState(null, '', `#${targetId}`);
+        openTask(targetId, true);
+      });
+    }
+
+    for (const topic of taskTopics) {
+      topic.addEventListener('toggle', () => {
+        if (!topic.open) {
+          if (!taskTopics.some((candidate) => candidate.open)) setActiveTask('');
+          return;
+        }
+        for (const otherTopic of taskTopics) {
+          if (otherTopic !== topic) otherTopic.open = false;
+        }
+        setActiveTask(topic.id);
+      });
+    }
+
+    const initialTarget = window.location.hash.slice(1);
+    if (initialTarget) openTask(initialTarget, false);
   </script>
 </body>
 </html>
