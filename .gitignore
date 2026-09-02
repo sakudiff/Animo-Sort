@@ -15,3 +15,7 @@ Thumbs.db
 .pi/
 .vscode/
 .idea/
+
+# Grill-me planning artifacts
+docs/grill-me-*/
+*_grill-me.md
