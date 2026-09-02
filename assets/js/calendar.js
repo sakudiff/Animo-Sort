@@ -4,6 +4,7 @@ import {
   normalizeCourseCode,
   normalizeSection,
   resolveMeetingCustomization,
+  resolveScheduleEntries,
 } from './customization.js';
 
 const CALENDAR_TIMEZONE = 'Asia/Manila';
@@ -147,6 +148,18 @@ function formatUntilTimestamp(date, endMinutes) {
   return formatUtcTimestamp(end);
 }
 
+function normalizeHttpUrl(value) {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    return url.href;
+  } catch (error) {
+    if (error instanceof TypeError) return null;
+    throw error;
+  }
+}
+
 function validateMeeting(meeting) {
   if (!isRecord(meeting)) {
     throw new CalendarExportError('INVALID_SCHEDULE', 'A valid schedule with meetings is required.');
@@ -160,6 +173,12 @@ function validateMeeting(meeting) {
     || !normalizeSection(meeting.section)
   ) {
     throw new CalendarExportError('INVALID_SCHEDULE', 'A schedule meeting is missing required course information.');
+  }
+  if (meeting.scheduled === false) {
+    if (meeting.day !== null || meeting.startMinutes !== null || meeting.endMinutes !== null) {
+      throw new CalendarExportError('INVALID_SCHEDULE', 'An unplaced schedule meeting has unexpected time values.');
+    }
+    return meeting;
   }
   getDayNumber(meeting.day);
   if (
@@ -253,31 +272,57 @@ export function resolveCalendarEvent(meeting, schedule, profile, range, index = 
   }
   validateProfile(profile);
   const validatedRange = resolveRange(range);
-  const firstDate = getFirstOccurrenceDate(validatedRange.start, meeting.day);
-  if (firstDate > validatedRange.end) return null;
-  const lastDate = getLastOccurrenceDate(validatedRange.end, meeting.day);
   const resolved = resolveMeetingCustomization(profile, meeting, index);
-  const metadata = formatMeetingMetadataLines(meeting, resolved);
-  const time = metadata.time || `Time: ${formatTimeLabel(meeting.startMinutes)} - ${formatTimeLabel(meeting.endMinutes)}`;
+  if (!resolved.scheduled) return null;
+  const effective = {
+    ...meeting,
+    courseCode: resolved.courseCode,
+    section: resolved.section,
+    title: resolved.title,
+    day: resolved.day,
+    startMinutes: resolved.startMinutes,
+    endMinutes: resolved.endMinutes,
+    startLabel: resolved.startLabel,
+    endLabel: resolved.endLabel,
+    location: resolved.location,
+    expandedLocation: resolved.expandedLocation,
+    scheduled: true,
+  };
+  validateMeeting(effective);
+  const firstDate = getFirstOccurrenceDate(validatedRange.start, effective.day);
+  if (firstDate > validatedRange.end) return null;
+  const lastDate = getLastOccurrenceDate(validatedRange.end, effective.day);
+  const metadata = formatMeetingMetadataLines(effective, resolved);
+  const time = metadata.time || `Time: ${formatTimeLabel(effective.startMinutes)} - ${formatTimeLabel(effective.endMinutes)}`;
+  const meetingUrl = resolved.mode === 'online' ? normalizeHttpUrl(resolved.location) : null;
+  const delivery = resolved.mode === 'online'
+    ? meetingUrl ? 'Mode: Online' : metadata.locationMode
+    : 'Mode: F2F';
   const descriptionLines = [
     metadata.professor,
-    `Mode: ${resolved.mode === 'online' ? 'Online' : 'F2F'}`,
-    `Day: ${DAY_LABELS[meeting.day]}`,
+    delivery,
+    `Day: ${DAY_LABELS[effective.day]}`,
     time,
   ];
   if (typeof schedule.session === 'string' && schedule.session.trim()) {
     descriptionLines.push(`Academic session: ${schedule.session.trim()}`);
   }
-  const physicalLocation = String(meeting.expandedLocation || meeting.location || 'Room not specified').trim() || 'Room not specified';
+  const rawPhysicalLocation = String(resolved.expandedLocation || effective.expandedLocation || resolved.location || effective.location || 'Room not specified').trim() || 'Room not specified';
+  const physicalLocation = /^online$/i.test(rawPhysicalLocation) ? 'Room not specified' : rawPhysicalLocation;
+  if (meetingUrl) {
+    const deliveryIndex = descriptionLines.indexOf(delivery);
+    descriptionLines.splice(deliveryIndex + 1, 0, `Join link: ${meetingUrl}`);
+  }
   return {
     uid: createEventUid(schedule, meeting, validatedRange, index),
     dtstamp: null,
-    dtstart: formatLocalTimestamp(firstDate, meeting.startMinutes),
-    dtend: formatLocalTimestamp(firstDate, meeting.endMinutes),
-    until: formatUntilTimestamp(lastDate, meeting.endMinutes),
-    summary: `${meeting.courseCode} ${meeting.section} - ${meeting.title}`,
+    dtstart: formatLocalTimestamp(firstDate, effective.startMinutes),
+    dtend: formatLocalTimestamp(firstDate, effective.endMinutes),
+    until: formatUntilTimestamp(lastDate, effective.endMinutes),
+    summary: `${effective.courseCode} ${effective.section} - ${effective.title}`,
     location: resolved.mode === 'online' ? 'Online' : physicalLocation,
     description: descriptionLines.filter(Boolean).join('\n'),
+    url: meetingUrl,
     firstOccurrenceDate: firstDate,
     lastOccurrenceDate: lastDate,
   };
@@ -330,6 +375,7 @@ function serializeEvent(event, dtstamp) {
     `RRULE:FREQ=WEEKLY;UNTIL=${event.until}`,
     `SUMMARY:${escapeIcsText(event.summary)}`,
     `LOCATION:${escapeIcsText(event.location)}`,
+    ...(event.url ? [`URL:${event.url}`] : []),
     `DESCRIPTION:${escapeIcsText(event.description)}`,
     'END:VEVENT',
   ];
@@ -343,9 +389,18 @@ export function formatIcsCalendar(schedule, profile, range, options = {}) {
   const dtstamp = formatUtcTimestamp(validateTimestamp(timestampValue));
   const events = [];
   let skippedCount = 0;
-  for (const [index, meeting] of validatedSchedule.meetings.entries()) {
+  let unresolvedCount = 0;
+  let outsideRangeCount = 0;
+  const entries = resolveScheduleEntries(validatedSchedule, profile);
+  for (const [index, { meeting, resolved }] of entries.entries()) {
+    if (!resolved.scheduled) {
+      unresolvedCount += 1;
+      skippedCount += 1;
+      continue;
+    }
     const event = resolveCalendarEvent(meeting, validatedSchedule, profile, validatedRange, index);
     if (!event) {
+      outsideRangeCount += 1;
       skippedCount += 1;
       continue;
     }
@@ -371,6 +426,8 @@ export function formatIcsCalendar(schedule, profile, range, options = {}) {
     icsText,
     exportedCount: events.length,
     skippedCount,
+    unresolvedCount,
+    outsideRangeCount,
   };
 }
 

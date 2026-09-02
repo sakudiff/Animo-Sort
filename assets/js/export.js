@@ -5,10 +5,9 @@ import {
   createCustomPalette,
   createDefaultProfile,
   formatMeetingMetadataLines,
-  getCourseKey,
   getPaletteById,
   normalizeCourseCode,
-  resolveMeetingCustomization,
+  resolveScheduleEntries,
 } from './customization.js';
 
 // Keep the palette helpers available to existing direct consumers while the
@@ -85,15 +84,6 @@ export function wrapTitle(title, maxChars = 22) {
   return lines.length ? lines : [''];
 }
 
-function createCourseIndexMap(schedule) {
-  const indexes = new Map();
-  for (const meeting of schedule.meetings) {
-    const code = normalizeCourseCode(meeting.courseCode);
-    if (code && !indexes.has(code)) indexes.set(code, indexes.size);
-  }
-  return indexes;
-}
-
 export function getMeetingContentRequirements(meeting, resolved, showCourseTitles) {
   const lines = formatMeetingMetadataLines(meeting, resolved);
   return {
@@ -108,24 +98,22 @@ export function getTimelineLayout(schedule, showCourseTitles, profile = createDe
   if (!schedule || !Array.isArray(schedule.meetings) || schedule.meetings.length === 0) {
     throw new Error('A valid schedule is required for export');
   }
-  const allMinutes = schedule.meetings.flatMap((meeting) => [meeting.startMinutes, meeting.endMinutes]);
+  const entries = resolveScheduleEntries(schedule, profile).filter((entry) => entry.resolved.scheduled);
+  if (!entries.length) throw new Error('No scheduled meetings are available for export');
+  const allMinutes = entries.flatMap(({ effective }) => [effective.startMinutes, effective.endMinutes]);
   const canvasStart = Math.max(0, Math.min(...allMinutes) - 15);
   const canvasEnd = Math.min(1440, Math.max(...allMinutes) + 15);
   const minutesInSpan = Math.max(1, canvasEnd - canvasStart);
-  const courseColorMap = buildCourseColorMap(schedule, profile);
-  const courseIndexes = createCourseIndexMap(schedule);
   let gridHeight = BASE_GRID_HEIGHT;
 
-  for (const meeting of schedule.meetings) {
-    const code = getCourseKey(meeting.courseCode);
-    const resolved = resolveMeetingCustomization(profile, meeting, courseIndexes.get(code) || 0, courseColorMap);
-    const requirements = getMeetingContentRequirements(meeting, resolved, showCourseTitles);
+  for (const { effective, resolved } of entries) {
+    const requirements = getMeetingContentRequirements(effective, resolved, showCourseTitles);
     const contentHeight = 20 + 16 +
       (showCourseTitles ? requirements.titleLines * 13 + 2 : 0) +
       requirements.locationLines * 13 +
       requirements.professorLines * 13 +
       requirements.timeLines * 13 + 8;
-    const duration = Math.max(1, meeting.endMinutes - meeting.startMinutes);
+    const duration = Math.max(1, effective.endMinutes - effective.startMinutes);
     gridHeight = Math.max(gridHeight, (contentHeight * minutesInSpan) / duration);
   }
 
@@ -147,8 +135,8 @@ export function createScheduleSvg(schedule, options = {}) {
   const showCourseTitles = options?.showCourseTitles !== false;
   const profile = options?.profile || createDefaultProfile();
   const isDark = options?.theme === 'dark';
-  const courseColorMap = buildCourseColorMap(schedule, profile);
-  const courseIndexes = createCourseIndexMap(schedule);
+  const entries = resolveScheduleEntries(schedule, profile).filter((entry) => entry.resolved.scheduled);
+  if (!entries.length) throw new Error('No scheduled meetings are available for export');
   const parts = [];
   const title = escapeSvgText(formatExportTitle(schedule));
 
@@ -176,8 +164,8 @@ export function createScheduleSvg(schedule, options = {}) {
   const titleY = HEADER + 12;
   parts.push(`<text x="${MARGIN}" y="${titleY}" font-family="Helvetica, Arial, sans-serif" font-size="${titleSize}" font-weight="bold" fill="${headerBrandColor}">${title}</text>`);
 
-  const meetingCount = schedule.meetings.length;
-  const courseCount = new Set(schedule.meetings.map((m) => normalizeCourseCode(m.courseCode))).size;
+  const meetingCount = entries.length;
+  const courseCount = new Set(entries.map(({ effective }) => normalizeCourseCode(effective.courseCode))).size;
   parts.push(`<text x="${MARGIN}" y="${titleY + 26}" font-family="Helvetica, Arial, sans-serif" font-size="${subSize}" fill="${summaryColor}">${courseCount} ${courseCount === 1 ? 'course' : 'courses'} · ${meetingCount} ${meetingCount === 1 ? 'meeting' : 'meetings'}</text>`);
 
   const gridTop = GRID_TOP;
@@ -188,7 +176,7 @@ export function createScheduleSvg(schedule, options = {}) {
   const timeX = tableX - 10;
   const visiblePeriods = [
     ...STANDARD_PERIODS.filter(([start, end]) => start >= canvasStart && end <= canvasStart + minutesInSpan),
-    ...schedule.meetings.map((m) => [m.startMinutes, m.endMinutes]),
+    ...entries.flatMap(({ effective }) => [[effective.startMinutes, effective.endMinutes]]),
   ];
   const guideEntries = createGuideEntries(visiblePeriods);
 
@@ -218,25 +206,23 @@ export function createScheduleSvg(schedule, options = {}) {
 
   for (let i = 0; i < DAY_ORDER.length; i += 1) {
     const day = DAY_ORDER[i];
-    const dayMeetings = schedule.meetings.filter((m) => m.day === day);
+    const dayMeetings = entries.filter(({ effective }) => effective.day === day);
     if (!dayMeetings.length) {
       const x = tableX + i * colWidth;
       parts.push(`<text x="${(x + colWidth / 2).toFixed(1)}" y="${(gridTop + gridHeight / 2).toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="${emptyDayColor}" text-anchor="middle">No classes</text>`);
     }
   }
 
-  for (const meeting of schedule.meetings) {
-    const dayIndex = DAY_ORDER.indexOf(meeting.day);
+  for (const { effective, resolved } of entries) {
+    const dayIndex = DAY_ORDER.indexOf(effective.day);
     if (dayIndex === -1) continue;
-    const courseKey = getCourseKey(meeting.courseCode);
-    const resolved = resolveMeetingCustomization(profile, meeting, courseIndexes.get(courseKey) || 0, courseColorMap);
-    const lines = formatMeetingMetadataLines(meeting, resolved);
+    const lines = formatMeetingMetadataLines(effective, resolved);
     const palette = resolved.palette;
     const colors = isDark ? palette.dark : palette.light;
     const x = tableX + dayIndex * colWidth + 5;
     const width = colWidth - 10;
-    const top = gridTop + ((meeting.startMinutes - canvasStart) / minutesInSpan) * gridHeight;
-    const bottom = gridTop + ((meeting.endMinutes - canvasStart) / minutesInSpan) * gridHeight;
+    const top = gridTop + ((effective.startMinutes - canvasStart) / minutesInSpan) * gridHeight;
+    const bottom = gridTop + ((effective.endMinutes - canvasStart) / minutesInSpan) * gridHeight;
     const height = bottom - top;
 
     parts.push(`<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${width.toFixed(1)}" height="${height.toFixed(1)}" rx="8" fill="${colors.bg}" stroke="${colors.border}" stroke-width="1.5"/>`);
@@ -246,10 +232,10 @@ export function createScheduleSvg(schedule, options = {}) {
 
     const textX = x + 9;
     let ty = top + 20;
-    parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="${colors.code}">${escapeSvgText(meeting.courseCode)} <tspan font-size="10" font-weight="700" fill="${colors.meta}">${escapeSvgText(meeting.section)}</tspan></text>`);
+    parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="${colors.code}">${escapeSvgText(effective.courseCode)} <tspan font-size="10" font-weight="700" fill="${colors.meta}">${escapeSvgText(effective.section)}</tspan></text>`);
     ty += 16;
     if (showCourseTitles) {
-      for (const titleLine of wrapTitle(meeting.title, 22)) {
+      for (const titleLine of wrapTitle(effective.title, 22)) {
         parts.push(`<text x="${textX}" y="${ty.toFixed(1)}" font-family="Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="${colors.title}">${escapeSvgText(titleLine)}</text>`);
         ty += 13;
       }

@@ -1,9 +1,13 @@
-import { expandLocation } from './eaf-parser.js';
+import { DAY_ORDER, DAY_SET, expandLocation } from './eaf-parser.js';
 
 /** @typedef {'f2f'|'online'} SectionMode */
 /** @typedef {'generated'|'plain'} DefaultColorMode */
-/** @typedef {{ mode?: SectionMode, professor?: string }} SectionCustomization */
+/** @typedef {{ day: string, startMinutes: number, endMinutes: number }} ManualTime */
+/** @typedef {{ automatic?: true, mode?: SectionMode, professor?: string, courseCode?: string, section?: string, title?: string, time?: ManualTime, room?: string }} MeetingCustomization */
+/** @typedef {{ mode?: SectionMode, professor?: string, courseCode?: string, section?: string, title?: string, time?: ManualTime, room?: string, meetings?: Record<string, MeetingCustomization & { synced: false }> }} SectionCustomization */
 /** @typedef {{ format: 'animosort-customization', version: 1, name: string, defaults: { color: DefaultColorMode, mode: 'infer' }, courses: Record<string, { color: string }>, sections: Record<string, SectionCustomization> }} CustomizationProfile */
+/** @typedef {{ field: string, label: string, currentValue: string, pairValue: string, sourceValue: string, reason: 'eaf'|'manual' }} FieldDifference */
+/** @typedef {{ sectionKey: string, selectedMeetingId: string, peerMeetingIds: string[], meetingCount: number, scope: 'meeting'|'pair', groupStatus: 'linked'|'eaf-variation'|'manual-conflict'|'partially-independent', sourceDifferences: FieldDifference[], conflicts: FieldDifference[], selectedOverrideFields: string[], peerOverrideFields: string[], hasActionableConflict: boolean }} PairCustomizationState */
 
 export const CONFIG_FORMAT = 'animosort-customization';
 export const CONFIG_VERSION = 1;
@@ -15,9 +19,31 @@ export const LEGACY_COLOR_STORAGE_KEY = 'animosort_course_colors';
 export const MAX_CUSTOMIZATION_FILE_SIZE = 256 * 1024;
 export const PROFILE_NAME_LIMIT = 64;
 export const PROFESSOR_NAME_LIMIT = 100;
+export const COURSE_CODE_LIMIT = 24;
+export const SECTION_NAME_LIMIT = 64;
+export const TITLE_LIMIT = 160;
+export const ROOM_NAME_LIMIT = 120;
 
 const DEFAULT_IMPORTED_NAME = 'Imported profile';
 const PALETTE_IDS = new Set(['plain', 'sage', 'sky', 'lavender', 'peach', 'mint', 'rose', 'sand', 'slate']);
+const DETAIL_FIELDS = ['mode', 'time', 'room', 'courseCode', 'section', 'title', 'professor'];
+const DETAIL_FIELD_LABELS = {
+  mode: 'Delivery',
+  time: 'Schedule',
+  room: 'Room',
+  courseCode: 'Course Code',
+  section: 'Section',
+  title: 'Title',
+  professor: 'Professor',
+};
+const DAY_LABELS = {
+  MON: 'Monday',
+  TUE: 'Tuesday',
+  WED: 'Wednesday',
+  THU: 'Thursday',
+  FRI: 'Friday',
+  SAT: 'Saturday',
+};
 
 export class CustomizationConfigError extends Error {
   constructor(code, message, path = null) {
@@ -141,7 +167,15 @@ function cloneMaps(profile) {
     ...profile,
     defaults: { ...profile.defaults },
     courses: { ...profile.courses },
-    sections: { ...profile.sections },
+    sections: Object.fromEntries(Object.entries(profile.sections || {}).map(([key, section]) => [
+      key,
+      {
+        ...section,
+        ...(isRecord(section?.meetings)
+          ? { meetings: Object.fromEntries(Object.entries(section.meetings).map(([meetingId, meeting]) => [meetingId, { ...meeting }])) }
+          : {}),
+      },
+    ])),
   };
 }
 
@@ -153,6 +187,127 @@ export function normalizeCourseCode(value) {
 export function normalizeSection(value) {
   if (typeof value !== 'string') return '';
   return value.trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+function normalizeTextOverride(value, limit, label, normalizer, path) {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== 'string') {
+    throw new CustomizationConfigError('INVALID_PROFILE', `${label} must be text.`, path);
+  }
+  const normalized = normalizer(value);
+  if (!normalized) return null;
+  if ([...normalized].length > limit) {
+    throw new CustomizationConfigError('INVALID_PROFILE', `${label} must contain at most ${limit} characters.`, path);
+  }
+  return normalized;
+}
+
+function normalizeModeOverride(value, path, label = 'Section mode') {
+  if (value === null || value === undefined || value === '') return null;
+  const mode = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (mode !== 'f2f' && mode !== 'online') {
+    throw new CustomizationConfigError('INVALID_MODE', `${label} must be f2f or online.`, path);
+  }
+  return mode;
+}
+
+function normalizeManualTime(value, path) {
+  if (!isRecord(value)) {
+    throw new CustomizationConfigError('INVALID_TIME', 'A manual time must include a day, start time, and end time.', path);
+  }
+  const day = typeof value.day === 'string' ? value.day.trim().toUpperCase() : '';
+  const startMinutes = value.startMinutes;
+  const endMinutes = value.endMinutes;
+  if (
+    !DAY_SET.has(day)
+    || !Number.isInteger(startMinutes)
+    || !Number.isInteger(endMinutes)
+    || startMinutes < 0
+    || endMinutes > 1439
+    || endMinutes <= startMinutes
+  ) {
+    throw new CustomizationConfigError('INVALID_TIME', 'Choose a Monday–Saturday day and a valid time interval.', path);
+  }
+  return { day, startMinutes, endMinutes };
+}
+
+function applyCustomizationPatch(patch, path = 'patch', labelPrefix = 'Section') {
+  if (!isRecord(patch)) {
+    throw new CustomizationConfigError('INVALID_PROFILE', 'Customization changes must be an object.', path);
+  }
+  const result = {};
+  if (hasOwn(patch, 'mode')) {
+    const mode = normalizeModeOverride(patch.mode, `${path}.mode`, `${labelPrefix} mode`);
+    if (mode) result.mode = mode;
+  }
+  if (hasOwn(patch, 'professor')) {
+    const professor = normalizeTextOverride(patch.professor, PROFESSOR_NAME_LIMIT, 'Professor', (value) => value.trim(), `${path}.professor`);
+    if (professor) result.professor = professor;
+  }
+  if (hasOwn(patch, 'courseCode')) {
+    const courseCode = normalizeTextOverride(patch.courseCode, COURSE_CODE_LIMIT, 'Course code', normalizeCourseCode, `${path}.courseCode`);
+    if (courseCode) result.courseCode = courseCode;
+  }
+  if (hasOwn(patch, 'section')) {
+    const section = normalizeTextOverride(patch.section, SECTION_NAME_LIMIT, 'Section', normalizeSection, `${path}.section`);
+    if (section) result.section = section;
+  }
+  if (hasOwn(patch, 'title')) {
+    const title = normalizeTextOverride(patch.title, TITLE_LIMIT, 'Title', (value) => value.trim().replace(/\s+/g, ' '), `${path}.title`);
+    if (title) result.title = title;
+  }
+  if (hasOwn(patch, 'time')) {
+    if (patch.time !== null && patch.time !== undefined) result.time = normalizeManualTime(patch.time, `${path}.time`);
+  }
+  if (hasOwn(patch, 'room')) {
+    const room = normalizeTextOverride(
+      patch.room,
+      ROOM_NAME_LIMIT,
+      'Room',
+      (value) => /^online$/i.test(value.trim()) ? 'Online' : value.trim().replace(/\s+/g, ' '),
+      `${path}.room`,
+    );
+    if (room) result.room = room;
+  }
+  return result;
+}
+
+function normalizeMeetingOverrides(meetings, path, sectionKey) {
+  if (meetings === undefined) return {};
+  if (!isRecord(meetings)) {
+    throw new CustomizationConfigError('INVALID_PROFILE', 'Meeting customizations must be an object.', path);
+  }
+  const result = {};
+  for (const [rawMeetingId, rawEntry] of Object.entries(meetings)) {
+    const parts = rawMeetingId.split('::');
+    const ordinal = parts.length === 3 ? Number(parts[2]) : NaN;
+    const meetingId = parts.length === 3
+      && getSectionKey(parts[0], parts[1]) === sectionKey
+      && Number.isInteger(ordinal)
+      && ordinal >= 0
+      ? `${sectionKey}::${ordinal}`
+      : '';
+    if (!meetingId) {
+      throw new CustomizationConfigError('INVALID_PROFILE', 'A meeting customization needs a stable meeting id.', path);
+    }
+    if (hasOwn(result, meetingId)) {
+      throw new CustomizationConfigError('INVALID_PROFILE', 'Two meeting customizations resolve to the same meeting.', `${path}.${rawMeetingId}`);
+    }
+    if (!isRecord(rawEntry) || rawEntry.synced !== false) {
+      throw new CustomizationConfigError('INVALID_PROFILE', 'A meeting customization must explicitly be unsynced.', `${path}.${meetingId}`);
+    }
+    const hasAutomaticReset = hasOwn(rawEntry, 'automatic');
+    if (hasAutomaticReset && rawEntry.automatic !== true) {
+      throw new CustomizationConfigError('INVALID_PROFILE', 'An automatic meeting reset must be true when present.', `${path}.${meetingId}.automatic`);
+    }
+    const entry = applyCustomizationPatch(rawEntry, `${path}.${rawMeetingId}`, 'Meeting');
+    if (hasAutomaticReset && Object.keys(entry).length) {
+      throw new CustomizationConfigError('INVALID_PROFILE', 'An automatic meeting reset cannot include manual details.', `${path}.${meetingId}`);
+    }
+    if (hasAutomaticReset) result[meetingId] = { synced: false, automatic: true };
+    else if (Object.keys(entry).length) result[meetingId] = { synced: false, ...entry };
+  }
+  return result;
 }
 
 export function getCourseKey(courseCode) {
@@ -315,24 +470,9 @@ function normalizeSections(sections) {
     if (!isRecord(rawEntry)) {
       throw new CustomizationConfigError('INVALID_PROFILE', 'Each section customization must be an object.', `sections.${rawKey}`);
     }
-    const entry = {};
-    if (hasOwn(rawEntry, 'mode') && rawEntry.mode !== null && rawEntry.mode !== undefined) {
-      const mode = typeof rawEntry.mode === 'string' ? rawEntry.mode.trim().toLowerCase() : '';
-      if (mode !== 'f2f' && mode !== 'online') {
-        throw new CustomizationConfigError('INVALID_PROFILE', 'Section mode must be f2f or online.', `sections.${rawKey}.mode`);
-      }
-      entry.mode = mode;
-    }
-    if (hasOwn(rawEntry, 'professor') && rawEntry.professor !== null && rawEntry.professor !== undefined) {
-      if (typeof rawEntry.professor !== 'string') {
-        throw new CustomizationConfigError('INVALID_PROFILE', 'Professor must be text.', `sections.${rawKey}.professor`);
-      }
-      const professor = rawEntry.professor.trim();
-      if ([...professor].length > PROFESSOR_NAME_LIMIT) {
-        throw new CustomizationConfigError('INVALID_PROFILE', `Professor must contain at most ${PROFESSOR_NAME_LIMIT} characters.`, `sections.${rawKey}.professor`);
-      }
-      if (professor) entry.professor = professor;
-    }
+    const entry = applyCustomizationPatch(rawEntry, `sections.${rawKey}`);
+    const meetings = normalizeMeetingOverrides(rawEntry.meetings, `sections.${rawKey}.meetings`, key);
+    if (Object.keys(meetings).length) entry.meetings = meetings;
     if (Object.keys(entry).length) result[key] = entry;
   }
   return result;
@@ -347,6 +487,9 @@ export function normalizeProfile(raw, fallbackName) {
   }
   if (raw.version !== CONFIG_VERSION) {
     throw new CustomizationConfigError('UNSUPPORTED_VERSION', 'This customization profile version is not supported.', 'version');
+  }
+  if (hasOwn(raw, 'session') || hasOwn(raw, 'meetings')) {
+    throw new CustomizationConfigError('INVALID_PROFILE', 'Customization profiles cannot contain imported schedule data.', 'profile');
   }
 
   let name;
@@ -390,41 +533,75 @@ export function setCourseColor(profile, courseCode, color) {
 }
 
 export function setSectionCustomization(profile, courseCode, section, patch) {
-  if (!isRecord(patch)) {
-    throw new CustomizationConfigError('INVALID_PROFILE', 'Section customization changes must be an object.', 'patch');
-  }
   const next = cloneMaps(profile);
   const key = getSectionKey(courseCode, section);
   const current = isRecord(next.sections[key]) ? { ...next.sections[key] } : {};
-
-  if (hasOwn(patch, 'mode')) {
-    if (patch.mode === null || patch.mode === undefined || patch.mode === '') {
-      delete current.mode;
-    } else {
-      const mode = typeof patch.mode === 'string' ? patch.mode.trim().toLowerCase() : '';
-      if (mode !== 'f2f' && mode !== 'online') {
-        throw new CustomizationConfigError('INVALID_MODE', 'Section mode must be f2f or online.', 'mode');
-      }
-      current.mode = mode;
-    }
+  const updated = applyCustomizationPatch(patch);
+  for (const property of ['mode', 'professor', 'courseCode', 'section', 'title', 'time', 'room']) {
+    if (!hasOwn(patch, property)) continue;
+    if (hasOwn(updated, property)) current[property] = updated[property];
+    else delete current[property];
   }
+  if (Object.keys(current).some((property) => property !== 'meetings') || Object.keys(current.meetings || {}).length) next.sections[key] = current;
+  else delete next.sections[key];
+  return next;
+}
 
-  if (hasOwn(patch, 'professor')) {
-    if (patch.professor === null || patch.professor === undefined) {
-      delete current.professor;
-    } else if (typeof patch.professor !== 'string') {
-      throw new CustomizationConfigError('INVALID_PROFILE', 'Professor must be text.', 'professor');
-    } else {
-      const professor = patch.professor.trim();
-      if ([...professor].length > PROFESSOR_NAME_LIMIT) {
-        throw new CustomizationConfigError('INVALID_PROFILE', `Professor must contain at most ${PROFESSOR_NAME_LIMIT} characters.`, 'professor');
-      }
-      if (professor) current.professor = professor;
-      else delete current.professor;
-    }
+export function setMeetingCustomization(profile, courseCode, section, meetingId, patch) {
+  if (typeof meetingId !== 'string' || !meetingId.trim()) {
+    throw new CustomizationConfigError('INVALID_MEETING_ID', 'A stable meeting id is required.', 'meetingId');
   }
+  const key = getSectionKey(courseCode, section);
+  if (!meetingId.startsWith(`${key}::`)) {
+    throw new CustomizationConfigError('INVALID_MEETING_ID', 'The meeting does not belong to this course section.', 'meetingId');
+  }
+  const next = cloneMaps(profile);
+  const sectionCurrent = isRecord(next.sections[key]) ? { ...next.sections[key] } : {};
+  const meetings = isRecord(sectionCurrent.meetings) ? { ...sectionCurrent.meetings } : {};
+  const updated = applyCustomizationPatch(patch, 'patch', 'Meeting');
+  if (Object.keys(updated).length) meetings[meetingId] = { synced: false, ...updated };
+  else delete meetings[meetingId];
+  if (Object.keys(meetings).length) sectionCurrent.meetings = meetings;
+  else delete sectionCurrent.meetings;
+  if (Object.keys(sectionCurrent).length) next.sections[key] = sectionCurrent;
+  else delete next.sections[key];
+  return next;
+}
 
-  if (Object.keys(current).length) next.sections[key] = current;
+export function setMeetingAutomaticOverride(profile, courseCode, section, meetingId) {
+  if (typeof meetingId !== 'string' || !meetingId.trim()) {
+    throw new CustomizationConfigError('INVALID_MEETING_ID', 'A stable meeting id is required.', 'meetingId');
+  }
+  const key = getSectionKey(courseCode, section);
+  if (!meetingId.startsWith(`${key}::`)) {
+    throw new CustomizationConfigError('INVALID_MEETING_ID', 'The meeting does not belong to this course section.', 'meetingId');
+  }
+  const next = cloneMaps(profile);
+  const sectionCurrent = isRecord(next.sections[key]) ? { ...next.sections[key] } : {};
+  const meetings = isRecord(sectionCurrent.meetings) ? { ...sectionCurrent.meetings } : {};
+  meetings[meetingId] = { synced: false, automatic: true };
+  sectionCurrent.meetings = meetings;
+  next.sections[key] = sectionCurrent;
+  return next;
+}
+
+export function resetMeetingCustomization(profile, courseCode, section, meetingId) {
+  if (typeof meetingId !== 'string' || !meetingId.trim()) {
+    throw new CustomizationConfigError('INVALID_MEETING_ID', 'A stable meeting id is required.', 'meetingId');
+  }
+  const key = getSectionKey(courseCode, section);
+  if (!meetingId.startsWith(`${key}::`)) {
+    throw new CustomizationConfigError('INVALID_MEETING_ID', 'The meeting does not belong to this course section.', 'meetingId');
+  }
+  const next = cloneMaps(profile);
+  const sectionCurrent = next.sections[key];
+  if (!isRecord(sectionCurrent) || !isRecord(sectionCurrent.meetings)) return next;
+  const meetings = { ...sectionCurrent.meetings };
+  delete meetings[meetingId];
+  const updatedSection = { ...sectionCurrent };
+  if (Object.keys(meetings).length) updatedSection.meetings = meetings;
+  else delete updatedSection.meetings;
+  if (Object.keys(updatedSection).length) next.sections[key] = updatedSection;
   else delete next.sections[key];
   return next;
 }
@@ -432,6 +609,18 @@ export function setSectionCustomization(profile, courseCode, section, patch) {
 export function resetSectionCustomization(profile, courseCode, section) {
   const next = cloneMaps(profile);
   delete next.sections[getSectionKey(courseCode, section)];
+  return next;
+}
+
+export function resetSectionDefaults(profile, courseCode, section) {
+  const next = cloneMaps(profile);
+  const key = getSectionKey(courseCode, section);
+  const current = next.sections[key];
+  if (!isRecord(current) || !isRecord(current.meetings) || !Object.keys(current.meetings).length) {
+    delete next.sections[key];
+    return next;
+  }
+  next.sections[key] = { meetings: current.meetings };
   return next;
 }
 
@@ -507,38 +696,543 @@ export function buildCourseColorMap(schedule, profile = createDefaultProfile()) 
   return map;
 }
 
-export function resolveMeetingCustomization(profile, meeting, courseIndex = 0, courseColorMap) {
+function formatTimeLabel(minutes) {
+  if (!Number.isInteger(minutes) || minutes < 0 || minutes > 1439) return '';
+  const hours24 = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  const period = hours24 >= 12 ? 'PM' : 'AM';
+  const hours = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  return `${hours}:${String(mins).padStart(2, '0')} ${period}`;
+}
+
+function sourceMeetingId(meeting, sectionKey, fallbackOrdinal = 0) {
+  if (typeof meeting?.id === 'string' && meeting.id.trim()) return meeting.id.trim();
+  const ordinal = Number.isInteger(meeting?.meetingOrdinal) && meeting.meetingOrdinal >= 0
+    ? meeting.meetingOrdinal
+    : fallbackOrdinal;
+  return `${sectionKey}::${ordinal}`;
+}
+
+function isScheduledTime(value) {
+  return isRecord(value)
+    && DAY_SET.has(value.day)
+    && Number.isInteger(value.startMinutes)
+    && Number.isInteger(value.endMinutes)
+    && value.startMinutes >= 0
+    && value.endMinutes <= 1439
+    && value.endMinutes > value.startMinutes;
+}
+
+function pickCustomizationValue(meetingOverride, section, source, property) {
+  if (meetingOverride && hasOwn(meetingOverride, property)) return meetingOverride[property];
+  if (section && hasOwn(section, property)) return section[property];
+  return source;
+}
+
+export function resolveMeetingCustomization(profile, meeting, courseIndex = 0, courseColorMap, fallbackOrdinal = 0) {
   const courseKey = getCourseKey(meeting?.courseCode);
   const sectionKey = getSectionKey(meeting?.courseCode, meeting?.section);
+  const meetingId = sourceMeetingId(meeting, sectionKey, fallbackOrdinal);
   const map = courseColorMap || buildCourseColorMap({ meetings: [meeting] }, profile);
   const palette = map[courseKey] || getPaletteById(profile?.defaults?.color === 'plain' ? 'plain' : COURSE_PALETTES[1].id);
   const section = profile && isRecord(profile.sections) && isRecord(profile.sections[sectionKey])
     ? profile.sections[sectionKey]
     : {};
-  const hasOverride = section.mode === 'f2f' || section.mode === 'online';
-  const inferredOnline = meeting?.modality === 'online' || /^online$/i.test(String(meeting?.location || '').trim());
-  const mode = hasOverride ? section.mode : inferredOnline ? 'online' : 'f2f';
-  const professor = typeof section.professor === 'string' && section.professor.trim() ? section.professor.trim() : null;
+  const meetingOverride = isRecord(section.meetings) && isRecord(section.meetings[meetingId])
+    && section.meetings[meetingId].synced === false
+    ? section.meetings[meetingId]
+    : null;
+  const automaticReset = meetingOverride?.automatic === true;
+  const detailMeetingOverride = automaticReset ? null : meetingOverride;
+  const detailSection = automaticReset ? {} : section;
+  const sourceTime = meeting?.scheduled === false || !isScheduledTime({
+    day: typeof meeting?.day === 'string' ? meeting.day.trim().toUpperCase() : '',
+    startMinutes: meeting?.startMinutes,
+    endMinutes: meeting?.endMinutes,
+  })
+    ? null
+    : {
+      day: meeting.day.trim().toUpperCase(),
+      startMinutes: meeting.startMinutes,
+      endMinutes: meeting.endMinutes,
+    };
+  const time = pickCustomizationValue(detailMeetingOverride, detailSection, sourceTime, 'time');
+  const scheduled = isScheduledTime(time);
+  const courseCode = pickCustomizationValue(detailMeetingOverride, detailSection, meeting.courseCode, 'courseCode');
+  const displaySection = pickCustomizationValue(detailMeetingOverride, detailSection, meeting.section, 'section');
+  const title = pickCustomizationValue(detailMeetingOverride, detailSection, meeting.title, 'title');
+  const sourceLocation = typeof meeting.location === 'string' && meeting.location.trim() ? meeting.location.trim() : null;
+  const sourceIsOnline = meeting?.modality === 'online' || /^online$/i.test(String(sourceLocation || '').trim());
+  const explicitMode = pickCustomizationValue(detailMeetingOverride, detailSection, null, 'mode');
+  const selectedLocation = pickCustomizationValue(detailMeetingOverride, detailSection, sourceLocation, 'room');
+  const hasManualRoom = Boolean(
+    (detailMeetingOverride && hasOwn(detailMeetingOverride, 'room'))
+      || (detailSection && hasOwn(detailSection, 'room')),
+  );
+  const inferredOnline = /^online$/i.test(String(selectedLocation || '').trim())
+    || sourceIsOnline;
+  const mode = explicitMode || (inferredOnline ? 'online' : scheduled ? 'f2f' : 'async');
+  const location = mode === 'f2f' && sourceIsOnline && !hasManualRoom ? null : selectedLocation;
+  const locationSource = detailMeetingOverride && hasOwn(detailMeetingOverride, 'room')
+    ? 'meeting'
+    : detailSection && hasOwn(detailSection, 'room')
+      ? 'section'
+      : 'eaf';
+  const expandedLocation = location
+    ? (detailMeetingOverride?.room || detailSection.room ? expandLocation(location) : meeting.expandedLocation || expandLocation(location))
+    : null;
+  const professor = pickCustomizationValue(detailMeetingOverride, detailSection, null, 'professor') || null;
+  const hasSectionOverride = Object.keys(detailSection).some((property) => property !== 'meetings');
+  const syncSource = meetingOverride ? 'meeting' : hasSectionOverride ? 'section' : 'eaf';
+  const startLabel = scheduled
+    ? time.startMinutes === sourceTime?.startMinutes && time.endMinutes === sourceTime?.endMinutes && time.day === sourceTime?.day
+      ? meeting.startLabel || formatTimeLabel(time.startMinutes)
+      : formatTimeLabel(time.startMinutes)
+    : null;
+  const endLabel = scheduled
+    ? time.startMinutes === sourceTime?.startMinutes && time.endMinutes === sourceTime?.endMinutes && time.day === sourceTime?.day
+      ? meeting.endLabel || formatTimeLabel(time.endMinutes)
+      : formatTimeLabel(time.endMinutes)
+    : null;
   return {
+    sourceCourseCode: meeting.courseCode,
+    sourceSection: meeting.section,
     courseKey,
     sectionKey,
+    meetingId,
+    synced: !meetingOverride,
+    syncSource,
+    courseCode,
+    section: displaySection,
+    title,
+    day: scheduled ? time.day : null,
+    startMinutes: scheduled ? time.startMinutes : null,
+    endMinutes: scheduled ? time.endMinutes : null,
+    startLabel,
+    endLabel,
+    location,
+    locationSource,
+    expandedLocation,
+    scheduled,
     palette,
     mode,
     professor,
     colorSource: profile?.courses?.[courseKey]?.color ? 'course' : 'profile-default',
-    modeSource: hasOverride ? 'section' : 'eaf-inferred',
+    modeSource: detailMeetingOverride?.mode ? 'meeting' : detailSection.mode ? 'section' : 'eaf-inferred',
     courseIndex,
   };
 }
 
+export function resolveScheduleEntries(schedule, profile = createDefaultProfile()) {
+  if (!schedule || !Array.isArray(schedule.meetings)) return [];
+  const courseColorMap = buildCourseColorMap(schedule, profile);
+  const courseIndexes = new Map();
+  for (const meeting of schedule.meetings) {
+    const code = normalizeCourseCode(meeting?.courseCode);
+    if (code && !courseIndexes.has(code)) courseIndexes.set(code, courseIndexes.size);
+  }
+  return schedule.meetings.map((meeting, index) => {
+    const courseKey = getCourseKey(meeting.courseCode);
+    const resolved = resolveMeetingCustomization(profile, meeting, courseIndexes.get(courseKey) || 0, courseColorMap, index);
+    return {
+      meeting,
+      resolved,
+      effective: {
+        ...meeting,
+        id: resolved.meetingId,
+        courseCode: resolved.courseCode,
+        section: resolved.section,
+        title: resolved.title,
+        day: resolved.day,
+        startMinutes: resolved.startMinutes,
+        endMinutes: resolved.endMinutes,
+        startLabel: resolved.startLabel,
+        endLabel: resolved.endLabel,
+        location: resolved.location,
+        expandedLocation: resolved.expandedLocation,
+        scheduled: resolved.scheduled,
+        modality: resolved.mode === 'online' ? 'online' : meeting.modality,
+      },
+    };
+  });
+}
+
 export function formatMeetingMetadataLines(meeting, resolved) {
-  const location = meeting?.expandedLocation || expandLocation(meeting?.location) || meeting?.location || 'Room not specified';
+  const sourceIsOnline = meeting?.modality === 'online' || /^online$/i.test(String(meeting?.location || '').trim());
+  const missingPhysicalRoom = resolved?.mode === 'f2f' && sourceIsOnline && !resolved?.location;
+  const rawLocation = missingPhysicalRoom
+    ? 'Room not specified'
+    : resolved?.expandedLocation || meeting?.expandedLocation || expandLocation(resolved?.location || meeting?.location) || resolved?.location || meeting?.location || 'Room not specified';
+  const location = resolved?.mode === 'f2f' && /^online$/i.test(String(rawLocation).trim()) ? 'Room not specified' : rawLocation;
+  const onlineDetail = String(location).trim();
+  const looksLikePhysicalRoom = /^(?:room\s+)?[A-Z]{1,6}\s*\d[A-Z0-9-]*$/i.test(onlineDetail);
+  const hasOnlineDetail = onlineDetail
+    && !/^online$/i.test(onlineDetail)
+    && onlineDetail !== 'Room not specified'
+    && !looksLikePhysicalRoom
+    && (resolved?.locationSource !== 'eaf' || sourceIsOnline);
   const locationMode = resolved.mode === 'online'
-    ? 'Mode: Online'
-    : `Room: ${String(location)} · F2F`;
+    ? `Mode: Online${hasOnlineDetail ? ` · ${onlineDetail}` : ''}`
+    : resolved.mode === 'async'
+      ? 'Mode: Async · no fixed time'
+      : `Room: ${String(location)} · F2F`;
   const professor = resolved.professor ? `Professor: ${resolved.professor}` : null;
-  const time = `Time: ${meeting?.startLabel || ''} - ${meeting?.endLabel || ''}`.trim();
+  const time = resolved.scheduled === false
+    ? null
+    : `Time: ${resolved.startLabel || meeting?.startLabel || ''} - ${resolved.endLabel || meeting?.endLabel || ''}`.trim();
   return { locationMode, professor, time };
+}
+
+function getSourceTime(meeting) {
+  if (meeting?.scheduled === false) return null;
+  const time = {
+    day: typeof meeting?.day === 'string' ? meeting.day.trim().toUpperCase() : '',
+    startMinutes: meeting?.startMinutes,
+    endMinutes: meeting?.endMinutes,
+  };
+  return isScheduledTime(time) ? time : null;
+}
+
+function getSourceMode(meeting) {
+  if (meeting?.modality === 'online' || /^online$/i.test(String(meeting?.location || '').trim())) return 'online';
+  return getSourceTime(meeting) ? 'f2f' : 'async';
+}
+
+function getSourceFieldValue(meeting, field) {
+  if (field === 'mode') return getSourceMode(meeting);
+  if (field === 'time') return getSourceTime(meeting);
+  if (field === 'room') {
+    return typeof meeting?.location === 'string' && meeting.location.trim() ? meeting.location.trim() : null;
+  }
+  if (field === 'courseCode') return typeof meeting?.courseCode === 'string' ? meeting.courseCode.trim() : null;
+  if (field === 'section') return typeof meeting?.section === 'string' ? meeting.section.trim() : null;
+  if (field === 'title') return typeof meeting?.title === 'string' && meeting.title.trim() ? meeting.title.trim() : null;
+  if (field === 'professor') return typeof meeting?.professor === 'string' && meeting.professor.trim() ? meeting.professor.trim() : null;
+  return null;
+}
+
+function getResolvedFieldValue(resolved, field) {
+  if (field === 'mode') return resolved?.mode || null;
+  if (field === 'time') {
+    if (!resolved?.scheduled) return null;
+    return {
+      day: resolved.day,
+      startMinutes: resolved.startMinutes,
+      endMinutes: resolved.endMinutes,
+    };
+  }
+  if (field === 'room') return resolved?.location || null;
+  if (field === 'courseCode') return resolved?.courseCode || null;
+  if (field === 'section') return resolved?.section || null;
+  if (field === 'title') return resolved?.title || null;
+  if (field === 'professor') return resolved?.professor || null;
+  return null;
+}
+
+function comparableFieldValue(value, field) {
+  if (field === 'time') {
+    if (!isScheduledTime(value)) return '';
+    return `${value.day}|${value.startMinutes}|${value.endMinutes}`;
+  }
+  return value === null || value === undefined ? '' : String(value).trim().toLowerCase();
+}
+
+function fieldValuesEqual(first, second, field) {
+  return comparableFieldValue(first, field) === comparableFieldValue(second, field);
+}
+
+function formatPairFieldValue(field, value) {
+  if (field === 'mode') {
+    if (value === 'online') return 'Online';
+    if (value === 'f2f') return 'F2F';
+    if (value === 'async') return 'Async';
+    return 'Automatic';
+  }
+  if (field === 'time') {
+    if (!isScheduledTime(value)) return 'No fixed time';
+    const day = DAY_LABELS[value.day] || value.day;
+    return `${day}, ${formatTimeLabel(value.startMinutes)}–${formatTimeLabel(value.endMinutes)}`;
+  }
+  if (field === 'room') return value ? String(value).trim() : 'Room not specified';
+  if (field === 'courseCode') return value ? String(value).trim() : 'Not specified';
+  if (field === 'section') return value ? String(value).trim() : 'Not specified';
+  if (field === 'title') return value ? String(value).trim() : 'Not specified';
+  if (field === 'professor') return value ? String(value).trim() : 'Not specified';
+  return 'Not specified';
+}
+
+function getSectionRecord(profile, sectionKey) {
+  return profile && isRecord(profile.sections) && isRecord(profile.sections[sectionKey])
+    ? profile.sections[sectionKey]
+    : {};
+}
+
+function getMeetingOverride(section, meetingId) {
+  return isRecord(section.meetings) && isRecord(section.meetings[meetingId])
+    ? section.meetings[meetingId]
+    : null;
+}
+
+function getOwnedMeetingFields(override) {
+  if (!isRecord(override)) return [];
+  if (override.automatic === true) return DETAIL_FIELDS.slice();
+  return DETAIL_FIELDS.filter((field) => hasOwn(override, field));
+}
+
+function getSourceMeetingIdForPair(meeting, sectionKey, fallbackOrdinal) {
+  return sourceMeetingId(meeting, sectionKey, fallbackOrdinal);
+}
+
+function assertPairScope(scope) {
+  if (scope !== 'meeting' && scope !== 'pair') {
+    throw new CustomizationConfigError('INVALID_SYNC_SCOPE', 'Sync scope must be meeting or pair.', 'scope');
+  }
+}
+
+function assertPairContext(schedule, selectedMeeting) {
+  if (!schedule || !Array.isArray(schedule.meetings)) {
+    throw new CustomizationConfigError('INVALID_SCHEDULE', 'A schedule with meetings is required.', 'schedule');
+  }
+  if (!isRecord(selectedMeeting)) {
+    throw new CustomizationConfigError('INVALID_MEETING', 'A selected meeting is required.', 'selectedMeeting');
+  }
+  const sectionKey = getSectionKey(selectedMeeting.courseCode, selectedMeeting.section);
+  const selectedId = getSourceMeetingIdForPair(selectedMeeting, sectionKey, 0);
+  const selectedIndex = schedule.meetings.findIndex((meeting, index) => (
+    meeting === selectedMeeting
+      || getSectionKey(meeting.courseCode, meeting.section) === sectionKey
+        && getSourceMeetingIdForPair(meeting, sectionKey, index) === selectedId
+  ));
+  if (selectedIndex < 0) {
+    throw new CustomizationConfigError('INVALID_MEETING', 'The selected meeting is not in the schedule.', 'selectedMeeting');
+  }
+  return { sectionKey, selectedIndex, selectedMeeting: schedule.meetings[selectedIndex] };
+}
+
+function buildSourceDifference(field, selectedSource, peerSource) {
+  return {
+    field,
+    label: DETAIL_FIELD_LABELS[field],
+    currentValue: formatPairFieldValue(field, getSourceFieldValue(selectedSource, field)),
+    pairValue: formatPairFieldValue(field, getSourceFieldValue(peerSource, field)),
+    sourceValue: formatPairFieldValue(field, getSourceFieldValue(selectedSource, field)),
+    reason: 'eaf',
+  };
+}
+
+function buildManualDifference(field, selectedResolved, pairResolved, selectedSource) {
+  return {
+    field,
+    label: DETAIL_FIELD_LABELS[field],
+    currentValue: formatPairFieldValue(field, getResolvedFieldValue(selectedResolved, field)),
+    pairValue: formatPairFieldValue(field, getResolvedFieldValue(pairResolved, field)),
+    sourceValue: formatPairFieldValue(field, getSourceFieldValue(selectedSource, field)),
+    reason: 'manual',
+  };
+}
+
+export function getPairCustomizationState(schedule, profile = createDefaultProfile(), selectedMeeting, scope = 'meeting') {
+  assertPairScope(scope);
+  const context = assertPairContext(schedule, selectedMeeting);
+  const selected = context.selectedMeeting;
+  const section = getSectionRecord(profile, context.sectionKey);
+  const selectedId = getSourceMeetingIdForPair(selected, context.sectionKey, context.selectedIndex);
+  const group = schedule.meetings
+    .map((meeting, index) => ({
+      meeting,
+      id: getSourceMeetingIdForPair(meeting, getSectionKey(meeting.courseCode, meeting.section), index),
+      index,
+    }))
+    .filter(({ meeting }) => getSectionKey(meeting.courseCode, meeting.section) === context.sectionKey);
+  const selectedEntry = getMeetingOverride(section, selectedId);
+  const selectedResolved = resolveMeetingCustomization(profile, selected, 0, undefined, context.selectedIndex);
+  const pairProfile = selectedEntry
+    ? resetMeetingCustomization(profile, selected.courseCode, selected.section, selectedId)
+    : profile;
+  const pairResolved = resolveMeetingCustomization(pairProfile, selected, 0, undefined, context.selectedIndex);
+  const selectedSource = resolveMeetingCustomization(createDefaultProfile(), selected, 0, undefined, context.selectedIndex);
+  const sourceDifferences = [];
+  const conflicts = [];
+  const peerMeetingIds = [];
+  const peerOverrideFields = new Set();
+
+  for (const { meeting, id, index } of group) {
+    if (id === selectedId) continue;
+    peerMeetingIds.push(id);
+    const peerEntry = getMeetingOverride(section, id);
+    getOwnedMeetingFields(peerEntry).forEach((field) => peerOverrideFields.add(field));
+    const peerSource = resolveMeetingCustomization(createDefaultProfile(), meeting, 0, undefined, index);
+    for (const field of DETAIL_FIELDS) {
+      const selectedValue = getResolvedFieldValue(selectedSource, field);
+      const peerValue = getResolvedFieldValue(peerSource, field);
+      if (!fieldValuesEqual(selectedValue, peerValue, field)) sourceDifferences.push(buildSourceDifference(field, selected, meeting));
+    }
+  }
+
+  const selectedOverrideFields = getOwnedMeetingFields(selectedEntry);
+  for (const field of DETAIL_FIELDS) {
+    const selectedValue = getResolvedFieldValue(selectedResolved, field);
+    const pairValue = getResolvedFieldValue(pairResolved, field);
+    if (!fieldValuesEqual(selectedValue, pairValue, field)) {
+      conflicts.push(buildManualDifference(field, selectedResolved, pairResolved, selected));
+    }
+  }
+
+  const hasIndependentMeeting = Boolean(selectedEntry) || peerMeetingIds.some((id) => getMeetingOverride(section, id));
+  let groupStatus = 'linked';
+  if (conflicts.length) groupStatus = 'manual-conflict';
+  else if (hasIndependentMeeting) groupStatus = 'partially-independent';
+  else if (sourceDifferences.length) groupStatus = 'eaf-variation';
+
+  return {
+    sectionKey: context.sectionKey,
+    selectedMeetingId: selectedId,
+    peerMeetingIds,
+    meetingCount: group.length,
+    scope,
+    groupStatus,
+    sourceDifferences,
+    conflicts,
+    selectedOverrideFields,
+    peerOverrideFields: [...peerOverrideFields],
+    hasActionableConflict: conflicts.length > 0,
+  };
+}
+
+export function formatPairFieldDifference(difference) {
+  if (!isRecord(difference) || typeof difference.field !== 'string') {
+    throw new CustomizationConfigError('INVALID_SYNC_DIFFERENCE', 'A sync difference must include a field.', 'difference');
+  }
+  const label = difference.label || DETAIL_FIELD_LABELS[difference.field] || difference.field;
+  const current = difference.currentValue || 'Not specified';
+  const pair = difference.pairValue || 'Not specified';
+  return {
+    label,
+    current,
+    pair,
+    ariaLabel: `${label}: this meeting ${current}; pair settings ${pair}`,
+  };
+}
+
+export function getPairScopeLabel(pairState) {
+  if (!isRecord(pairState)) {
+    throw new CustomizationConfigError('INVALID_SYNC_STATE', 'A pair customization state is required.', 'pairState');
+  }
+  if (pairState.scope === 'meeting') {
+    const hasSelectedMeetingChanges = Array.isArray(pairState.selectedOverrideFields)
+      && pairState.selectedOverrideFields.length > 0;
+    return {
+      title: 'This meeting',
+      help: 'Only this meeting changes.',
+      status: hasSelectedMeetingChanges
+        ? 'This meeting has its own changes.'
+        : 'This meeting uses its EAF details.',
+    };
+  }
+  if (pairState.scope !== 'pair') assertPairScope(pairState.scope);
+  if (pairState.hasActionableConflict || pairState.groupStatus === 'manual-conflict') {
+    return {
+      title: 'Paired meetings',
+      help: 'Changes apply to both meetings.',
+      status: 'Some details are customized per meeting.',
+    };
+  }
+  if (pairState.groupStatus === 'partially-independent') {
+    return {
+      title: 'Paired meetings',
+      help: 'Changes apply to both meetings.',
+      status: 'One meeting still has its own changes.',
+    };
+  }
+  if (pairState.groupStatus === 'eaf-variation') {
+    return {
+      title: 'Paired meetings',
+      help: 'Changes apply to both meetings.',
+      status: "Automatic keeps each meeting's EAF schedule.",
+    };
+  }
+  return {
+    title: 'Paired meetings',
+    help: 'Changes apply to both meetings.',
+    status: 'Both meetings use the shared settings.',
+  };
+}
+
+function normalizeConflictFieldValue(field, value) {
+  if (field === 'mode' && (value === null || value === undefined || value === '' || value === 'inherit')) return null;
+  if (value === null || value === undefined || value === '') return null;
+  return value;
+}
+
+function getConflictTargetValue(field, selectedMeeting, selectedEntry, draftPatch) {
+  if (isRecord(draftPatch) && hasOwn(draftPatch, field)) return normalizeConflictFieldValue(field, draftPatch[field]);
+  if (selectedEntry?.automatic !== true && selectedEntry && hasOwn(selectedEntry, field)) return selectedEntry[field];
+  const sourceValue = getSourceFieldValue(selectedMeeting, field);
+  if (field === 'mode' && sourceValue === 'async') return null;
+  return sourceValue;
+}
+
+function clearMeetingFields(profile, sectionKey, fields) {
+  const next = cloneMaps(profile);
+  const section = next.sections[sectionKey];
+  if (!isRecord(section) || !isRecord(section.meetings)) return next;
+  const meetings = {};
+  for (const [meetingId, rawEntry] of Object.entries(section.meetings)) {
+    const entry = { ...rawEntry };
+    fields.forEach((field) => delete entry[field]);
+    if (entry.automatic === true) delete entry.automatic;
+    if (Object.keys(entry).some((key) => key !== 'synced')) meetings[meetingId] = { synced: false, ...entry };
+  }
+  const updatedSection = { ...section };
+  if (Object.keys(meetings).length) updatedSection.meetings = meetings;
+  else delete updatedSection.meetings;
+  if (Object.keys(updatedSection).length) next.sections[sectionKey] = updatedSection;
+  else delete next.sections[sectionKey];
+  return next;
+}
+
+export function applySyncConflictChoice(profile, context, choice) {
+  if (!['use-pair', 'use-current-for-pair', 'cancel'].includes(choice)) {
+    throw new CustomizationConfigError('INVALID_SYNC_CHOICE', 'Choose a valid pair sync action.', 'choice');
+  }
+  if (choice === 'cancel') return profile;
+  if (!isRecord(context)) {
+    throw new CustomizationConfigError('INVALID_SYNC_CONTEXT', 'A sync context is required.', 'context');
+  }
+  const pairContext = assertPairContext(context.schedule, context.selectedMeeting);
+  const selected = pairContext.selectedMeeting;
+  const selectedId = getSourceMeetingIdForPair(selected, pairContext.sectionKey, pairContext.selectedIndex);
+  if (choice === 'use-pair') return resetMeetingCustomization(profile, selected.courseCode, selected.section, selectedId);
+
+  const pairState = context.pairState && context.pairState.sectionKey === pairContext.sectionKey
+    ? context.pairState
+    : getPairCustomizationState(context.schedule, profile, selected, 'meeting');
+  const draftPatch = isRecord(context.draftPatch) ? context.draftPatch : {};
+  const changedFields = context.changedFields instanceof Set
+    ? context.changedFields
+    : Array.isArray(context.changedFields) ? new Set(context.changedFields) : null;
+  const actionableDraftPatch = {};
+  for (const field of DETAIL_FIELDS) {
+    if (hasOwn(draftPatch, field) && (!changedFields || changedFields.has(field))) {
+      actionableDraftPatch[field] = draftPatch[field];
+    }
+  }
+  const fields = new Set(pairState.conflicts.map((difference) => difference.field));
+  for (const field of DETAIL_FIELDS) {
+    if (hasOwn(actionableDraftPatch, field)) fields.add(field);
+  }
+  const sectionPatch = {};
+  for (const field of fields) {
+    sectionPatch[field] = getConflictTargetValue(
+      field,
+      selected,
+      getMeetingOverride(getSectionRecord(profile, pairContext.sectionKey), selectedId),
+      actionableDraftPatch,
+    );
+  }
+  let next = setSectionCustomization(profile, selected.courseCode, selected.section, sectionPatch);
+  next = clearMeetingFields(next, pairContext.sectionKey, [...fields]);
+  return next;
 }
 
 function createDefaultStore() {

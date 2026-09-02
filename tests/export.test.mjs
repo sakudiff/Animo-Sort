@@ -140,3 +140,59 @@ test('expands exported layout for long metadata lines', () => {
   assert.match(svg, />Alexandra Maria dela</);
   assert.match(svg, />Cruz-Santos, PhD</);
 });
+
+test('exports resolved manual identity and time while omitting an unplaced async entry', () => {
+  const asyncMeeting = {
+    id: 'NSTP1::S01::0',
+    courseCode: 'NSTP1',
+    title: 'NATIONAL SERVICE TRAINING',
+    section: 'S01',
+    credits: 3,
+    day: null,
+    startMinutes: null,
+    endMinutes: null,
+    startLabel: null,
+    endLabel: null,
+    location: null,
+    expandedLocation: null,
+    modality: 'async',
+    scheduled: false,
+  };
+  let profile = createProfile('Manual export');
+  profile = setSectionCustomization(profile, 'NSTP1', 'S01', {
+    courseCode: 'NSTP',
+    title: 'Community Engagement',
+    time: { day: 'SAT', startMinutes: 480, endMinutes: 600 },
+    room: 'Online',
+  });
+  const unresolved = { ...asyncMeeting, id: 'NSTP2::S01::0', courseCode: 'NSTP2' };
+  const svg = createScheduleSvg({ session: 'AY 2026-2027 Term 1', meetings: [asyncMeeting, unresolved] }, { profile });
+
+  assert.match(svg, />NSTP <tspan[^>]*>S01<\/tspan>/);
+  assert.match(svg, />Community Engagement</);
+  assert.match(svg, />Mode: Online</);
+  assert.doesNotMatch(svg, />NSTP2 <tspan/);
+});
+
+test('blocks an export when every effective meeting remains unplaced', () => {
+  const asyncMeeting = {
+    id: 'NSTP1::S01::0',
+    courseCode: 'NSTP1',
+    title: 'NATIONAL SERVICE TRAINING',
+    section: 'S01',
+    credits: 3,
+    day: null,
+    startMinutes: null,
+    endMinutes: null,
+    startLabel: null,
+    endLabel: null,
+    location: null,
+    expandedLocation: null,
+    modality: 'async',
+    scheduled: false,
+  };
+  assert.throws(
+    () => createScheduleSvg({ session: 'AY 2026-2027 Term 1', meetings: [asyncMeeting] }),
+    /No scheduled meetings are available for export/,
+  );
+});
