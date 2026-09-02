@@ -47,8 +47,238 @@ refreshes the user guide and verification fixtures.
 - Added a comprehensive EAF fixture, controller tests, and browser acceptance
   coverage for imports, paired edits, conflict choices, responsive layouts,
   reduced motion, PNG export, and calendar export.
-- Refreshed the README product screenshots with current timetable,
-  customization, profile, color-picker, and calendar-handoff views.
+- Kept the README product screenshots focused on local import, timetable
+  output, customization profiles, and the architecture pipeline, while
+  linking the current workflow captures from the How to use guide.
+
+### Implementation details for maintainers
+
+The release preserves a source schedule and derives an effective schedule from
+it. The parser owns normalized EAF data. The customization resolver produces a
+projection for the active profile. The renderer, PNG exporter, and calendar
+serializer consume that projection. This boundary matters because editing a
+profile must not rewrite the imported receipt, and each output must represent
+the same effective values.
+
+The main browser-side path is implemented in the following modules.
+
+- [`assets/js/eaf-parser.js`](assets/js/eaf-parser.js) performs local PDF.js
+  extraction, structure checks, row parsing, normalization, and validation.
+  `extractPdfTextItems()` loads the vendored PDF.js module and worker, reads
+  each page into text items with string, horizontal position, vertical
+  position, and width values, and reports bounded progress phases. It does not
+  send the file to a parsing service.
+- `groupItemsIntoLines()` sorts PDF.js coordinates top-first and joins items
+  whose vertical positions are within a 2.5 point tolerance. The row parser
+  then detects the `Day/Time/Room` header, derives column boundaries from the
+  stable Section, Credits, and schedule headers, and keeps wrapped row lines
+  within a 16 point vertical gap. This is a coordinate-aware parser rather
+  than a plain text split, because PDF extraction does not guarantee that
+  visual columns arrive in reading order.
+- `validateArchershubEaf()` checks for the Enrollment Assessment Form marker
+  and an academic session. `parseScheduleRows()` rejects unreadable rows
+  instead of replacing a working timetable with partial data. `sanitizeSchedule()`
+  applies the final allowed-field contract to every scheduled and unplaced
+  meeting before the result reaches the UI.
+- `normalizeMeeting()` converts twelve-hour labels into integer minute values,
+  retains the source display labels, preserves the original room string, and
+  attaches the normalized building code, building name, modality, and stable
+  meeting identity. `parseTimeRange()` accepts non-standard intervals as long
+  as the end is after the start, so layout hints do not become parser limits.
+- `normalizeUnplacedMeeting()` represents an explicit asynchronous row with
+  null day, time, and location values plus `scheduled` set to false. The eight
+  supported asynchronous markers are centralized in
+  `ASYNC_SCHEDULE_MARKERS`. `validateNoOverlaps()` ignores unplaced meetings
+  and performs same-day interval checks on scheduled meetings before import
+  completes.
+- `BUILDING_NAMES`, `getBuildingCode()`, `getBuildingName()`, and
+  `expandLocation()` keep the source label while adding a human-readable
+  suffix. The `LC` registry entry intentionally covers both `LC1` and `LC2`
+  through prefix matching. Unknown prefixes remain unchanged instead of being
+  guessed.
+
+The profile and effective-value layer lives in
+[`assets/js/customization.js`](assets/js/customization.js).
+
+- The portable profile contract is versioned with `CONFIG_FORMAT`,
+  `CONFIG_VERSION`, `PROFILE_STORE_FORMAT`, and `PROFILE_STORE_VERSION`. A
+  profile contains a name, defaults, course color overrides, and section or
+  meeting detail overrides. `normalizeProfile()` rejects an unexpected format
+  or version, rejects imported `session` and `meetings` data, and reconstructs
+  only the permitted fields.
+- `normalizeCourseCode()`, `normalizeSection()`, `normalizeHexColor()`, and
+  the text normalizers collapse equivalent input forms before storage. The
+  implementation enforces limits of 64 characters for profile names, 100 for
+  professor names, 24 for course codes, 64 for sections, 160 for titles, and
+  120 for rooms. Customization imports are capped at 256 KiB in
+  `app.js` before JSON parsing begins.
+- `cloneMaps()` makes profile updates copy-on-write across defaults, courses,
+  sections, and nested meeting overrides. `setCourseColor()`,
+  `setSectionCustomization()`, and `setMeetingCustomization()` therefore
+  return new profile values rather than mutating the active object in place.
+- `resolveMeetingCustomization()` applies meeting-level values first, section
+  values second, and source EAF values last. It separately resolves course
+  color, delivery mode, identity, title, professor, room or platform, and
+  time. `resolveScheduleEntries()` preserves the source meeting alongside an
+  `effective` copy so all consumers can compare or render both views without
+  modifying the imported schedule.
+- Course colors remain course-wide. An explicit course override wins over the
+  profile default. Otherwise the resolver uses the plain palette or assigns a
+  deterministic pastel palette by first-seen course order. `randomizeCourseColors()`
+  uses a bounded Fisher-Yates shuffle before writing explicit course values.
+- A meeting with `automatic` set to true is an explicit restoration state.
+  The resolver suppresses section details for that meeting and reads its
+  editable values from the EAF source again. This is different from deleting
+  an entire section record because a paired section can retain shared values
+  for its other meeting.
+- The browser store uses `PROFILE_STORAGE_KEY` and adds a protected Default
+  profile. `loadProfileStore()` repairs malformed stored state and migrates
+  the legacy `animosort_course_colors` key only when a versioned profile store
+  does not already exist. `addProfile()` and `renameProfile()` generate unique
+  names, while `deleteProfile()` protects the built-in Default profile.
+
+Pair behavior is implemented as explicit state resolution rather than a
+boolean synchronization flag.
+
+- `sourceMeetingId()` derives a stable identity from normalized course,
+  section, and meeting ordinal values. This lets a profile address one source
+  meeting even when its day, time, or room differs from its peer.
+- `getPairCustomizationState()` first identifies the meetings with the same
+  normalized course and section. It then separates ordinary source EAF
+  variation from actionable manual conflicts. A Monday and Thursday source
+  pair is therefore not treated as a conflict merely because the receipt
+  contains different days.
+- `getPairScopeLabel()` exposes the state as This meeting or Paired meetings
+  and reports whether the group is linked, an EAF variation, partially
+  independent, or in manual conflict. The editor can communicate the actual
+  state instead of presenting a misleading sync toggle.
+- `applySyncConflictChoice()` implements Cancel, Use pair settings, and Use
+  this meeting for both. The latter promotes only the fields in the conflict
+  set or the current draft and then clears the corresponding independent
+  meeting fields. Unrelated peer values survive the merge.
+- `getPairChoiceDraftPatch()` in `app.js` filters the current form to fields
+  changed in this edit. This prevents an untouched stale value in the form from
+  becoming a new pair-wide override during conflict resolution.
+- `readCustomizationPatch()` enforces delivery boundaries. F2F cannot retain
+  Online as a physical room. Online cannot accept a value that matches a
+  physical room pattern. Switching between F2F and Online clears the old
+  location field. Adding a time to an asynchronous row requires an explicit
+  delivery mode.
+- `validateEffectiveProfile()` resolves the proposed profile, removes
+  unresolved meetings from the overlap set, and calls `validateNoOverlaps()`
+  before `saveCustomizationDraft()` persists anything. A rejected overlap
+  therefore leaves the stored profile and rendered timetable unchanged.
+
+Calendar export is isolated in
+[`assets/js/calendar.js`](assets/js/calendar.js) and consumes effective
+entries rather than source rows.
+
+- `validateDateRange()` accepts real ISO calendar dates, rejects impossible
+  dates and reversed ranges, and returns inclusive start and end dates.
+  `getFirstOccurrenceDate()` and `getLastOccurrenceDate()` trim each weekly
+  series to the selected range instead of assuming that the term starts on a
+  Monday or ends on a Saturday.
+- Events use `Asia/Manila` as the calendar timezone. The DTSTART and DTEND
+  values preserve the local meeting time. The RRULE UNTIL value is calculated
+  from the last local occurrence and converted to UTC, avoiding the common
+  one-day or eight-hour boundary error around a Manila term end.
+- `resolveCalendarEvent()` calls `resolveMeetingCustomization()` for each
+  meeting. It returns null for unresolved asynchronous entries and for
+  scheduled entries outside the selected range. It sets physical rooms only
+  for F2F events and uses Online as the location for Online events.
+- `normalizeHttpUrl()` uses the platform URL parser and allows only HTTP and
+  HTTPS protocols. A complete Online URL becomes the event URL and is also
+  inserted as a Join link line in the description. A label such as Zoom stays
+  text. An unsafe scheme is omitted from both the URL property and the link
+  fallback.
+- `formatIcsCalendar()` tracks exported, skipped, unresolved, and out-of-range
+  counts. It fails with `NO_EVENTS_IN_RANGE` when the selected range would
+  produce an empty calendar rather than downloading a misleading blank file.
+- `escapeIcsText()` escapes iCalendar control characters. `foldIcsLine()`
+  folds at 75 UTF-8 octets and prefixes continuation lines correctly. The
+  serializer emits recurring VEVENT records with stable UIDs derived from
+  session, meeting identity, range, and index values.
+- `downloadCalendarFile()` creates a local `text/calendar` Blob, clicks a
+  temporary download link, and revokes the object URL. No Google account API,
+  OAuth token, or Google Meet conference object is involved.
+
+The visual exporters share the same effective projection.
+
+- [`assets/js/export.js`](assets/js/export.js) calls `resolveScheduleEntries()`
+  before building SVG or PNG output. `formatMeetingMetadataLines()` is shared
+  with the live card path, which keeps room, Online, professor, and time line
+  order consistent between the browser preview and downloaded image.
+- `getTimelineLayout()` derives the visible range from actual effective
+  meeting endpoints with 15 minutes of surrounding space. It treats
+  `STANDARD_PERIODS` as grid hints and raises the grid height when wrapped
+  titles or metadata would not fit in a short meeting block.
+- `createScheduleSvg()` emits a 1400 pixel-wide SVG with escaped text, theme
+  colors, wrapped titles, day columns, time guides, and a linked footer. The
+  PNG path in `downloadSchedulePng()` rasterizes that SVG at a scale of two,
+  uses `toBlob()` when available, and falls back to a data URL when necessary.
+  The supplied About image is 2800 pixels wide and 2488 pixels high, which is
+  consistent with the two-times raster scale and content-driven height.
+- [`assets/js/app.js`](assets/js/app.js) owns the state transitions. `handleFile()`
+  uses an import generation token to ignore stale asynchronous completions.
+  `renderSchedule()` resolves the profile once, renders only scheduled entries
+  into the timetable, and sends unresolved entries to the Manual class details
+  panel. The calendar dialog validates dates before enabling export and
+  reports skipped meeting counts after download.
+
+### Verification matrix
+
+- [`tests/fixtures/comprehensive-eaf/README.md`](tests/fixtures/comprehensive-eaf/README.md)
+  documents a deterministic synthetic fixture generated with ReportLab. It
+  contains 26 rows and 41 meetings, with 40 scheduled meetings and one
+  explicit asynchronous row. The fixture includes paired schedules, source
+  day and time variation, online and hybrid delivery, single-day classes, late
+  evening intervals, all seven NSTP form codes, and eight Laguna room samples
+  covering `MM101`, `MM-BLACKBOX`, `MRR101`, `UH208`, `EKR101`, `RL101`, `LC1`,
+  and `LC2`.
+- [`tests/comprehensive-eaf.test.mjs`](tests/comprehensive-eaf.test.mjs)
+  imports the generated PDF through `parseEafFile()` instead of testing a
+  hand-built object. It checks session extraction, all 26 rows, all 41
+  meetings, building normalization, asynchronous null fields, distinct NSTP
+  codes, and the no-overlap invariant.
+- [`tests/customization.test.mjs`](tests/customization.test.mjs),
+  [`tests/app-controller.test.mjs`](tests/app-controller.test.mjs), and
+  [`tests/calendar.test.mjs`](tests/calendar.test.mjs) cover copy-on-write
+  profile updates, import and legacy migration, hex normalization, pair
+  state, automatic restoration, conflict winners, manual async slots, date
+  boundaries, Manila recurrence, URL serialization, unsafe URL rejection,
+  escaping, and UTF-8 line folding.
+- [`tests/browser_acceptance.py`](tests/browser_acceptance.py) exercises the
+  actual static site through Playwright. The suite covers fixture import,
+  manual async completion, paired EAF variation, conflict cancellation and
+  winner choices, F2F and Online mode boundaries, calendar and PNG downloads,
+  the About output image, five clickable How to use figures, responsive focus
+  behavior, no horizontal overflow, and reduced-motion behavior across 320,
+  390, 480, 768, 1024, and 1440 pixel viewports.
+- The release-preparation run completed with 62 passing Node tests and eight
+  passing browser acceptance checks. The repository hygiene scan passed after
+  retaining five previously reviewed CE002 findings for existing CSS section
+  labels. The binary PDF fixture is excluded from text whitespace inspection
+  because its internal stream contains intentional trailing byte content.
+
+### Boundaries and disclosure
+
+- The parser accepts the official Archershub EAF shape supported by the
+  project. Files from legacy Animo.sys are outside this release boundary, and
+  a PDF larger than 1 MiB is rejected by the application before parsing.
+- A room prefix absent from `BUILDING_NAMES` remains the source text. The
+  resolver does not infer a building from an unfamiliar code.
+- A PNG is a static raster image. It cannot carry a clickable meeting link.
+  Link transport is available only through the calendar export, and the
+  receiving calendar application controls whether it renders a clickable URL
+  or a native join affordance.
+- The About-page output now uses the supplied
+  `assets/images/animosort-schedule-export.png`. Its course, day, time, and
+  room layout follows the Term 3 sample, while professor names such as the
+  Avengers characters are fictional presentation values. They are not DLSU
+  faculty data and must not be read as enrollment evidence.
+- Profile state remains browser-local. A downloaded profile can contain
+  manually entered class details and meeting links, but it does not contain
+  the imported EAF, session, or source meeting records.
 
 ## v0.4.3 - 2026-09-01
 

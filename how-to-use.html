@@ -104,6 +104,12 @@
             <li><span class="guide-step-number">2</span><strong>Import the PDF</strong><span>Choose Browse files or drag the file into the import area.</span></li>
             <li><span class="guide-step-number">3</span><strong>Choose what is next</strong><span>Review the week, edit a class, download a PNG, or export a calendar.</span></li>
           </ol>
+          <figure class="guide-figure">
+            <a class="guide-figure-link" href="assets/images/animosort-schedule-export.png" target="_blank" rel="noopener noreferrer" aria-label="Open the generated timetable screenshot at full size">
+              <img src="assets/images/animosort-schedule-export.png" alt="High-resolution AnimoSort timetable showing Monday through Saturday course cards for AY 2025-2026 Term 3" loading="lazy" decoding="async">
+            </a>
+            <figcaption><strong>Generated timetable.</strong><span>The timetable is the effective schedule after EAF parsing and any saved profile details are applied. Select the image to open the original-size PNG.</span></figcaption>
+          </figure>
           <aside class="guide-callout guide-callout-primary"><strong>Your schedule stays in this browser</strong><span>The EAF is parsed locally and is not uploaded. Importing another EAF replaces the displayed schedule; saved customization profiles remain available.</span></aside>
           <div class="guide-topic-footer">
             <p>If an import fails, open More help below for the file requirements.</p>
@@ -125,12 +131,32 @@
             <li><span class="guide-step-number">2</span><strong>Select a class</strong><span>Choose a timetable card or its color dot to open the editor.</span></li>
             <li><span class="guide-step-number">3</span><strong>Save your changes</strong><span>Set the identity, title, time, room or platform, delivery mode, color, or professor, then choose Done. Use <strong>This meeting</strong> for one-off changes or <strong>Paired meetings</strong> to share only the fields you change.</span></li>
           </ol>
+          <div class="guide-figure-grid">
+            <figure class="guide-figure">
+              <a class="guide-figure-link" href="assets/images/animosort-customization-editor.png" target="_blank" rel="noopener noreferrer" aria-label="Open the class details editor screenshot at full size">
+                <img src="assets/images/animosort-customization-editor.png" alt="AnimoSort class details editor showing identity, Monday schedule, and room fields" loading="lazy" decoding="async">
+              </a>
+              <figcaption><strong>Class details editor.</strong><span>Identity, schedule, and location fields are edited as one draft. Select the image to inspect the full-size form.</span></figcaption>
+            </figure>
+            <figure class="guide-figure">
+              <a class="guide-figure-link" href="assets/images/animosort-customization-color-picker.png" target="_blank" rel="noopener noreferrer" aria-label="Open the course color picker screenshot at full size">
+                <img src="assets/images/animosort-customization-color-picker.png" alt="AnimoSort color customization editor with a native color picker open and a hexadecimal color value" loading="lazy" decoding="async">
+              </a>
+              <figcaption><strong>Course color picker.</strong><span>Choose a preset or enter an opaque three or six digit hexadecimal value. The native picker appearance varies by operating system.</span></figcaption>
+            </figure>
+          </div>
           <aside class="guide-callout guide-callout-primary"><strong>Async classes need a complete time</strong><span>If an EAF row says Async but has no time or room, it appears under Manual class details. Open Edit details and provide a day, start time, end time, and any missing identity or room values. Enter times with AM or PM, such as 7:30 AM. Choose F2F or Online when adding a time; Automatic keeps the async row without a fixed slot. The class joins the timetable only after the time slot is complete.</span></aside>
           <p class="guide-topic-intro">Classes in the same EAF course and section form a pair when AnimoSort can match their shared identity. Normal EAF differences, such as a Monday meeting paired with a Thursday meeting, stay separate automatically. If a class already has its own changes, the review names the conflicting fields: <strong>Use pair settings</strong> follows the shared pair, <strong>Use this meeting for both</strong> shares the listed differences, and <strong>Cancel</strong> keeps your draft. Online meetings use <strong>Platform or link</strong>; leave it blank to show Online, or paste a complete HTTP(S) URL when you want to carry a meeting link into the calendar export. F2F meetings use a physical room. <strong>Automatic</strong> restores editable class details from the imported EAF for the selected scope. Course colors stay unchanged.</p>
           <div class="guide-compact-grid">
             <article><span class="guide-mini-label">Move it</span><h3>Use the profile elsewhere</h3><p>Choose <strong>Download JSON</strong>. On another browser or device, choose <strong>Import JSON</strong>. The imported copy becomes active without changing your other profiles. A profile JSON can include a meeting URL you entered, so share it only as deliberately as you would share that link.</p></article>
             <article><span class="guide-mini-label">Export it</span><h3>Match your PNG</h3><p>Choose <strong>Match site</strong>, <strong>Light</strong>, or <strong>Dark</strong>. The preview changes first, so the downloaded PNG looks as expected. A PNG is a static image and cannot carry a clickable Zoom link.</p></article>
           </div>
+          <figure class="guide-figure">
+            <a class="guide-figure-link" href="assets/images/animosort-profile-controls.png" target="_blank" rel="noopener noreferrer" aria-label="Open the profile controls screenshot at full size">
+              <img src="assets/images/animosort-profile-controls.png" alt="AnimoSort profile controls with Download JSON, Import JSON, reset actions, and course color choices" loading="lazy" decoding="async">
+            </a>
+            <figcaption><strong>Profile and course controls.</strong><span>Profiles, JSON portability, reset actions, and course-wide colors are managed from the configuration panel. Select the image to open the original-size screenshot.</span></figcaption>
+          </figure>
           <div class="guide-topic-footer">
             <p>You can import a profile before loading an EAF. Matching courses and sections pick up the saved details later. Appearance and reset tools are under More details.</p>
             <a class="button btn-primary" href="index.html#configuration-panel">Open customization</a>
@@ -151,6 +177,12 @@
             <li><span class="guide-step-number">2</span><strong>Download the .ics file</strong><span>Choose Export to Google Calendar (.ics), read the notice, then download.</span></li>
             <li><span class="guide-step-number">3</span><strong>Import on a computer</strong><span>In Google Calendar, open Settings, then Import &amp; export, then Import.</span></li>
           </ol>
+          <figure class="guide-figure">
+            <a class="guide-figure-link" href="assets/images/animosort-calendar-handoff.png" target="_blank" rel="noopener noreferrer" aria-label="Open the calendar handoff screenshot at full size">
+              <img src="assets/images/animosort-calendar-handoff.png" alt="AnimoSort calendar handoff panel with term date fields and the Export to Google Calendar button" loading="lazy" decoding="async">
+            </a>
+            <figcaption><strong>Calendar handoff.</strong><span>Enter inclusive term dates before exporting recurring events. The screenshot shows the export controls after a timetable is ready.</span></figcaption>
+          </figure>
           <aside class="guide-callout guide-callout-primary"><strong>Meeting links can travel with the event</strong><span>For an Online class, paste the complete <code>https://</code> or <code>http://</code> meeting URL into <strong>Platform or link</strong>. AnimoSort writes it to the event’s standard <code>URL</code> field and repeats it as <code>Join link:</code> in the description. Google Calendar imports the event details, but Google decides how to display the URL. A clickable link or native Join button is not guaranteed, and the URL does not create Google Meet conference data.</span></aside>
           <aside class="guide-callout"><strong>Using an iPhone?</strong><span>Save the .ics file to Files, then send or move it to a computer. Google Calendar’s official import flow is on the desktop website.</span></aside>
           <aside class="guide-callout"><strong>Avoid duplicates</strong><span>Import each file once. Importing the same file again can create another copy of every class.</span></aside>

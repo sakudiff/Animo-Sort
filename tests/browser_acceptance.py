@@ -366,6 +366,29 @@ def test_calendar_and_png_downloads(browser: Browser) -> None:
         assert Path(png_download.value.path()).read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
 
 
+def test_about_output_image(browser: Browser) -> None:
+    context = browser.new_context(
+        viewport={"width": 390, "height": 844},
+        reduced_motion="reduce",
+    )
+    page = context.new_page()
+    try:
+        page.goto(f"{BASE_URL}/about.html", wait_until="networkidle")
+        output = page.locator("#story-demo-output")
+        output.wait_for(state="visible")
+        assert output.get_attribute("src") == "assets/images/animosort-schedule-export.png"
+        assert "fictional demonstration professor names" in (output.get_attribute("alt") or "")
+        assert page.locator("#story-output-dialog-image").get_attribute("src") == "assets/images/animosort-schedule-export.png"
+
+        page.locator("#story-output-trigger").click()
+        page.locator("#story-output-dialog").wait_for(state="visible")
+        assert "fictional demonstration labels" in page.locator("#story-output-dialog").inner_text()
+        page.locator("#story-output-close").click()
+        page.locator("#story-output-dialog").wait_for(state="hidden")
+    finally:
+        context.close()
+
+
 def test_how_to_use_guide(browser: Browser) -> None:
     context = browser.new_context(
         viewport={"width": 390, "height": 844},
@@ -375,6 +398,19 @@ def test_how_to_use_guide(browser: Browser) -> None:
     try:
         page.goto(f"{BASE_URL}/how-to-use.html", wait_until="networkidle")
         assert page.locator("#building-codes").count() == 1
+        figure_links = page.locator(".guide-figure-link")
+        figure_images = page.locator(".guide-figure img")
+        assert figure_links.count() == 5
+        assert figure_images.count() == 5
+        expected_images = {
+            "assets/images/animosort-schedule-export.png",
+            "assets/images/animosort-customization-editor.png",
+            "assets/images/animosort-customization-color-picker.png",
+            "assets/images/animosort-profile-controls.png",
+            "assets/images/animosort-calendar-handoff.png",
+        }
+        assert set(page.locator(".guide-figure img").evaluate_all("images => images.map(image => image.getAttribute('src'))")) == expected_images
+        assert set(page.locator(".guide-figure-link").evaluate_all("links => links.map(link => link.getAttribute('href'))")) == expected_images
         page.locator('[data-guide-target="building-codes"]').click()
         assert page.locator("#building-codes").evaluate("element => element.open")
         building_text = page.locator("#building-codes").inner_text()
@@ -413,6 +449,7 @@ def main() -> None:
             test_conflict_cancel_and_winner_choices,
             test_mode_boundaries_and_automatic_restore,
             test_calendar_and_png_downloads,
+            test_about_output_image,
             test_how_to_use_guide,
             test_focus_responsive_and_reduced_motion,
         ]

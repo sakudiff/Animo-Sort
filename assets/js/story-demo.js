@@ -1,4 +1,4 @@
-const STORY_DEMO_IMAGE = 'assets/images/animosort-term3-output.png';
+const STORY_DEMO_IMAGE = 'assets/images/animosort-schedule-export.png';
 
 const storyOutput = document.querySelector('#story-demo-output');
 const storyOutputDialogImage = document.querySelector('#story-output-dialog-image');

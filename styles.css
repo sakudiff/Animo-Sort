@@ -4582,6 +4582,56 @@ details[open] > summary .guide-disclosure {
   overflow-wrap: anywhere;
 }
 
+.guide-figure-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.guide-figure {
+  display: grid;
+  gap: 9px;
+  width: 100%;
+  max-width: 920px;
+  margin: 0;
+}
+
+.guide-figure-link {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-alt);
+  line-height: 0;
+}
+
+.guide-figure-link:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-ghost);
+}
+
+.guide-figure-link:focus-visible {
+  outline: 3px solid var(--accent-border);
+  outline-offset: 3px;
+}
+
+.guide-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.guide-figure figcaption {
+  display: grid;
+  gap: 3px;
+  color: var(--text-2);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.guide-figure figcaption strong {
+  color: var(--text-1);
+}
+
 .guide-table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -4929,6 +4979,10 @@ details[open] > summary .guide-disclosure {
   }
 
   .guide-compact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .guide-figure-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

@@ -23,21 +23,19 @@ Read the [How to use guide](how-to-use.html) for profile, PNG, and calendar work
 
 ## Screenshots
 
-These screenshots are captured from the current site and focus on the product itself: reviewing the generated timetable, editing effective class details, choosing course colors, and handing the schedule to a calendar app. For step-by-step profile and calendar instructions, use the [How to use guide](how-to-use.html#customization-profiles) and its [Google Calendar section](how-to-use.html#google-calendar).
+These screenshots are captured from the current site and focus on the product itself: importing locally, seeing the generated timetable, saving presentation choices, and inspecting the code path. For step-by-step profile, editing, calendar, and room-code instructions, use the [How to use guide](how-to-use.html#customization-profiles), which now includes clickable full-size workflow screenshots.
 
-| Timetable export | Profile and calendar controls |
+| Import locally | Timetable output |
 | --- | --- |
-| ![High-resolution AnimoSort timetable export](assets/images/animosort-schedule-export.png) | ![AnimoSort profile controls and calendar handoff](assets/images/animosort-calendar-handoff.png) |
+| ![AnimoSort import panel with local-processing explanation](assets/images/animosort-import-panel.png) | ![Generated AnimoSort timetable output](assets/images/animosort-timetable-output.png) |
 
-| Class details editor | Course color picker |
+| Customization profiles | Interactive architecture pipeline |
 | --- | --- |
-| ![AnimoSort class details customization editor](assets/images/animosort-customization-editor.png) | ![AnimoSort course color picker](assets/images/animosort-customization-color-picker.png) |
+| ![AnimoSort customization profiles panel](assets/images/animosort-customization-panel.png) | ![AnimoSort Archify EAF-to-week pipeline](assets/images/animosort-about-pipeline.png) |
 
-| Profile and course colors |
-| --- |
-| ![AnimoSort profile controls and course color choices](assets/images/animosort-profile-controls.png) |
+## Workflow screenshots
 
-The [About page](about.html#pipeline) also includes the local import flow and an interactive architecture pipeline.
+The [How to use guide](how-to-use.html#make-timetable) contains the new workflow captures in context. The figures cover the generated timetable, class details editor, course color picker, profile controls, and calendar handoff. Each image opens in its original size for inspection on a phone or desktop. The [About page](about.html#pipeline) retains the local import flow and interactive architecture pipeline.
 
 ## Core Features
 
@@ -102,16 +100,16 @@ If a meeting already has independent changes and you choose Paired meetings, a s
 │   ├── animosort-workflow-mobile.workflow.json # Archify mobile source spec
 │   ├── images/
 │   │   ├── archershub-schedule-example.png     # Source receipt used on About
-│   │   ├── animosort-term3-output.png          # Term 3 output shown on About
+│   │   ├── animosort-term3-output.png          # Historical About output screenshot
 │   │   ├── animosort-import-panel.png          # README screenshot
 │   │   ├── animosort-timetable-output.png       # README screenshot
 │   │   ├── animosort-customization-panel.png    # README screenshot
 │   │   ├── animosort-about-pipeline.png         # About pipeline screenshot
-│   │   ├── animosort-schedule-export.png        # README screenshot
-│   │   ├── animosort-calendar-handoff.png       # README screenshot
-│   │   ├── animosort-customization-editor.png   # README screenshot
-│   │   ├── animosort-customization-color-picker.png # README screenshot
-│   │   └── animosort-profile-controls.png       # README screenshot
+│   │   ├── animosort-schedule-export.png        # How-to-use and About output screenshot
+│   │   ├── animosort-calendar-handoff.png       # How-to-use screenshot
+│   │   ├── animosort-customization-editor.png   # How-to-use screenshot
+│   │   ├── animosort-customization-color-picker.png # How-to-use screenshot
+│   │   └── animosort-profile-controls.png       # How-to-use screenshot
 │   └── js/
 │       ├── app.js           # Application controller and UI interactions
 │       ├── customization.js # Profile schema, persistence, resolver, and resets
