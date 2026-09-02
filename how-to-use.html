@@ -75,7 +75,7 @@
           <span class="guide-task-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path></svg>
           </span>
-          <span class="guide-task-copy"><strong>Add to Google Calendar</strong><span>Download and import an .ics file</span></span>
+          <span class="guide-task-copy"><strong>Add to a calendar</strong><span>Use the .ics file with Google or Apple Calendar</span></span>
           <span class="guide-task-time">About 2 min</span>
           <span class="guide-task-arrow" aria-hidden="true">›</span>
         </a>
@@ -166,29 +166,54 @@
 
       <details class="guide-topic" id="google-calendar">
         <summary>
-          <span class="guide-topic-heading"><span class="guide-topic-label">Calendar handoff</span><strong>Put your classes in Google Calendar</strong></span>
+          <span class="guide-topic-heading"><span class="guide-topic-label">Calendar handoff</span><strong>Put your classes in Google or Apple Calendar</strong></span>
           <span class="guide-topic-duration">About 2 minutes</span>
           <span class="guide-disclosure" aria-hidden="true"></span>
         </summary>
         <div class="guide-topic-body">
           <p class="guide-topic-intro"><strong>An .ics file</strong> is a calendar file. AnimoSort creates weekly events from the current effective class details. An independently edited class uses its edited day, time, room or platform, and title, then repeats weekly through the selected term dates. An async class stays out until it has a complete manual time.</p>
-          <ol class="guide-path" aria-label="Google Calendar export steps">
+          <ol class="guide-path" aria-label="Calendar export steps">
             <li><span class="guide-step-number">1</span><strong>Enter the term dates</strong><span>Use the real first and last day of the term. Both dates are included.</span></li>
             <li><span class="guide-step-number">2</span><strong>Download the .ics file</strong><span>Choose Export to Google Calendar (.ics), read the notice, then download.</span></li>
-            <li><span class="guide-step-number">3</span><strong>Import on a computer</strong><span>In Google Calendar, open Settings, then Import &amp; export, then Import.</span></li>
+            <li><span class="guide-step-number">3</span><strong>Choose a calendar app</strong><span>Use Google Calendar on a computer, or follow the iPhone handoff to Apple Calendar.</span></li>
           </ol>
           <figure class="guide-figure">
             <a class="guide-figure-link" href="assets/images/animosort-calendar-handoff.png" target="_blank" rel="noopener noreferrer" aria-label="Open the calendar handoff screenshot at full size">
-              <img src="assets/images/animosort-calendar-handoff.png" alt="AnimoSort calendar handoff panel with term date fields and the Export to Google Calendar button" loading="lazy" decoding="async">
+              <img src="assets/images/animosort-calendar-handoff.png" alt="Focused AnimoSort calendar handoff panel with term date fields and the Export to Google Calendar button" loading="lazy" decoding="async">
             </a>
-            <figcaption><strong>Calendar handoff.</strong><span>Enter inclusive term dates before exporting recurring events. The screenshot shows the export controls after a timetable is ready.</span></figcaption>
+            <figcaption><strong>Focused calendar handoff.</strong><span>Enter inclusive term dates before exporting recurring events. This close-up shows the date fields and export control after a timetable is ready.</span></figcaption>
           </figure>
           <aside class="guide-callout guide-callout-primary"><strong>Meeting links can travel with the event</strong><span>For an Online class, paste the complete <code>https://</code> or <code>http://</code> meeting URL into <strong>Platform or link</strong>. AnimoSort writes it to the event’s standard <code>URL</code> field and repeats it as <code>Join link:</code> in the description. Google Calendar imports the event details, but Google decides how to display the URL. A clickable link or native Join button is not guaranteed, and the URL does not create Google Meet conference data.</span></aside>
-          <aside class="guide-callout"><strong>Using an iPhone?</strong><span>Save the .ics file to Files, then send or move it to a computer. Google Calendar’s official import flow is on the desktop website.</span></aside>
+          <div class="guide-compact-grid guide-calendar-paths">
+            <article>
+              <span class="guide-mini-label">Google Calendar</span>
+              <h3>Import the file on a computer</h3>
+              <ol class="guide-detail-list">
+                <li>Open <a class="text-link" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">Google Calendar</a> on a computer.</li>
+                <li>Choose Settings, then choose Settings again.</li>
+                <li>In the left menu, choose Import &amp; export.</li>
+                <li>Choose Select file from your computer and select the downloaded <code>.ics</code> file.</li>
+                <li>Choose the calendar where the classes should go. Google uses your primary calendar by default.</li>
+                <li>Choose Import.</li>
+              </ol>
+              <p>Google documents this file-import flow for a computer. If you exported from an iPhone, choose Save to Files, then move the file to a computer through AirDrop, iCloud Drive, Mail, or another method you trust. The Google Calendar mobile app does not expose the same file-import menu.</p>
+            </article>
+            <article>
+              <span class="guide-mini-label">Apple Calendar</span>
+              <h3>Use the iPhone handoff</h3>
+              <ol class="guide-detail-list">
+                <li>Tap Export to Google Calendar (.ics) in AnimoSort.</li>
+                <li>If iOS opens an import sheet such as Add All, follow the prompt and choose the destination calendar. The exact wording depends on the iOS version and browser.</li>
+                <li>If the browser offers Save to Files, open Files, open Downloads, and tap the <code>.ics</code> file. Follow the Calendar or Add All prompt if it appears.</li>
+                <li>If Files does not offer a direct import, send the file to yourself in Mail and tap the attachment. Apple documents importing an <code>.ics</code> file from Mail.</li>
+              </ol>
+              <p>This is a one-time import. Do not choose Add Subscription Calendar for a downloaded file. Apple’s subscription option expects a calendar URL and creates a read-only subscription instead.</p>
+            </article>
+          </div>
           <aside class="guide-callout"><strong>Avoid duplicates</strong><span>Import each file once. Importing the same file again can create another copy of every class.</span></aside>
           <div class="guide-topic-footer">
             <p>Classes outside the selected dates are skipped. If no class falls inside the range, AnimoSort blocks the download so you can fix the dates. A platform name such as <code>Zoom</code> is exported as text; only a complete HTTP(S) URL is treated as a link.</p>
-            <p class="guide-calendar-links"><a class="text-link" href="https://support.google.com/calendar/answer/37118?hl=en" target="_blank" rel="noopener noreferrer">Read Google’s import instructions</a></p>
+            <p class="guide-calendar-links"><a class="text-link" href="https://support.google.com/calendar/answer/37118?hl=en" target="_blank" rel="noopener noreferrer">Read Google’s import instructions</a><span aria-hidden="true"> · </span><a class="text-link" href="https://support.apple.com/en-mide/guide/iphone/-iph3d1110d4/ios" target="_blank" rel="noopener noreferrer">Read Apple’s iPhone calendar guide</a></p>
           </div>
         </div>
       </details>

@@ -44,6 +44,9 @@ refreshes the user guide and verification fixtures.
 - Reworked the How to Use page around task-based guidance for importing,
   effective details, profiles, PNG export, and calendar handoff, including the
   supported building-code reference and the calendar-link disclosure.
+- Replaced the broad calendar screenshot with a focused handoff capture and
+  documented the Google Calendar computer import path beside the iPhone Apple
+  Calendar handoff and Save to Files fallback.
 - Added a comprehensive EAF fixture, controller tests, and browser acceptance
   coverage for imports, paired edits, conflict choices, responsive layouts,
   reduced motion, PNG export, and calendar export.

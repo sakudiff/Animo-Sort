@@ -4768,6 +4768,26 @@ details[open] > summary .guide-disclosure {
   line-height: 1.6;
 }
 
+.guide-detail-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+  padding-left: 1.25rem;
+}
+
+.guide-detail-list li {
+  padding-left: 3px;
+  color: var(--text-2);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.guide-detail-list a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .guide-topic-footer {
   display: grid;
   align-items: center;

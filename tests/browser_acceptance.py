@@ -423,6 +423,18 @@ def test_how_to_use_guide(browser: Browser) -> None:
         page.locator('[data-guide-target="google-calendar"]').click()
         assert page.locator("#google-calendar").evaluate("element => element.open")
         calendar_text = page.locator("#google-calendar").inner_text()
+        assert "Add to a calendar" in page.locator('[data-guide-target="google-calendar"]').inner_text()
+        assert "Google or Apple Calendar" in calendar_text
+        assert page.locator("#google-calendar .guide-calendar-paths article").count() == 2
+        assert "Import the file on a computer" in calendar_text
+        assert "Use the iPhone handoff" in calendar_text
+        assert "Save to Files" in calendar_text
+        assert "one-time import" in calendar_text
+        calendar_links = page.locator("#google-calendar .guide-calendar-links a")
+        assert set(calendar_links.evaluate_all("links => links.map(link => link.getAttribute('href'))")) == {
+            "https://support.google.com/calendar/answer/37118?hl=en",
+            "https://support.apple.com/en-mide/guide/iphone/-iph3d1110d4/ios",
+        }
         assert "standard URL field" in calendar_text
         assert "native Join button is not guaranteed" in calendar_text
     finally:
