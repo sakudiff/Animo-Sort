@@ -13,6 +13,7 @@ import {
 } from '../assets/js/calendar.js';
 import {
   createProfile,
+  setMeetingCustomization,
   setSectionCustomization,
 } from '../assets/js/customization.js';
 
@@ -115,6 +116,8 @@ test('counts meetings outside the range and blocks a zero-event export', () => {
   );
   assert.equal(result.exportedCount, 1);
   assert.equal(result.skippedCount, 1);
+  assert.equal(result.unresolvedCount, 0);
+  assert.equal(result.outsideRangeCount, 1);
   assert.equal((result.icsText.match(/BEGIN:VEVENT/g) || []).length, 1);
 
   assert.throws(
@@ -128,6 +131,137 @@ test('counts meetings outside the range and blocks a zero-event export', () => {
       && error.code === 'NO_EVENTS_IN_RANGE'
       && error.details.skippedCount === 1,
   );
+});
+
+test('exports a manual async slot and skips an unresolved async meeting', () => {
+  const manual = meeting({
+    id: 'NSTP1::S01::0',
+    courseCode: 'NSTP1',
+    title: 'NATIONAL SERVICE TRAINING',
+    section: 'S01',
+    day: null,
+    startMinutes: null,
+    endMinutes: null,
+    startLabel: null,
+    endLabel: null,
+    location: null,
+    expandedLocation: null,
+    modality: 'async',
+    scheduled: false,
+  });
+  const unresolved = { ...manual, id: 'NSTP2::S01::0', courseCode: 'NSTP2' };
+  let profile = createProfile('Async calendar');
+  profile = setSectionCustomization(profile, 'NSTP1', 'S01', {
+    courseCode: 'NSTP',
+    title: 'Community Engagement',
+    time: { day: 'SAT', startMinutes: 480, endMinutes: 600 },
+    room: 'Online',
+  });
+  const result = formatIcsCalendar(
+    schedule([manual, unresolved]),
+    profile,
+    { startDate: '2026-08-22', endDate: '2026-08-22' },
+    { now: '2026-08-01T00:00:00Z' },
+  );
+  const ics = result.icsText.replace(/\r\n /g, '');
+
+  assert.equal(result.exportedCount, 1);
+  assert.equal(result.skippedCount, 1);
+  assert.equal(result.unresolvedCount, 1);
+  assert.equal(result.outsideRangeCount, 0);
+  assert.match(ics, /SUMMARY:NSTP S01 - Community Engagement/);
+  assert.match(ics, /DTSTART;TZID=Asia\/Manila:20260822T080000/);
+  assert.match(ics, /LOCATION:Online/);
+});
+
+test('exports an independent class on its edited weekday and keeps the online platform in the event details', () => {
+  const source = meeting({ id: 'STSP002::S30A::0', meetingOrdinal: 0 });
+  let profile = createProfile('Independent calendar');
+  profile = setMeetingCustomization(profile, 'STSP002', 'S30A', source.id, {
+    title: 'Edited independent class',
+    mode: 'online',
+    time: { day: 'FRI', startMinutes: 780, endMinutes: 870 },
+    room: 'Zoom',
+  });
+  const result = formatIcsCalendar(
+    schedule([source]),
+    profile,
+    { startDate: '2026-08-28', endDate: '2026-09-04' },
+    { now: '2026-08-01T00:00:00Z' },
+  );
+  const ics = result.icsText.replace(/\r\n /g, '');
+
+  assert.equal(result.exportedCount, 1);
+  assert.match(ics, /DTSTART;TZID=Asia\/Manila:20260828T130000/);
+  assert.match(ics, /DTEND;TZID=Asia\/Manila:20260828T143000/);
+  assert.match(ics, /RRULE:FREQ=WEEKLY;UNTIL=20260904T063000Z/);
+  assert.match(ics, /SUMMARY:STSP002 S30A - Edited independent class/);
+  assert.match(ics, /LOCATION:Online/);
+  assert.match(ics, /DESCRIPTION:Mode: Online · Zoom\\nDay: Friday\\nTime: 1:00 PM - 2:30 PM/);
+});
+
+test('serializes a complete online meeting link as a calendar URL with a description fallback', () => {
+  const source = meeting({ id: 'STSP002::S30A::0', meetingOrdinal: 0 });
+  let profile = createProfile('Online link calendar');
+  profile = setMeetingCustomization(profile, 'STSP002', 'S30A', source.id, {
+    mode: 'online',
+    time: { day: 'FRI', startMinutes: 780, endMinutes: 870 },
+    room: 'https://zoom.us/j/123456789?pwd=demo',
+  });
+  const result = formatIcsCalendar(
+    schedule([source]),
+    profile,
+    { startDate: '2026-08-28', endDate: '2026-09-04' },
+    { now: '2026-08-01T00:00:00Z' },
+  );
+  const ics = result.icsText.replace(/\r\n /g, '');
+
+  assert.match(ics, /LOCATION:Online/);
+  assert.ok(ics.includes('URL:https://zoom.us/j/123456789?pwd=demo'));
+  assert.ok(ics.includes('DESCRIPTION:Mode: Online\\nJoin link: https://zoom.us/j/123456789?pwd=demo\\nDay: Friday\\nTime: 1:00 PM - 2:30 PM'));
+});
+
+test('keeps platform text in the description and does not emit unsafe URL schemes', () => {
+  const source = meeting({ id: 'STSP002::S30A::0', meetingOrdinal: 0 });
+  let profile = createProfile('Platform text calendar');
+  profile = setMeetingCustomization(profile, 'STSP002', 'S30A', source.id, {
+    mode: 'online',
+    room: 'javascript:alert(1)',
+  });
+  const result = formatIcsCalendar(
+    schedule([source]),
+    profile,
+    { startDate: '2026-08-24', endDate: '2026-08-24' },
+    { now: '2026-08-01T00:00:00Z' },
+  );
+  const ics = result.icsText.replace(/\r\n /g, '');
+
+  assert.doesNotMatch(ics, /^URL:/m);
+  assert.ok(ics.includes('DESCRIPTION:Mode: Online · javascript:alert(1)\\nDay: Monday'));
+});
+
+test('does not export Online as a physical room after an online class is changed to F2F', () => {
+  const source = meeting({
+    id: 'WEB01::S01::0',
+    courseCode: 'WEB01',
+    title: 'FULLY ONLINE',
+    section: 'S01',
+    location: 'Online',
+    expandedLocation: 'Online',
+    modality: 'online',
+  });
+  const profile = setMeetingCustomization(createProfile('F2F conversion'), 'WEB01', 'S01', source.id, { mode: 'f2f' });
+  const result = formatIcsCalendar(
+    schedule([source]),
+    profile,
+    { startDate: '2026-08-24', endDate: '2026-08-24' },
+    { now: '2026-08-01T00:00:00Z' },
+  );
+  const ics = result.icsText.replace(/\r\n /g, '');
+
+  assert.match(ics, /LOCATION:Room not specified/);
+  assert.match(ics, /DESCRIPTION:Mode: F2F\\nDay: Monday\\nTime: 09:15 AM - 10:45 AM/);
+  assert.doesNotMatch(ics, /LOCATION:Online/);
 });
 
 test('escapes iCalendar text and folds at UTF-8 octet boundaries', () => {

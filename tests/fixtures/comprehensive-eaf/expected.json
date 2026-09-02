@@ -1,0 +1,276 @@
+{
+  "fixture": "comprehensive-eaf",
+  "synthetic": true,
+  "session": "AY 2026-2027 Term 1",
+  "rowCount": 26,
+  "meetingCount": 41,
+  "scheduledMeetingCount": 40,
+  "asyncMeetingCount": 1,
+  "rows": [
+    {
+      "courseCode": "PAIR101",
+      "title": "MON THU PAIR",
+      "section": "P01",
+      "credits": 3,
+      "meetings": [
+        { "day": "MON", "startLabel": "07:30 AM", "endLabel": "09:00 AM", "location": "L101", "scheduled": true, "modality": "room" },
+        { "day": "THU", "startLabel": "07:30 AM", "endLabel": "09:00 AM", "location": "L101", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "PAIR102",
+      "title": "TUE FRI PAIR",
+      "section": "P02",
+      "credits": 3,
+      "meetings": [
+        { "day": "TUE", "startLabel": "09:15 AM", "endLabel": "10:45 AM", "location": "M101", "scheduled": true, "modality": "room" },
+        { "day": "FRI", "startLabel": "09:15 AM", "endLabel": "10:45 AM", "location": "M101", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "PAIR103",
+      "title": "WED SAT PAIR",
+      "section": "P03",
+      "credits": 3,
+      "meetings": [
+        { "day": "WED", "startLabel": "11:00 AM", "endLabel": "12:30 PM", "location": "AG101", "scheduled": true, "modality": "room" },
+        { "day": "SAT", "startLabel": "11:00 AM", "endLabel": "12:30 PM", "location": "AG101", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "PE101",
+      "title": "PE SINGLE DAY",
+      "section": "PE1",
+      "credits": 2,
+      "meetings": [
+        { "day": "MON", "startLabel": "01:00 PM", "endLabel": "02:00 PM", "location": "ER101", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "LAB101",
+      "title": "LAB SINGLE DAY",
+      "section": "LB1",
+      "credits": 1,
+      "meetings": [
+        { "day": "TUE", "startLabel": "02:15 PM", "endLabel": "04:15 PM", "location": "V101", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "ONLINE101",
+      "title": "FULL ONLINE",
+      "section": "ON1",
+      "credits": 3,
+      "meetings": [
+        { "day": "MON", "startLabel": "05:00 PM", "endLabel": "06:00 PM", "location": "Online", "scheduled": true, "modality": "online" },
+        { "day": "THU", "startLabel": "05:00 PM", "endLabel": "06:00 PM", "location": "Online", "scheduled": true, "modality": "online" }
+      ]
+    },
+    {
+      "courseCode": "HYBRID101",
+      "title": "HYBRID ONLINE F2F",
+      "section": "HY1",
+      "credits": 3,
+      "meetings": [
+        { "day": "TUE", "startLabel": "07:30 PM", "endLabel": "08:30 PM", "location": "Online", "scheduled": true, "modality": "online" },
+        { "day": "FRI", "startLabel": "07:30 PM", "endLabel": "08:30 PM", "location": "M201", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "FACESAME1",
+      "title": "FACE SAME ROOM",
+      "section": "FF1",
+      "credits": 3,
+      "meetings": [
+        { "day": "WED", "startLabel": "01:00 PM", "endLabel": "02:30 PM", "location": "B101", "scheduled": true, "modality": "room" },
+        { "day": "SAT", "startLabel": "01:00 PM", "endLabel": "02:30 PM", "location": "B101", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "FACEDIFF1",
+      "title": "FACE DIFF ROOM",
+      "section": "FF2",
+      "credits": 3,
+      "meetings": [
+        { "day": "MON", "startLabel": "03:00 PM", "endLabel": "04:30 PM", "location": "L201", "scheduled": true, "modality": "room" },
+        { "day": "THU", "startLabel": "03:00 PM", "endLabel": "04:30 PM", "location": "L202", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "VAR101",
+      "title": "DAY TIME ROOM",
+      "section": "VR1",
+      "credits": 3,
+      "meetings": [
+        { "day": "TUE", "startLabel": "05:00 PM", "endLabel": "06:30 PM", "location": "AG201", "scheduled": true, "modality": "room" },
+        { "day": "FRI", "startLabel": "11:00 AM", "endLabel": "12:30 PM", "location": "G201", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "LATE101",
+      "title": "LATE EVENING",
+      "section": "LT1",
+      "credits": 3,
+      "meetings": [
+        { "day": "WED", "startLabel": "09:00 PM", "endLabel": "10:30 PM", "location": "V201", "scheduled": true, "modality": "room" },
+        { "day": "SAT", "startLabel": "09:00 PM", "endLabel": "10:30 PM", "location": "V201", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "NSTP101",
+      "title": "NSTP ASYNC",
+      "section": "N101",
+      "credits": 3,
+      "meetings": [
+        { "day": null, "startLabel": null, "endLabel": null, "location": null, "scheduled": false, "modality": "async" }
+      ]
+    },
+    {
+      "courseCode": "NSTPCW1",
+      "title": "CWTS PART 1",
+      "section": "CW1",
+      "credits": 3,
+      "meetings": [
+        { "day": "MON", "startLabel": "06:30 AM", "endLabel": "07:15 AM", "location": "Online", "scheduled": true, "modality": "online" },
+        { "day": "THU", "startLabel": "06:30 AM", "endLabel": "07:15 AM", "location": "Online", "scheduled": true, "modality": "online" }
+      ]
+    },
+    {
+      "courseCode": "NSTPCW2",
+      "title": "CWTS PART 2",
+      "section": "CW2",
+      "credits": 3,
+      "meetings": [
+        { "day": "TUE", "startLabel": "06:30 AM", "endLabel": "07:15 AM", "location": "Online", "scheduled": true, "modality": "online" },
+        { "day": "FRI", "startLabel": "06:30 AM", "endLabel": "07:15 AM", "location": "Online", "scheduled": true, "modality": "online" }
+      ]
+    },
+    {
+      "courseCode": "NSTPLT1",
+      "title": "LTS PART 1",
+      "section": "LT2",
+      "credits": 3,
+      "meetings": [
+        { "day": "WED", "startLabel": "06:30 PM", "endLabel": "07:30 PM", "location": "Online", "scheduled": true, "modality": "online" },
+        { "day": "SAT", "startLabel": "06:30 PM", "endLabel": "07:30 PM", "location": "Online", "scheduled": true, "modality": "online" }
+      ]
+    },
+    {
+      "courseCode": "NSTPLT2",
+      "title": "LTS PART 2",
+      "section": "LT3",
+      "credits": 3,
+      "meetings": [
+        { "day": "WED", "startLabel": "08:00 PM", "endLabel": "09:00 PM", "location": "Online", "scheduled": true, "modality": "online" },
+        { "day": "SAT", "startLabel": "08:00 PM", "endLabel": "09:00 PM", "location": "Online", "scheduled": true, "modality": "online" }
+      ]
+    },
+    {
+      "courseCode": "NSTPRO1",
+      "title": "ROTC PART 1",
+      "section": "RO1",
+      "credits": 3,
+      "meetings": [
+        { "day": "TUE", "startLabel": "01:00 PM", "endLabel": "01:45 PM", "location": "AG301", "scheduled": true, "modality": "room" },
+        { "day": "FRI", "startLabel": "01:00 PM", "endLabel": "01:45 PM", "location": "AG302", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "NSTPRO2",
+      "title": "ROTC PART 2",
+      "section": "RO2",
+      "credits": 3,
+      "meetings": [
+        { "day": "TUE", "startLabel": "12:00 PM", "endLabel": "12:45 PM", "location": "AG303", "scheduled": true, "modality": "room" },
+        { "day": "FRI", "startLabel": "02:00 PM", "endLabel": "02:45 PM", "location": "AG304", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "LAGMM1",
+      "title": "LAGUNA MM",
+      "section": "MM1",
+      "credits": 1,
+      "meetings": [
+        { "day": "MON", "startLabel": "10:00 AM", "endLabel": "10:30 AM", "location": "MM101", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "LAGBOX1",
+      "title": "LAGUNA MM BOX",
+      "section": "MB1",
+      "credits": 1,
+      "meetings": [
+        { "day": "TUE", "startLabel": "11:00 AM", "endLabel": "11:30 AM", "location": "MM-BLACKBOX", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "LAGMRR1",
+      "title": "LAGUNA MRR",
+      "section": "MR1",
+      "credits": 1,
+      "meetings": [
+        { "day": "WED", "startLabel": "09:00 AM", "endLabel": "09:30 AM", "location": "MRR101", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "LAGUH1",
+      "title": "LAGUNA UH",
+      "section": "UH1",
+      "credits": 1,
+      "meetings": [
+        { "day": "THU", "startLabel": "10:00 AM", "endLabel": "10:30 AM", "location": "UH208", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "LAGEKR1",
+      "title": "LAGUNA EKR",
+      "section": "EK1",
+      "credits": 1,
+      "meetings": [
+        { "day": "FRI", "startLabel": "08:00 AM", "endLabel": "08:30 AM", "location": "EKR101", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "LAGRL1",
+      "title": "LAGUNA RL",
+      "section": "RL1",
+      "credits": 1,
+      "meetings": [
+        { "day": "SAT", "startLabel": "03:00 PM", "endLabel": "03:30 PM", "location": "RL101", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "LAGLC1",
+      "title": "LAGUNA LC1",
+      "section": "LC1",
+      "credits": 1,
+      "meetings": [
+        { "day": "MON", "startLabel": "10:30 AM", "endLabel": "11:00 AM", "location": "LC1", "scheduled": true, "modality": "room" }
+      ]
+    },
+    {
+      "courseCode": "LAGLC2",
+      "title": "LAGUNA LC2",
+      "section": "LC2",
+      "credits": 1,
+      "meetings": [
+        { "day": "TUE", "startLabel": "11:30 AM", "endLabel": "12:00 PM", "location": "LC2", "scheduled": true, "modality": "room" }
+      ]
+    }
+  ],
+  "coverage": {
+    "ordinaryPairs": ["PAIR101", "PAIR102", "PAIR103"],
+    "singleDayClasses": ["PE101", "LAB101"],
+    "fullyOnline": ["ONLINE101"],
+    "hybridOnlineAndF2f": ["HYBRID101"],
+    "f2fSameRoom": ["FACESAME1"],
+    "f2fDifferentRooms": ["FACEDIFF1"],
+    "pairedDifferentDayTimeRoom": ["VAR101"],
+    "asyncNoTimeNoVenue": ["NSTP101"],
+    "nstpForms": ["NSTP101", "NSTPCW1", "NSTPCW2", "NSTPLT1", "NSTPLT2", "NSTPRO1", "NSTPRO2"],
+    "lagunaBuildingCodes": ["LAGMM1", "LAGBOX1", "LAGMRR1", "LAGUH1", "LAGEKR1", "LAGRL1", "LAGLC1", "LAGLC2"],
+    "morning": ["PAIR101", "PAIR102", "PAIR103", "NSTPCW1", "NSTPCW2"],
+    "afternoon": ["PE101", "LAB101", "NSTPRO1", "NSTPRO2"],
+    "lateEvening": ["LATE101", "NSTPLT1", "NSTPLT2"],
+    "validNonOverlap": true
+  }
+}

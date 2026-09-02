@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>How to use AnimoSort</title>
-  <meta name="description" content="Learn how to turn a DLSU Archershub EAF into a timetable and carry your AnimoSort customizations between devices.">
+  <meta name="description" content="Learn how to import a DLSU Archershub EAF, customize classes, export Google Calendar links, and read supported DLSU building codes in AnimoSort.">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
@@ -52,7 +52,7 @@
     <section class="guide-hero" aria-labelledby="guide-title">
       <p class="import-kicker">Pick a task</p>
       <h1 id="guide-title">What do you want to do?</h1>
-      <p>Choose one. You do not need to read everything.</p>
+      <p>Pick a task. The short path comes first; open the details only when you need them.</p>
 
       <nav class="guide-task-picker" aria-label="Choose a help topic">
         <a class="guide-task-choice is-active" href="#make-timetable" data-guide-target="make-timetable" aria-current="true">
@@ -79,6 +79,14 @@
           <span class="guide-task-time">About 2 min</span>
           <span class="guide-task-arrow" aria-hidden="true">›</span>
         </a>
+        <a class="guide-task-choice" href="#building-codes" data-guide-target="building-codes">
+          <span class="guide-task-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5l8-3 8 3v16"></path><path d="M2 21h20M8 8h1M15 8h1M8 12h1M15 12h1M8 16h1M15 16h1M11 21v-4h2v4"></path></svg>
+          </span>
+          <span class="guide-task-copy"><strong>Read room codes</strong><span>Find the building behind a room label</span></span>
+          <span class="guide-task-time">About 1 min</span>
+          <span class="guide-task-arrow" aria-hidden="true">›</span>
+        </a>
       </nav>
     </section>
 
@@ -90,13 +98,15 @@
           <span class="guide-disclosure" aria-hidden="true"></span>
         </summary>
         <div class="guide-topic-body">
+          <p class="guide-topic-intro"><strong>Start with the official EAF.</strong> AnimoSort reads the PDF in your browser and builds a weekly view from the schedule rows it can understand.</p>
           <ol class="guide-path" aria-label="EAF import steps">
             <li><span class="guide-step-number">1</span><strong>Get your EAF</strong><span>Download the official Archershub EAF PDF.</span></li>
-            <li><span class="guide-step-number">2</span><strong>Drop the PDF</strong><span>Choose Browse files or drag it into the import area.</span></li>
-            <li><span class="guide-step-number">3</span><strong>Use your week</strong><span>Edit a class, download a PNG, or export your calendar.</span></li>
+            <li><span class="guide-step-number">2</span><strong>Import the PDF</strong><span>Choose Browse files or drag the file into the import area.</span></li>
+            <li><span class="guide-step-number">3</span><strong>Choose what is next</strong><span>Review the week, edit a class, download a PNG, or export a calendar.</span></li>
           </ol>
+          <aside class="guide-callout guide-callout-primary"><strong>Your schedule stays in this browser</strong><span>The EAF is parsed locally and is not uploaded. Importing another EAF replaces the displayed schedule; saved customization profiles remain available.</span></aside>
           <div class="guide-topic-footer">
-            <p>Importing another EAF replaces the displayed schedule. Your saved profiles stay available.</p>
+            <p>If an import fails, open More help below for the file requirements.</p>
             <a class="button btn-primary" href="index.html#import-panel">Open timetable</a>
           </div>
         </div>
@@ -109,17 +119,20 @@
           <span class="guide-disclosure" aria-hidden="true"></span>
         </summary>
         <div class="guide-topic-body">
+          <p class="guide-topic-intro"><strong>Profiles save presentation and class-detail choices.</strong> They do not contain your EAF or timetable rows, so you can carry the setup between devices without exporting the schedule itself.</p>
           <ol class="guide-path" aria-label="Customization steps">
             <li><span class="guide-step-number">1</span><strong>Choose a profile</strong><span>Select one or choose New to create a named setup.</span></li>
             <li><span class="guide-step-number">2</span><strong>Select a class</strong><span>Choose a timetable card or its color dot to open the editor.</span></li>
-            <li><span class="guide-step-number">3</span><strong>Save your changes</strong><span>Set the color, mode, or professor, then choose Save.</span></li>
+            <li><span class="guide-step-number">3</span><strong>Save your changes</strong><span>Set the identity, title, time, room or platform, delivery mode, color, or professor, then choose Done. Use <strong>This meeting</strong> for one-off changes or <strong>Paired meetings</strong> to share only the fields you change.</span></li>
           </ol>
+          <aside class="guide-callout guide-callout-primary"><strong>Async classes need a complete time</strong><span>If an EAF row says Async but has no time or room, it appears under Manual class details. Open Edit details and provide a day, start time, end time, and any missing identity or room values. Enter times with AM or PM, such as 7:30 AM. Choose F2F or Online when adding a time; Automatic keeps the async row without a fixed slot. The class joins the timetable only after the time slot is complete.</span></aside>
+          <p class="guide-topic-intro">Classes in the same EAF course and section form a pair when AnimoSort can match their shared identity. Normal EAF differences, such as a Monday meeting paired with a Thursday meeting, stay separate automatically. If a class already has its own changes, the review names the conflicting fields: <strong>Use pair settings</strong> follows the shared pair, <strong>Use this meeting for both</strong> shares the listed differences, and <strong>Cancel</strong> keeps your draft. Online meetings use <strong>Platform or link</strong>; leave it blank to show Online, or paste a complete HTTP(S) URL when you want to carry a meeting link into the calendar export. F2F meetings use a physical room. <strong>Automatic</strong> restores editable class details from the imported EAF for the selected scope. Course colors stay unchanged.</p>
           <div class="guide-compact-grid">
-            <article><span class="guide-mini-label">Move it</span><h3>Use the profile elsewhere</h3><p>Choose <strong>Download JSON</strong>. On another browser or device, choose <strong>Import JSON</strong>. The imported copy becomes active without changing your other profiles.</p></article>
-            <article><span class="guide-mini-label">Export it</span><h3>Match your PNG</h3><p>Choose <strong>Match site</strong>, <strong>Light</strong>, or <strong>Dark</strong>. The preview changes first, so the downloaded PNG looks as expected.</p></article>
+            <article><span class="guide-mini-label">Move it</span><h3>Use the profile elsewhere</h3><p>Choose <strong>Download JSON</strong>. On another browser or device, choose <strong>Import JSON</strong>. The imported copy becomes active without changing your other profiles. A profile JSON can include a meeting URL you entered, so share it only as deliberately as you would share that link.</p></article>
+            <article><span class="guide-mini-label">Export it</span><h3>Match your PNG</h3><p>Choose <strong>Match site</strong>, <strong>Light</strong>, or <strong>Dark</strong>. The preview changes first, so the downloaded PNG looks as expected. A PNG is a static image and cannot carry a clickable Zoom link.</p></article>
           </div>
           <div class="guide-topic-footer">
-            <p>You can import a profile before loading an EAF. Matching courses and sections pick up the saved details later.</p>
+            <p>You can import a profile before loading an EAF. Matching courses and sections pick up the saved details later. Appearance and reset tools are under More details.</p>
             <a class="button btn-primary" href="index.html#configuration-panel">Open customization</a>
           </div>
         </div>
@@ -132,17 +145,63 @@
           <span class="guide-disclosure" aria-hidden="true"></span>
         </summary>
         <div class="guide-topic-body">
-          <p class="guide-topic-intro"><strong>An .ics file</strong> is a calendar file. AnimoSort creates weekly class events with your current professor and F2F or Online details.</p>
+          <p class="guide-topic-intro"><strong>An .ics file</strong> is a calendar file. AnimoSort creates weekly events from the current effective class details. An independently edited class uses its edited day, time, room or platform, and title, then repeats weekly through the selected term dates. An async class stays out until it has a complete manual time.</p>
           <ol class="guide-path" aria-label="Google Calendar export steps">
             <li><span class="guide-step-number">1</span><strong>Enter the term dates</strong><span>Use the real first and last day of the term. Both dates are included.</span></li>
             <li><span class="guide-step-number">2</span><strong>Download the .ics file</strong><span>Choose Export to Google Calendar (.ics), read the notice, then download.</span></li>
             <li><span class="guide-step-number">3</span><strong>Import on a computer</strong><span>In Google Calendar, open Settings, then Import &amp; export, then Import.</span></li>
           </ol>
-          <aside class="guide-callout guide-callout-primary"><strong>Using an iPhone?</strong><span>Save the .ics file to Files, then send or move it to a computer. Google Calendar currently imports .ics files through its desktop website.</span></aside>
+          <aside class="guide-callout guide-callout-primary"><strong>Meeting links can travel with the event</strong><span>For an Online class, paste the complete <code>https://</code> or <code>http://</code> meeting URL into <strong>Platform or link</strong>. AnimoSort writes it to the event’s standard <code>URL</code> field and repeats it as <code>Join link:</code> in the description. Google Calendar imports the event details, but Google decides how to display the URL. A clickable link or native Join button is not guaranteed, and the URL does not create Google Meet conference data.</span></aside>
+          <aside class="guide-callout"><strong>Using an iPhone?</strong><span>Save the .ics file to Files, then send or move it to a computer. Google Calendar’s official import flow is on the desktop website.</span></aside>
           <aside class="guide-callout"><strong>Avoid duplicates</strong><span>Import each file once. Importing the same file again can create another copy of every class.</span></aside>
           <div class="guide-topic-footer">
-            <p>Classes outside the selected dates are skipped. If no class falls inside the range, AnimoSort blocks the download so you can fix the dates.</p>
+            <p>Classes outside the selected dates are skipped. If no class falls inside the range, AnimoSort blocks the download so you can fix the dates. A platform name such as <code>Zoom</code> is exported as text; only a complete HTTP(S) URL is treated as a link.</p>
             <p class="guide-calendar-links"><a class="text-link" href="https://support.google.com/calendar/answer/37118?hl=en" target="_blank" rel="noopener noreferrer">Read Google’s import instructions</a></p>
+          </div>
+        </div>
+      </details>
+
+      <details class="guide-topic" id="building-codes">
+        <summary>
+          <span class="guide-topic-heading"><span class="guide-topic-label">Room labels</span><strong>Find the building behind a room code</strong></span>
+          <span class="guide-topic-duration">About 1 minute</span>
+          <span class="guide-disclosure" aria-hidden="true"></span>
+        </summary>
+        <div class="guide-topic-body">
+          <p class="guide-topic-intro"><strong>AnimoSort keeps the original room code and adds the building name when it recognizes the prefix.</strong> The list below includes the supported DLSU room-code families, including the Laguna Campus codes.</p>
+          <div class="guide-table-wrap">
+            <table class="guide-building-table">
+              <caption>Supported DLSU building codes</caption>
+              <thead>
+                <tr><th scope="col">Code</th><th scope="col">Building</th><th scope="col">Example format</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row"><code>L / LS</code></th><td>Saint La Salle Hall</td><td><code>L…</code> or <code>LS…</code></td></tr>
+                <tr><th scope="row"><code>M / SM</code></th><td>Miguel Hall</td><td><code>M…</code> or <code>SM…</code></td></tr>
+                <tr><th scope="row"><code>AG / BAG</code></th><td>Brother Andrew Gonzales Building</td><td><code>AG…</code> or <code>BAG…</code></td></tr>
+                <tr><th scope="row"><code>EY / Y</code></th><td>Don Enrique Yuchengco Hall</td><td><code>EY…</code> or <code>Y…</code></td></tr>
+                <tr><th scope="row"><code>V / VL / VE</code></th><td>Velasco Hall</td><td><code>V…</code>, <code>VL…</code>, or <code>VE…</code></td></tr>
+                <tr><th scope="row"><code>ER / RC</code></th><td>Enrique Razon Sports Center</td><td><code>ER…</code> or <code>RC…</code></td></tr>
+                <tr><th scope="row"><code>SJ</code></th><td>St. Joseph Hall</td><td><code>SJ…</code></td></tr>
+                <tr><th scope="row"><code>G / GK</code></th><td>Gokongwei Hall</td><td><code>G…</code> or <code>GK…</code></td></tr>
+                <tr><th scope="row"><code>ST / STRC</code></th><td>Science &amp; Technology Research Center</td><td><code>ST…</code> or <code>STRC…</code></td></tr>
+                <tr><th scope="row"><code>MM</code></th><td>St. Mutien Marie Hall</td><td><code>MM101</code> or <code>MM-BLACKBOX</code></td></tr>
+                <tr><th scope="row"><code>MRR</code></th><td>Milagros R. del Rosario Building</td><td><code>MRR101</code></td></tr>
+                <tr><th scope="row"><code>UH</code></th><td>University Hall</td><td><code>UH208</code></td></tr>
+                <tr><th scope="row"><code>EKR</code></th><td>Enrique K. Razon Jr. Hall</td><td><code>EKR101</code></td></tr>
+                <tr><th scope="row"><code>RL</code></th><td>Richard L. Lee Engineering Technology Block</td><td><code>RL101</code></td></tr>
+                <tr><th scope="row"><code>LC1 / LC2</code></th><td>Integrated School Learning Centers</td><td><code>LC1</code> or <code>LC2</code></td></tr>
+                <tr><th scope="row"><code>WH / W / H</code></th><td>William Hall</td><td><code>WH…</code>, <code>W…</code>, or <code>H…</code></td></tr>
+                <tr><th scope="row"><code>J</code></th><td>John Gokongwei, Jr. Innovation Center</td><td><code>J…</code></td></tr>
+                <tr><th scope="row"><code>B</code></th><td>Bloemen Hall</td><td><code>B…</code></td></tr>
+                <tr><th scope="row"><code>C</code></th><td>Connon Hall</td><td><code>C…</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <aside class="guide-callout guide-callout-primary"><strong>Examples</strong><span><code>UH208</code> becomes <code>UH208 · University Hall</code>. <code>MM-BLACKBOX</code> becomes <code>MM-BLACKBOX · St. Mutien Marie Hall</code>. Both <code>LC1</code> and <code>LC2</code> use the Integrated School Learning Centers building family.</span></aside>
+          <div class="guide-topic-footer">
+            <p>Unknown room prefixes stay as entered. AnimoSort does not guess a building name.</p>
+            <a class="button btn-primary" href="index.html#import-panel">Open timetable</a>
           </div>
         </div>
       </details>
@@ -159,8 +218,9 @@
         <details>
           <summary><span><strong>How do class details work?</strong><small>Colors, mode, professor, and long text</small></span><span class="guide-disclosure" aria-hidden="true"></span></summary>
           <div class="guide-help-answer">
-            <p>A course color applies to every meeting of that course. Mode and professor apply only to the selected section. Choose <strong>Use EAF value</strong> to remove a manual mode override.</p>
-            <p>The color picker and hex field accept any opaque hex color. Professor names are optional and stay hidden when blank. Long details wrap, and the card grows to keep them inside its border.</p>
+            <p>A course color applies to every meeting of that course. Professor names are optional and stay hidden when blank. Long details wrap, and the card grows to keep them inside its border.</p>
+            <p>Choose <strong>This meeting</strong> for a one-off course code, section, title, time, room, mode, or professor. Choose <strong>Paired meetings</strong> to share only the fields you change. Normal EAF differences between paired meetings are not errors. If an independent meeting conflicts with pair settings, the review lists the fields and lets you follow the pair, use this meeting’s values for both, or cancel.</p>
+            <p>Choose <strong>Automatic</strong> to restore editable details from that meeting’s EAF row. An independent meeting stays independent, and course colors remain unchanged. For an Online class, the room field is labeled <strong>Platform or link</strong>; a plain platform name stays text, while a full HTTP(S) URL can be carried into the .ics export.</p>
             <div class="guide-card-sample" aria-label="Timetable card line order"><strong>CourseCode Section · color dot</strong><span>Course title</span><span>Room · F2F or Mode: Online</span><span>Professor, when entered</span><span>Time</span></div>
           </div>
         </details>
@@ -169,9 +229,10 @@
           <summary><span><strong>What do the reset buttons change?</strong><small>Clear only what you intend to clear</small></span><span class="guide-disclosure" aria-hidden="true"></span></summary>
           <div class="guide-help-answer guide-reset-list">
             <p><strong>Reset colors</strong><span>Returns the profile to Plain or Neutral colors.</span></p>
-            <p><strong>Reset section details</strong><span>Uses the EAF’s mode again and removes professors.</span></p>
+            <p><strong>Reset section details</strong><span>Uses the EAF’s mode and course details again, and removes shared and per-class overrides.</span></p>
             <p><strong>Reset everything</strong><span>Does both while keeping the profile name.</span></p>
-            <p><strong>Reset this section</strong><span>Clears only the selected section’s mode and professor.</span></p>
+            <p><strong>Reset this pair</strong><span>Clears the selected source section’s shared details.</span></p>
+            <p><strong>Reset this class</strong><span>Clears the selected meeting’s independent details, or all details for a single meeting.</span></p>
             <p>The built-in <strong>Default</strong> profile cannot be deleted.</p>
           </div>
         </details>
@@ -193,7 +254,7 @@
           <summary><span><strong>Where is my information stored?</strong><small>Privacy, profiles, and backups</small></span><span class="guide-disclosure" aria-hidden="true"></span></summary>
           <div class="guide-help-answer">
             <p>EAF parsing, profile validation, timetable rendering, and downloads happen in your browser. The EAF is not uploaded.</p>
-            <p>Profiles use this site’s local storage. Clearing site data removes them, so download a JSON backup for profiles you want to keep.</p>
+            <p>Profiles use this site’s local storage. Clearing site data removes them, so download a JSON backup for profiles you want to keep. A profile can contain any class details you entered, including a meeting URL; treat the JSON file as sensitive if the link is private.</p>
           </div>
         </details>
       </div>

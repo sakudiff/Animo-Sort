@@ -5,6 +5,7 @@ import {
   EafParseError,
   DAY_ORDER,
   STANDARD_PERIODS,
+  validateNoOverlaps,
 } from './eaf-parser.js';
 import {
   CalendarExportError,
@@ -34,12 +35,21 @@ import {
   renameProfile,
   resetProfile,
   resolveMeetingCustomization,
+  resolveScheduleEntries,
+  applySyncConflictChoice,
+  formatPairFieldDifference,
+  getPairCustomizationState,
+  getPairScopeLabel,
+  resetMeetingCustomization,
+  resetSectionDefaults,
   resetSectionCustomization,
   saveProfileStore,
   serializeProfile,
   setActiveProfile,
   setCourseColor,
   setSectionCustomization,
+  setMeetingCustomization,
+  setMeetingAutomaticOverride,
   formatMeetingMetadataLines,
 } from './customization.js';
 
@@ -74,6 +84,8 @@ const els = {
   summaryLabel: null,
   scheduleScroll: null,
   scheduleCanvas: null,
+  manualDetailsPanel: null,
+  manualDetailsList: null,
   courseLegend: null,
   courseLegendToggle: null,
   legendBadges: null,
@@ -118,6 +130,28 @@ const els = {
   customizationColor: null,
   customizationHex: null,
   customizationProfessor: null,
+  customizationScopeGroup: null,
+  customizationScopeOptions: null,
+  customizationScopeMeeting: null,
+  customizationScopePair: null,
+  customizationScopeHelp: null,
+  customizationPairStatus: null,
+  customizationConflictDialog: null,
+  customizationConflictForm: null,
+  customizationConflictCopy: null,
+  customizationSyncDiff: null,
+  customizationModeHelp: null,
+  customizationCourseCode: null,
+  customizationSection: null,
+  customizationTitle: null,
+  customizationDay: null,
+  customizationStartTime: null,
+  customizationEndTime: null,
+  customizationRoom: null,
+  customizationRoomLabel: null,
+  customizationRoomHelp: null,
+  customizationMoreDetails: null,
+  customizationValidation: null,
   resetSectionBtn: null,
   cancelCustomizationBtn: null,
 };
@@ -152,6 +186,8 @@ function requireElements() {
     summaryLabel: 'summary-label',
     scheduleScroll: 'schedule-scroll',
     scheduleCanvas: 'schedule-canvas',
+    manualDetailsPanel: 'manual-details-panel',
+    manualDetailsList: 'manual-details-list',
     courseLegend: 'course-legend',
     courseLegendToggle: 'course-legend-toggle',
     legendBadges: 'legend-badges',
@@ -196,6 +232,28 @@ function requireElements() {
     customizationColor: 'customization-color',
     customizationHex: 'customization-hex',
     customizationProfessor: 'customization-professor',
+    customizationScopeGroup: 'customization-scope-group',
+    customizationScopeOptions: 'customization-scope-options',
+    customizationScopeMeeting: 'customization-scope-meeting',
+    customizationScopePair: 'customization-scope-pair',
+    customizationScopeHelp: 'customization-scope-help',
+    customizationPairStatus: 'customization-pair-status',
+    customizationConflictDialog: 'customization-sync-conflict',
+    customizationConflictForm: 'customization-sync-conflict-form',
+    customizationConflictCopy: 'customization-sync-conflict-copy',
+    customizationSyncDiff: 'customization-sync-diff',
+    customizationModeHelp: 'customization-mode-help',
+    customizationCourseCode: 'customization-course-code',
+    customizationSection: 'customization-section',
+    customizationTitle: 'customization-title',
+    customizationDay: 'customization-day',
+    customizationStartTime: 'customization-start-time',
+    customizationEndTime: 'customization-end-time',
+    customizationRoom: 'customization-room',
+    customizationRoomLabel: 'customization-room-label',
+    customizationRoomHelp: 'customization-room-help',
+    customizationMoreDetails: 'customization-more-details',
+    customizationValidation: 'customization-validation',
     resetSectionBtn: 'reset-section-btn',
     cancelCustomizationBtn: 'cancel-customization-btn',
   };
@@ -312,9 +370,13 @@ function setCalendarExportOpen(isOpen) {
 function formatCalendarDownloadStatus(result) {
   const eventLabel = result.exportedCount === 1 ? 'event' : 'events';
   let message = `Downloaded ${result.exportedCount} recurring ${eventLabel}.`;
-  if (result.skippedCount > 0) {
-    const meetingLabel = result.skippedCount === 1 ? 'meeting' : 'meetings';
-    message += ` Skipped ${result.skippedCount} ${meetingLabel} outside the selected term dates.`;
+  if (result.outsideRangeCount > 0) {
+    const meetingLabel = result.outsideRangeCount === 1 ? 'meeting' : 'meetings';
+    message += ` Skipped ${result.outsideRangeCount} ${meetingLabel} outside the selected term dates.`;
+  }
+  if (result.unresolvedCount > 0) {
+    const meetingLabel = result.unresolvedCount === 1 ? 'meeting' : 'meetings';
+    message += ` Skipped ${result.unresolvedCount} ${meetingLabel} without a complete manual time.`;
   }
   return message;
 }
@@ -502,13 +564,21 @@ function getResolvedMeeting(meeting, schedule = currentSchedule, profile = activ
   return resolveMeetingCustomization(profile, meeting, indexes.get(code) || 0, map);
 }
 
+function getEafResolvedMeeting(meeting, profile = activeProfile()) {
+  const eafProfile = resetSectionCustomization(profile, meeting.courseCode, meeting.section);
+  return getResolvedMeeting(meeting, currentSchedule, eafProfile);
+}
+
 export function formatMeetingDetails(meeting, resolved = getResolvedMeeting(meeting)) {
   const lines = formatMeetingMetadataLines(meeting, resolved);
+  const dayLine = resolved.scheduled && resolved.day
+    ? `Day: ${DAY_LABELS[resolved.day] || resolved.day}`
+    : resolved.mode === 'online' ? 'Online · no fixed time' : 'Async · no fixed time';
   return [
-    meeting.courseCode,
-    `Section ${meeting.section}`,
-    meeting.title,
-    `Day: ${DAY_LABELS[meeting.day] || meeting.day}`,
+    resolved.courseCode || meeting.courseCode,
+    `Section ${resolved.section || meeting.section}`,
+    resolved.title || meeting.title,
+    dayLine,
     lines.locationMode,
     lines.professor,
     lines.time,
@@ -548,6 +618,8 @@ function resetScheduleView() {
   els.summaryLabel.textContent = '';
   els.scheduleCanvas.style.removeProperty('height');
   els.scheduleCanvas.replaceChildren();
+  els.manualDetailsList.replaceChildren();
+  els.manualDetailsPanel.hidden = true;
   els.legendBadges.replaceChildren();
   setStatus('');
 }
@@ -613,55 +685,85 @@ function createDayGridline(minutes, canvasStart, pixelsPerMinute, kind) {
   return line;
 }
 
-function renderCourseLegend(schedule, courseColorMap) {
+function renderManualDetails(entries) {
+  const unplaced = entries.filter((entry) => !entry.resolved.scheduled);
+  els.manualDetailsPanel.hidden = !unplaced.length;
+  els.manualDetailsList.replaceChildren();
+  for (const { meeting, resolved } of unplaced) {
+    const item = document.createElement('article');
+    item.className = 'manual-details-item';
+    const copy = document.createElement('div');
+    copy.className = 'manual-details-copy';
+    const identity = document.createElement('strong');
+    identity.textContent = `${resolved.courseCode} ${resolved.section}`;
+    const title = document.createElement('span');
+    title.textContent = resolved.title;
+    const state = document.createElement('span');
+    state.className = 'manual-details-state';
+    state.textContent = resolved.mode === 'online' ? 'Online · no fixed time' : 'Async · no fixed time';
+    copy.append(identity, title, state);
+    const edit = document.createElement('button');
+    edit.type = 'button';
+    edit.className = 'button btn-ghost manual-details-edit';
+    edit.textContent = 'Edit details';
+    edit.addEventListener('click', () => openCustomizationDialog(meeting, edit));
+    item.append(copy, edit);
+    els.manualDetailsList.appendChild(item);
+  }
+}
+
+function renderCourseLegend(schedule, courseColorMap, entries = resolveScheduleEntries(schedule, activeProfile())) {
   els.legendBadges.replaceChildren();
   const distinctCourses = [...new Set(schedule.meetings.map((meeting) => normalizeCourseCode(meeting.courseCode)))];
   els.courseLegend.hidden = !distinctCourses.length;
   for (const code of distinctCourses) {
-    const meeting = schedule.meetings.find((entry) => normalizeCourseCode(entry.courseCode) === code);
+    const entry = entries.find(({ meeting }) => normalizeCourseCode(meeting.courseCode) === code);
+    if (!entry) continue;
+    const { meeting, resolved } = entry;
     const palette = courseColorMap[code] || COURSE_PALETTES[0];
     const badge = document.createElement('button');
     badge.type = 'button';
     badge.className = 'course-badge';
     applyPaletteStyles(badge, palette);
-    badge.setAttribute('aria-label', `Customize ${meeting.courseCode} section ${meeting.section}`);
-    badge.title = `Customize ${meeting.courseCode} section ${meeting.section}`;
+    badge.setAttribute('aria-label', `Customize ${resolved.courseCode} section ${resolved.section}`);
+    badge.title = `Customize ${resolved.courseCode} section ${resolved.section}`;
     const swatch = document.createElement('span');
     swatch.className = 'course-badge-swatch';
     swatch.style.background = palette.swatch;
     const codeSpan = document.createElement('span');
     codeSpan.className = 'course-badge-code';
-    codeSpan.textContent = meeting.courseCode;
+    codeSpan.textContent = resolved.courseCode;
     const sectionSpan = document.createElement('span');
     sectionSpan.className = 'course-badge-section';
-    sectionSpan.textContent = meeting.section;
+    sectionSpan.textContent = resolved.section;
     badge.append(swatch, codeSpan, sectionSpan);
     badge.addEventListener('click', () => openCustomizationDialog(meeting, badge));
     els.legendBadges.appendChild(badge);
   }
 }
 
-function renderMeetingCard(meeting, courseColorMap, courseIndexes, canvasStart, pixelsPerMinute, previewTheme) {
-  const code = getCourseKey(meeting.courseCode);
-  const resolved = resolveMeetingCustomization(activeProfile(), meeting, courseIndexes.get(code) || 0, courseColorMap);
+function renderMeetingCard(entry, canvasStart, pixelsPerMinute, previewTheme) {
+  const { meeting, resolved, effective } = entry;
+  const code = resolved.courseKey;
   const lines = formatMeetingMetadataLines(meeting, resolved);
   const block = document.createElement('div');
   block.className = 'meeting-block';
   applyPaletteStyles(block, resolved.palette, previewTheme);
-  block.style.top = `${meetingTop(meeting, canvasStart, pixelsPerMinute)}%`;
-  block.style.height = `${meetingHeight(meeting, pixelsPerMinute)}%`;
+  block.style.top = `${meetingTop(effective, canvasStart, pixelsPerMinute)}%`;
+  block.style.height = `${meetingHeight(effective, pixelsPerMinute)}%`;
   block.setAttribute('role', 'cell');
   block.setAttribute('tabindex', '0');
   block.setAttribute('aria-label', formatMeetingDetails(meeting, resolved));
   block.dataset.course = code;
   block.dataset.section = resolved.sectionKey;
+  block.dataset.meetingId = resolved.meetingId;
 
   const codeNode = document.createElement('strong');
   codeNode.className = 'meeting-code';
-  codeNode.textContent = meeting.courseCode;
+  codeNode.textContent = resolved.courseCode;
   const sectionNode = document.createElement('span');
   sectionNode.className = 'meeting-section';
-  sectionNode.textContent = meeting.section;
+  sectionNode.textContent = resolved.section;
   const codeGroup = document.createElement('span');
   codeGroup.className = 'meeting-code-group';
   codeGroup.append(codeNode, sectionNode);
@@ -670,8 +772,8 @@ function renderMeetingCard(meeting, courseColorMap, courseIndexes, canvasStart, 
   colorButton.type = 'button';
   colorButton.className = 'meeting-color-btn';
   colorButton.style.background = resolved.palette.swatch;
-  colorButton.title = `Customize ${meeting.courseCode} section ${meeting.section}`;
-  colorButton.setAttribute('aria-label', `Customize ${meeting.courseCode} section ${meeting.section}`);
+  colorButton.title = `Customize ${resolved.courseCode} section ${resolved.section}`;
+  colorButton.setAttribute('aria-label', `Customize ${resolved.courseCode} section ${resolved.section}`);
   colorButton.addEventListener('click', (event) => {
     event.stopPropagation();
     openCustomizationDialog(meeting, colorButton);
@@ -683,7 +785,7 @@ function renderMeetingCard(meeting, courseColorMap, courseIndexes, canvasStart, 
 
   const title = document.createElement('span');
   title.className = 'meeting-title';
-  title.textContent = meeting.title;
+  title.textContent = resolved.title;
   const location = document.createElement('span');
   location.className = 'meeting-location';
   location.textContent = lines.locationMode;
@@ -704,7 +806,7 @@ function renderMeetingCard(meeting, courseColorMap, courseIndexes, canvasStart, 
       openCustomizationDialog(meeting, block);
     }
   });
-  return { block, duration: meeting.endMinutes - meeting.startMinutes };
+  return { block, duration: effective.endMinutes - effective.startMinutes };
 }
 
 export function renderSchedule(schedule) {
@@ -717,11 +819,13 @@ export function renderSchedule(schedule) {
   els.scheduleScroll.dataset.previewTheme = previewTheme;
   const profile = activeProfile();
   const courseColorMap = buildCourseColorMap(schedule, profile);
-  const courseIndexes = createCourseIndexMap(schedule);
-  renderCourseLegend(schedule, courseColorMap);
-  const allMinutes = schedule.meetings.flatMap((meeting) => [meeting.startMinutes, meeting.endMinutes]);
-  const canvasStart = Math.max(0, Math.min(...allMinutes) - 15);
-  const canvasEnd = Math.min(1440, Math.max(...allMinutes) + 15);
+  const entries = resolveScheduleEntries(schedule, profile);
+  const timedEntries = entries.filter((entry) => entry.resolved.scheduled);
+  renderCourseLegend(schedule, courseColorMap, entries);
+  renderManualDetails(entries);
+  const allMinutes = timedEntries.flatMap(({ effective }) => [effective.startMinutes, effective.endMinutes]);
+  const canvasStart = Math.max(0, (allMinutes.length ? Math.min(...allMinutes) : STANDARD_PERIODS[0][0]) - 15);
+  const canvasEnd = Math.min(1440, (allMinutes.length ? Math.max(...allMinutes) : STANDARD_PERIODS[STANDARD_PERIODS.length - 1][1]) + 15);
   const span = Math.max(1, canvasEnd - canvasStart);
   const pixelsPerMinute = span;
   const canvas = document.createElement('div');
@@ -734,7 +838,7 @@ export function renderSchedule(schedule) {
   canvas.appendChild(timeGutter);
   const guides = [
     ...STANDARD_PERIODS.filter(([start, end]) => start >= canvasStart && end <= canvasEnd),
-    ...schedule.meetings.map((meeting) => [meeting.startMinutes, meeting.endMinutes]),
+    ...timedEntries.flatMap(({ effective }) => [[effective.startMinutes, effective.endMinutes]]),
   ];
   const guideEntries = createGuideEntries(guides);
   for (const entry of guideEntries) {
@@ -760,15 +864,15 @@ export function renderSchedule(schedule) {
     const body = document.createElement('div');
     body.className = 'day-body';
     for (const entry of guideEntries) body.appendChild(createDayGridline(entry.minutes, canvasStart, pixelsPerMinute, entry.kind));
-    const dayMeetings = schedule.meetings.filter((meeting) => meeting.day === day);
+    const dayMeetings = timedEntries.filter(({ effective }) => effective.day === day);
     if (!dayMeetings.length) {
       const empty = document.createElement('p');
       empty.className = 'empty-day';
       empty.textContent = 'No classes';
       body.appendChild(empty);
     } else {
-      for (const meeting of dayMeetings) {
-        const rendered = renderMeetingCard(meeting, courseColorMap, courseIndexes, canvasStart, pixelsPerMinute, previewTheme);
+      for (const entry of dayMeetings) {
+        const rendered = renderMeetingCard(entry, canvasStart, pixelsPerMinute, previewTheme);
         meetingBlocks.push(rendered);
         body.appendChild(rendered.block);
       }
@@ -781,7 +885,7 @@ export function renderSchedule(schedule) {
   fitScheduleBody(canvas, meetingBlocks, span);
   fitTimetablePreview(canvas);
   els.sessionLabel.textContent = schedule.session;
-  const courseCount = new Set(schedule.meetings.map((meeting) => normalizeCourseCode(meeting.courseCode))).size;
+  const courseCount = new Set(entries.map(({ meeting }) => normalizeCourseCode(meeting.courseCode))).size;
   els.summaryLabel.textContent = `${courseCount} ${courseCount === 1 ? 'course' : 'courses'} · ${schedule.meetings.length} ${schedule.meetings.length === 1 ? 'meeting' : 'meetings'}`;
 }
 
@@ -984,42 +1088,572 @@ function renderEditorPaletteOptions() {
   }
 }
 
+function getSelectedEditorScope() {
+  if (!editorContext?.hasPair) return 'meeting';
+  return els.customizationScopePair.checked ? 'pair' : 'meeting';
+}
+
+function setSelectedEditorScope(scope) {
+  const nextScope = scope === 'pair' && editorContext?.hasPair ? 'pair' : 'meeting';
+  els.customizationScopeMeeting.checked = nextScope === 'meeting';
+  els.customizationScopePair.checked = nextScope === 'pair';
+  if (editorContext) editorContext.scope = nextScope;
+  return nextScope;
+}
+
+function getEditorProfile() {
+  return editorContext?.stagedProfile || activeProfile();
+}
+
+function getEditorMeetingOverride(profile = getEditorProfile()) {
+  if (!editorContext) return null;
+  const section = profile.sections?.[editorContext.sectionKey];
+  const meetings = section?.meetings;
+  const override = meetings?.[editorContext.resolved.meetingId];
+  return override && typeof override === 'object' ? override : null;
+}
+
+function updateEditorScopeChanged() {
+  if (!editorContext) return;
+  editorContext.scopeChanged = editorContext.scope !== editorContext.initialScope
+    || Boolean(editorContext.stagedProfile)
+    || Boolean(editorContext.conflictChoice);
+}
+
+function closeSyncConflictSheet(restoreFocus = false) {
+  if (!els.customizationConflictDialog) return;
+  if (typeof els.customizationConflictDialog.close === 'function') {
+    if (els.customizationConflictDialog.open) els.customizationConflictDialog.close();
+  } else {
+    els.customizationConflictDialog.hidden = true;
+  }
+  if (restoreFocus && editorContext) {
+    const target = editorContext.scope === 'pair' ? els.customizationScopePair : els.customizationScopeMeeting;
+    if (target && typeof target.focus === 'function') target.focus();
+  }
+}
+
 export function closeCustomizationDialog() {
   if (!els.customizationDialog) return;
   const trigger = editorContext?.trigger;
+  closeSyncConflictSheet(false);
   if (typeof els.customizationDialog.close === 'function' && els.customizationDialog.open) els.customizationDialog.close();
   else els.customizationDialog.hidden = true;
   editorContext = null;
   if (trigger && typeof trigger.focus === 'function') trigger.focus();
 }
 
+function getSelectedEditorMode() {
+  return els.customizationForm.querySelector('input[name="customization-mode"]:checked')?.value || 'inherit';
+}
+
+function inferSourceMeetingMode(meeting) {
+  const sourceLocation = String(meeting?.location || '').trim();
+  if (meeting?.modality === 'online' || /^online$/i.test(sourceLocation)) return 'online';
+  const hasScheduledTime = meeting?.scheduled !== false
+    && DAY_LABELS[meeting?.day]
+    && Number.isInteger(meeting?.startMinutes)
+    && Number.isInteger(meeting?.endMinutes)
+    && meeting.endMinutes > meeting.startMinutes;
+  return hasScheduledTime ? 'f2f' : 'async';
+}
+
+function getEditorEffectiveMode() {
+  const selectedMode = getSelectedEditorMode();
+  return selectedMode === 'inherit' ? editorContext?.sourceMode || 'async' : selectedMode;
+}
+
+function isPhysicalRoomValue(value) {
+  const normalized = String(value || '').trim();
+  return /^(?:room\s+)?[A-Z]{1,6}\s*\d[A-Z0-9-]*$/i.test(normalized);
+}
+
+function formatCustomizationError(error) {
+  if (error?.code !== 'MEETING_OVERLAP' || !Array.isArray(error.details?.meetings) || error.details.meetings.length < 2) {
+    return error?.message || 'The class customization could not be saved.';
+  }
+  const [first, second] = error.details.meetings;
+  const label = (meeting) => {
+    const ordinal = typeof meeting.id === 'string' ? Number(meeting.id.split('::').pop()) : NaN;
+    const suffix = Number.isInteger(ordinal) ? ` meeting ${ordinal + 1}` : '';
+    return `${meeting.courseCode || 'Class'} ${meeting.section || ''}${suffix}`.trim();
+  };
+  const time = (meeting) => `${formatInputTime(meeting.startMinutes)} - ${formatInputTime(meeting.endMinutes)}`;
+  const day = DAY_LABELS[error.details.day] || error.details.day || 'the same day';
+  return `These changes make ${label(first)} (${time(first)}) and ${label(second)} (${time(second)}) overlap on ${day}. Adjust the Time fields or choose This meeting.`;
+}
+
+function updateEditorModePresentation() {
+  if (!editorContext) return;
+  const selectedMode = getSelectedEditorMode();
+  const mode = getEditorEffectiveMode();
+  const previousMode = editorContext.presentedMode;
+  const isOnline = mode === 'online';
+  const isAsync = mode === 'async';
+  const crossedDeliveryBoundary = previousMode && previousMode !== mode
+    && ((previousMode === 'online' && mode === 'f2f') || (previousMode === 'f2f' && mode === 'online'));
+  if (crossedDeliveryBoundary) {
+    els.customizationRoom.value = '';
+    editorContext.changedFields.add('room');
+  }
+  if (selectedMode === 'inherit' && editorContext.sourceMode === 'async' && previousMode && previousMode !== 'async') {
+    els.customizationDay.value = '';
+    els.customizationStartTime.value = '';
+    els.customizationEndTime.value = '';
+    els.customizationRoom.value = '';
+    editorContext.changedFields.add('time');
+    editorContext.changedFields.add('room');
+  }
+  els.customizationForm.classList.toggle('is-online', isOnline);
+  els.customizationForm.classList.toggle('is-async', isAsync);
+  els.customizationRoomLabel.textContent = isOnline ? 'Platform or link' : 'Room';
+  if (isOnline && isPhysicalRoomValue(els.customizationRoom.value)) {
+    els.customizationRoom.value = '';
+    editorContext.changedFields.add('room');
+  }
+  els.customizationRoom.placeholder = isOnline ? 'Optional; e.g. Zoom or a URL' : isAsync ? 'Not used for async classes' : 'e.g. G404B';
+  els.customizationRoomHelp.textContent = isOnline
+    ? 'Leave blank for Online. A full http:// or https:// URL is included in .ics; calendar apps decide how it appears.'
+    : isAsync
+      ? 'Async classes have no fixed time or room.'
+      : 'Optional if the EAF does not include a room.';
+  els.customizationRoom.disabled = isAsync;
+  els.customizationModeHelp.textContent = selectedMode === 'inherit'
+    ? `Using the EAF value: ${isOnline ? 'Online' : isAsync ? 'Async' : 'F2F'}. Saving Automatic restores all class details from the EAF.`
+    : isOnline
+      ? 'This meeting is online.'
+      : 'This meeting is in person.';
+  editorContext.presentedMode = mode;
+}
+
+function getPairStateForEditor(scope = editorContext?.scope, profile = getEditorProfile()) {
+  if (!editorContext?.hasPair || !currentSchedule) return null;
+  return getPairCustomizationState(currentSchedule, profile, editorContext.meeting, scope);
+}
+
+function updatePairScopePresentation() {
+  if (!editorContext) return;
+  const scope = getSelectedEditorScope();
+  editorContext.scope = scope;
+  updateEditorScopeChanged();
+  const pairState = getPairStateForEditor(scope);
+  if (pairState) editorContext.pairState = pairState;
+
+  els.customizationScopeGroup.hidden = !editorContext.hasPair;
+  els.customizationScopePair.disabled = !editorContext.hasPair;
+  els.customizationScopeMeeting.checked = scope === 'meeting';
+  els.customizationScopePair.checked = scope === 'pair';
+  if (editorContext.hasPair && pairState) {
+    const labels = getPairScopeLabel(pairState);
+    els.customizationScopeHelp.textContent = labels.help;
+    els.customizationPairStatus.textContent = labels.status;
+    els.customizationPairStatus.hidden = !labels.status;
+  } else {
+    els.customizationScopeHelp.textContent = 'Only this meeting changes.';
+    els.customizationPairStatus.textContent = '';
+    els.customizationPairStatus.hidden = true;
+  }
+  els.customizationContext.textContent = `${editorContext.meeting.courseCode} ${editorContext.meeting.section} · ${scope === 'pair' && editorContext.hasPair ? 'Changes apply to both meetings.' : 'Only this meeting changes.'}`;
+  els.customizationForm.classList.toggle('is-unsynced', scope !== 'pair');
+  const stateLabel = els.customizationForm.querySelector('[data-sync-state]');
+  if (stateLabel) stateLabel.textContent = editorContext.hasPair && scope === 'pair' ? 'Paired meetings' : 'This meeting';
+  els.resetSectionBtn.textContent = scope === 'pair' && editorContext.hasPair ? 'Reset this pair' : 'Reset this class';
+  updateEditorModePresentation();
+}
+
+function renderConflictDiff(pairState) {
+  els.customizationSyncDiff.replaceChildren();
+  for (const difference of pairState?.conflicts || []) {
+    const formatted = formatPairFieldDifference(difference);
+    const row = document.createElement('div');
+    row.className = 'customization-sync-diff-row';
+    const label = document.createElement('strong');
+    label.className = 'customization-sync-diff-label';
+    label.textContent = formatted.label;
+    const current = document.createElement('span');
+    current.className = 'customization-sync-diff-value';
+    current.dataset.diffSide = 'current';
+    current.textContent = formatted.current;
+    current.setAttribute('aria-label', formatted.ariaLabel);
+    const pair = document.createElement('span');
+    pair.className = 'customization-sync-diff-value';
+    pair.dataset.diffSide = 'pair';
+    pair.textContent = formatted.pair;
+    row.append(label, current, pair);
+    els.customizationSyncDiff.appendChild(row);
+  }
+}
+
+function openSyncConflictSheet(pairState) {
+  if (!editorContext || !pairState?.hasActionableConflict) return;
+  editorContext.pendingConflict = true;
+  editorContext.pendingScope = 'pair';
+  editorContext.requestedScope = 'pair';
+  editorContext.pairState = pairState;
+  setSelectedEditorScope('meeting');
+  renderConflictDiff(pairState);
+  const hasPeerChanges = pairState.peerOverrideFields.length > 0;
+  els.customizationConflictCopy.textContent = hasPeerChanges
+    ? "This meeting has its own changes. Choose which details to keep. The other meeting's separate changes will stay separate unless they are part of the fields you choose to share."
+    : 'This meeting has its own changes. Choose which details to keep.';
+  els.customizationConflictDialog.hidden = false;
+  if (typeof els.customizationConflictDialog.showModal === 'function') els.customizationConflictDialog.showModal();
+  const firstAction = els.customizationConflictDialog.querySelector('[data-sync-choice="use-pair"]');
+  if (firstAction) firstAction.focus();
+}
+
+export function getPairChoiceDraftPatch(draftPatch, editorState = {}) {
+  if (editorState.automaticReset || !draftPatch || typeof draftPatch !== 'object' || Array.isArray(draftPatch)) return {};
+  const changedFields = editorState.changedFields instanceof Set
+    ? editorState.changedFields
+    : Array.isArray(editorState.changedFields) ? new Set(editorState.changedFields) : new Set();
+  if (!changedFields.size) return {};
+  return Object.fromEntries(Object.entries(draftPatch).filter(([field]) => changedFields.has(field)));
+}
+
+function getMeetingDraftPatchForPairChoice() {
+  if (!editorContext) return {};
+  const draftPatch = editorContext.automaticReset ? {} : readCustomizationPatch(editorContext.changedFields);
+  return getPairChoiceDraftPatch(draftPatch, editorContext);
+}
+
+function getMergedMeetingPatch(profile, patch) {
+  const override = getEditorMeetingOverride(profile);
+  if (!override || override.automatic === true) return { ...patch };
+  const merged = {};
+  for (const [key, value] of Object.entries(override)) {
+    if (key !== 'synced' && key !== 'automatic') merged[key] = value;
+  }
+  return { ...merged, ...patch };
+}
+
+function getIndependentDraftProfile() {
+  const profile = getEditorProfile();
+  if (editorContext.automaticReset) {
+    return {
+      profile: setMeetingAutomaticOverride(
+        profile,
+        editorContext.meeting.courseCode,
+        editorContext.meeting.section,
+        editorContext.resolved.meetingId,
+      ),
+      patch: {},
+    };
+  }
+  if (!editorContext.changedFields.size) return { profile, patch: {} };
+  const patch = getMeetingDraftPatchForPairChoice();
+  const merged = getMergedMeetingPatch(profile, patch);
+  return {
+    profile: setMeetingCustomization(
+      profile,
+      editorContext.meeting.courseCode,
+      editorContext.meeting.section,
+      editorContext.resolved.meetingId,
+      merged,
+    ),
+    patch,
+  };
+}
+
 export function openCustomizationDialog(meeting, trigger = null) {
   if (!currentSchedule || !meeting) return;
   const profile = activeProfile();
   const sectionKey = getSectionKey(meeting.courseCode, meeting.section);
-  const resolved = getResolvedMeeting(meeting);
+  const resolved = getResolvedMeeting(meeting, currentSchedule, profile);
   const storedColor = profile.courses?.[getCourseKey(meeting.courseCode)]?.color;
   const storedSection = profile.sections?.[sectionKey] || {};
+  const pairCount = currentSchedule.meetings.filter((entry) => getSectionKey(entry.courseCode, entry.section) === sectionKey).length;
+  const hasPair = pairCount > 1;
+  const storedMeeting = storedSection.meetings?.[resolved.meetingId];
+  const initialScope = hasPair && !storedMeeting ? 'pair' : 'meeting';
   editorContext = {
     meeting,
     trigger,
+    sectionKey,
+    resolved,
+    hasPair,
+    sourceMode: inferSourceMeetingMode(meeting),
+    presentedMode: null,
+    scope: initialScope,
+    initialScope,
+    requestedScope: initialScope,
+    pairState: null,
+    pendingConflict: false,
+    pendingScope: null,
+    scopeChanged: false,
+    conflictChoice: null,
+    stagedProfile: null,
+    automaticReset: false,
+    usingAutomaticEntry: Boolean(storedMeeting?.automatic),
+    changedFields: new Set(),
     draftColor: storedColor || resolved.palette.id || resolved.palette.swatch,
     colorChanged: false,
   };
-  els.customizationContext.textContent = `${meeting.courseCode} ${meeting.section} · color applies to the course; mode and professor apply to this section.`;
-  els.customizationProfessor.value = storedSection.professor || '';
-  const mode = storedSection.mode || 'inherit';
+  setSelectedEditorScope(initialScope);
+  els.customizationCourseCode.value = resolved.courseCode || '';
+  els.customizationSection.value = resolved.section || '';
+  els.customizationTitle.value = resolved.title || '';
+  els.customizationDay.value = resolved.day || '';
+  els.customizationStartTime.value = formatInputTime(resolved.startMinutes);
+  els.customizationEndTime.value = formatInputTime(resolved.endMinutes);
+  els.customizationRoom.value = resolved.location || '';
+  els.customizationProfessor.value = resolved.professor || '';
+  const mode = storedMeeting?.automatic ? 'inherit' : storedMeeting?.mode || storedSection.mode || 'inherit';
   els.customizationForm.querySelectorAll('input[name="customization-mode"]').forEach((radio) => {
     radio.checked = radio.value === mode;
   });
+  updatePairScopePresentation();
+  setCustomizationValidation('');
+  els.customizationMoreDetails.open = Boolean(resolved.professor);
   renderEditorPaletteOptions();
   setEditorDraftColor(editorContext.draftColor, false);
   if (typeof els.customizationDialog.showModal === 'function') els.customizationDialog.showModal();
   else els.customizationDialog.hidden = false;
-  const initialFocus = els.customizationPaletteOptions.querySelector('.active')
-    || els.customizationPaletteOptions.querySelector('button')
-    || els.cancelCustomizationBtn;
+  const initialFocus = els.customizationCourseCode || els.cancelCustomizationBtn;
   initialFocus.focus();
+}
+
+function formatInputTime(minutes) {
+  if (!Number.isInteger(minutes) || minutes < 0 || minutes > 1439) return '';
+  const hours24 = Math.floor(minutes / 60);
+  const period = hours24 >= 12 ? 'PM' : 'AM';
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  return `${hours12}:${String(minutes % 60).padStart(2, '0')} ${period}`;
+}
+
+function parseInputTime(value) {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toUpperCase();
+  const twelveHour = /^(\d{1,2}):([0-5]\d)\s*(AM|PM)$/.exec(normalized);
+  if (twelveHour) {
+    const hours = Number(twelveHour[1]);
+    const minutes = Number(twelveHour[2]);
+    if (hours < 1 || hours > 12) return null;
+    const hours24 = hours % 12 + (twelveHour[3] === 'PM' ? 12 : 0);
+    return hours24 * 60 + minutes;
+  }
+  const twentyFourHour = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(normalized);
+  if (!twentyFourHour) return null;
+  return Number(twentyFourHour[1]) * 60 + Number(twentyFourHour[2]);
+}
+
+function setCustomizationValidation(message, focusElement = null) {
+  els.customizationValidation.textContent = message;
+  els.customizationValidation.hidden = !message;
+  if (message && focusElement) focusElement.focus();
+}
+
+function setEditorDetailsFromResolved(resolved, mode = 'inherit') {
+  els.customizationCourseCode.value = resolved.courseCode || '';
+  els.customizationSection.value = resolved.section || '';
+  els.customizationTitle.value = resolved.title || '';
+  els.customizationDay.value = resolved.day || '';
+  els.customizationStartTime.value = formatInputTime(resolved.startMinutes);
+  els.customizationEndTime.value = formatInputTime(resolved.endMinutes);
+  els.customizationRoom.value = resolved.location || '';
+  els.customizationProfessor.value = resolved.professor || '';
+  els.customizationForm.querySelectorAll('input[name="customization-mode"]').forEach((radio) => {
+    radio.checked = radio.value === mode;
+  });
+  updateEditorModePresentation();
+}
+
+function restoreEditorFromEaf() {
+  if (!editorContext) return;
+  const resolved = getEafResolvedMeeting(editorContext.meeting, getEditorProfile());
+  editorContext.resolved = resolved;
+  editorContext.presentedMode = null;
+  editorContext.automaticReset = true;
+  editorContext.usingAutomaticEntry = true;
+  editorContext.changedFields = new Set();
+  setEditorDetailsFromResolved(resolved, 'inherit');
+}
+
+function cancelSyncConflict() {
+  if (!editorContext) return;
+  editorContext.pendingConflict = false;
+  editorContext.pendingScope = null;
+  editorContext.requestedScope = 'meeting';
+  setSelectedEditorScope('meeting');
+  editorContext.pairState = getPairStateForEditor('meeting', activeProfile());
+  closeSyncConflictSheet(false);
+  updatePairScopePresentation();
+  els.customizationScopeMeeting.focus();
+}
+
+function handleSyncConflictChoice(choice) {
+  if (!editorContext?.pendingConflict) return;
+  if (choice === 'cancel') {
+    cancelSyncConflict();
+    return;
+  }
+  try {
+    const draftPatch = choice === 'use-current-for-pair' ? getMeetingDraftPatchForPairChoice() : {};
+    const next = applySyncConflictChoice(activeProfile(), {
+      schedule: currentSchedule,
+      selectedMeeting: editorContext.meeting,
+      pairState: editorContext.pairState,
+      draftPatch,
+      changedFields: editorContext.changedFields,
+    }, choice);
+    validateEffectiveProfile(next);
+    editorContext.stagedProfile = next;
+    editorContext.conflictChoice = choice;
+    editorContext.scope = 'pair';
+    editorContext.requestedScope = 'pair';
+    editorContext.pendingConflict = false;
+    editorContext.pendingScope = null;
+    editorContext.automaticReset = false;
+    editorContext.usingAutomaticEntry = false;
+    editorContext.changedFields.clear();
+    if (choice === 'use-pair') {
+      editorContext.resolved = getResolvedMeeting(editorContext.meeting, currentSchedule, next);
+      editorContext.presentedMode = null;
+      const section = next.sections?.[editorContext.sectionKey] || {};
+      const override = section.meetings?.[editorContext.resolved.meetingId];
+      const mode = override?.automatic ? 'inherit' : override?.mode || section.mode || 'inherit';
+      setEditorDetailsFromResolved(editorContext.resolved, mode);
+    } else {
+      editorContext.resolved = getResolvedMeeting(editorContext.meeting, currentSchedule, next);
+    }
+    setSelectedEditorScope('pair');
+    closeSyncConflictSheet(false);
+    updatePairScopePresentation();
+    els.customizationScopePair.focus();
+  } catch (error) {
+    const message = formatCustomizationError(error);
+    editorContext.pendingConflict = false;
+    editorContext.pendingScope = null;
+    editorContext.requestedScope = 'meeting';
+    setSelectedEditorScope('meeting');
+    closeSyncConflictSheet(false);
+    updatePairScopePresentation();
+    setCustomizationValidation(message, error.focusElement || null);
+    setProfileStatus(message, 'error');
+  }
+}
+
+function handleEditorScopeChange(scope) {
+  if (!editorContext || !editorContext.hasPair) return;
+  const previousScope = editorContext.scope;
+  if (scope === previousScope) {
+    updatePairScopePresentation();
+    return;
+  }
+  editorContext.requestedScope = scope;
+  if (scope === 'meeting') {
+    if (editorContext.stagedProfile) {
+      editorContext.stagedProfile = null;
+      editorContext.conflictChoice = null;
+      editorContext.pairState = null;
+    }
+    editorContext.pendingConflict = false;
+    editorContext.pendingScope = null;
+    setSelectedEditorScope('meeting');
+    updatePairScopePresentation();
+    els.customizationScopeMeeting.focus();
+    return;
+  }
+
+  try {
+    const draft = getIndependentDraftProfile();
+    const pairState = getPairCustomizationState(currentSchedule, draft.profile, editorContext.meeting, 'meeting');
+    if (pairState.hasActionableConflict) {
+      setSelectedEditorScope('meeting');
+      openSyncConflictSheet(pairState);
+      return;
+    }
+    editorContext.scope = 'pair';
+    editorContext.pairState = { ...pairState, scope: 'pair' };
+    setSelectedEditorScope('pair');
+    updatePairScopePresentation();
+    els.customizationScopePair.focus();
+  } catch (error) {
+    const message = formatCustomizationError(error);
+    editorContext.requestedScope = previousScope;
+    setSelectedEditorScope(previousScope);
+    updatePairScopePresentation();
+    setCustomizationValidation(message, error.focusElement || null);
+    setProfileStatus(message, 'error');
+  }
+}
+
+function readManualTime() {
+  const day = els.customizationDay.value;
+  const startMinutes = parseInputTime(els.customizationStartTime.value);
+  const endMinutes = parseInputTime(els.customizationEndTime.value);
+  const hasAnyValue = Boolean(day || els.customizationStartTime.value || els.customizationEndTime.value);
+  if (!hasAnyValue) return null;
+  if (!day) {
+    const error = new Error('Choose a day for the manual time slot.');
+    error.focusElement = els.customizationDay;
+    throw error;
+  }
+  if (startMinutes === null) {
+    const error = new Error('Enter a valid start time for the manual time slot.');
+    error.focusElement = els.customizationStartTime;
+    throw error;
+  }
+  if (endMinutes === null) {
+    const error = new Error('Enter a valid end time for the manual time slot.');
+    error.focusElement = els.customizationEndTime;
+    throw error;
+  }
+  if (endMinutes <= startMinutes) {
+    const error = new Error('The end time must be after the start time.');
+    error.focusElement = els.customizationEndTime;
+    throw error;
+  }
+  return { day, startMinutes, endMinutes };
+}
+
+function readCustomizationPatch(changedFields = null) {
+  const include = (field) => !changedFields || changedFields.has(field);
+  const selectedMode = getSelectedEditorMode();
+  const effectiveMode = selectedMode === 'inherit' ? editorContext?.sourceMode || 'async' : selectedMode;
+  const mode = include('mode') ? selectedMode : null;
+  const time = include('time') ? readManualTime() : null;
+  if (time && editorContext?.sourceMode === 'async' && selectedMode === 'inherit') {
+    const error = new Error('Choose F2F or Online when adding a time to an async class.');
+    error.focusElement = els.customizationForm.querySelector('input[name="customization-mode"][value="f2f"]');
+    throw error;
+  }
+  if (editorContext?.sourceMode === 'async' && selectedMode !== 'inherit' && !time) {
+    const existingManualTime = !include('time') && editorContext.resolved?.scheduled;
+    if (!existingManualTime) {
+      const error = new Error('Add a day, start time, and end time for F2F or Online, or choose Automatic to keep this class async.');
+      error.focusElement = els.customizationDay;
+      throw error;
+    }
+  }
+  const roomValue = els.customizationRoom.value.trim();
+  if (effectiveMode === 'f2f' && /^online$/i.test(roomValue)) {
+    const error = new Error('F2F classes cannot use Online as a room. Leave Room blank or enter a physical room, or choose Online delivery.');
+    error.focusElement = els.customizationRoom;
+    throw error;
+  }
+  if (effectiveMode === 'online' && isPhysicalRoomValue(roomValue)) {
+    const error = new Error('Online classes use a platform or link, not a physical room. Leave it blank to show Online or enter the platform.');
+    error.focusElement = els.customizationRoom;
+    throw error;
+  }
+  const patch = {};
+  if (include('courseCode')) patch.courseCode = els.customizationCourseCode.value;
+  if (include('section')) patch.section = els.customizationSection.value;
+  if (include('title')) patch.title = els.customizationTitle.value;
+  if (include('time')) patch.time = time;
+  if (include('room')) patch.room = els.customizationRoom.value;
+  if (include('professor')) patch.professor = els.customizationProfessor.value;
+  if (include('mode')) patch.mode = mode === 'inherit' ? null : mode;
+  return patch;
+}
+
+function validateEffectiveProfile(profile) {
+  if (!currentSchedule) return;
+  const effectiveMeetings = resolveScheduleEntries(currentSchedule, profile)
+    .filter((entry) => entry.resolved.scheduled)
+    .map((entry) => entry.effective);
+  validateNoOverlaps(effectiveMeetings);
 }
 
 function saveCustomizationDraft(event) {
@@ -1028,45 +1662,157 @@ function saveCustomizationDraft(event) {
   const hex = normalizeHexColor(els.customizationHex.value);
   if (!hex) {
     els.customizationHex.classList.add('invalid');
-    els.customizationHex.focus();
+    const message = 'Enter a valid 3- or 6-digit hex color, such as #3B82F6.';
+    setCustomizationValidation(message, els.customizationHex);
+    setProfileStatus(message, 'error');
     return;
   }
   if (hex && editorContext.draftColor?.startsWith('#')) editorContext.draftColor = hex;
-  const mode = els.customizationForm.querySelector('input[name="customization-mode"]:checked')?.value || 'inherit';
   try {
-    let next = activeProfile();
+    const scope = getSelectedEditorScope();
+    const syncPair = Boolean(editorContext.hasPair && scope === 'pair');
+    const shouldRejoinPair = syncPair
+      && editorContext.initialScope === 'meeting'
+      && !editorContext.stagedProfile
+      && !editorContext.conflictChoice
+      && !editorContext.automaticReset;
+    const hasPersistableChange = editorContext.changedFields.size > 0
+      || editorContext.colorChanged
+      || editorContext.automaticReset
+      || Boolean(editorContext.stagedProfile)
+      || Boolean(editorContext.conflictChoice)
+      || shouldRejoinPair;
+    if (!hasPersistableChange) {
+      closeCustomizationDialog();
+      return;
+    }
+    let next = editorContext.stagedProfile || activeProfile();
     if (editorContext.colorChanged) next = setCourseColor(next, editorContext.meeting.courseCode, editorContext.draftColor);
-    next = setSectionCustomization(next, editorContext.meeting.courseCode, editorContext.meeting.section, {
-      mode: mode === 'inherit' ? null : mode,
-      professor: els.customizationProfessor.value,
-    });
+    let statusMessage = syncPair ? 'Paired meeting changes saved.' : "This meeting's changes saved.";
+    if (editorContext.automaticReset) {
+      if (syncPair || !editorContext.hasPair) {
+        if (syncPair) {
+          next = resetMeetingCustomization(
+            next,
+            editorContext.meeting.courseCode,
+            editorContext.meeting.section,
+            editorContext.resolved.meetingId,
+          );
+          next = resetSectionDefaults(next, editorContext.meeting.courseCode, editorContext.meeting.section);
+        } else {
+          next = resetSectionCustomization(next, editorContext.meeting.courseCode, editorContext.meeting.section);
+        }
+      } else {
+        next = setMeetingAutomaticOverride(
+          next,
+          editorContext.meeting.courseCode,
+          editorContext.meeting.section,
+          editorContext.resolved.meetingId,
+        );
+      }
+      statusMessage = syncPair ? 'Paired class details restored from the EAF.' : 'Class details restored from the EAF.';
+    } else {
+      if (syncPair) {
+        const patch = readCustomizationPatch(editorContext.changedFields);
+        if (Object.keys(patch).length) {
+          next = setSectionCustomization(next, editorContext.meeting.courseCode, editorContext.meeting.section, patch);
+          next = resetMeetingCustomization(next, editorContext.meeting.courseCode, editorContext.meeting.section, editorContext.resolved.meetingId);
+        } else if (shouldRejoinPair) {
+          next = resetMeetingCustomization(next, editorContext.meeting.courseCode, editorContext.meeting.section, editorContext.resolved.meetingId);
+        }
+      } else if (editorContext.changedFields.size) {
+        const patch = readCustomizationPatch(editorContext.changedFields);
+        const mergedPatch = getMergedMeetingPatch(next, patch);
+        next = setMeetingCustomization(
+          next,
+          editorContext.meeting.courseCode,
+          editorContext.meeting.section,
+          editorContext.resolved.meetingId,
+          mergedPatch,
+        );
+      }
+    }
+    if (editorContext.conflictChoice === 'use-pair' && !editorContext.changedFields.size && !editorContext.colorChanged) {
+      statusMessage = 'This meeting now follows the pair settings.';
+    }
+    validateEffectiveProfile(next);
     persistStore({
       ...profileStore,
       profiles: profileStore.profiles.map((entry) => entry.id === profileStore.activeProfileId ? { ...entry, profile: next } : entry),
-    }, 'Section customization saved.');
+    }, statusMessage);
     closeCustomizationDialog();
   } catch (error) {
-    setProfileStatus(error.message || 'The section customization could not be saved.', 'error');
+    const message = formatCustomizationError(error);
+    setCustomizationValidation(message, error.focusElement || null);
+    setProfileStatus(message, 'error');
   }
 }
 
 function resetEditorSection() {
   if (!editorContext) return;
-  els.customizationForm.querySelectorAll('input[name="customization-mode"]').forEach((radio) => {
-    radio.checked = radio.value === 'inherit';
-  });
-  els.customizationProfessor.value = '';
-  const profile = resetSectionCustomization(activeProfile(), editorContext.meeting.courseCode, editorContext.meeting.section);
-  const existingColor = profile.courses?.[getCourseKey(editorContext.meeting.courseCode)]?.color;
-  editorContext.draftColor = existingColor || editorContext.draftColor;
-  editorContext.colorChanged = false;
-  setEditorDraftColor(editorContext.draftColor, false);
+  try {
+    const syncPair = Boolean(editorContext.hasPair && getSelectedEditorScope() === 'pair');
+    let baseProfile = editorContext.stagedProfile || activeProfile();
+    let profile;
+    if (syncPair) {
+      profile = resetMeetingCustomization(baseProfile, editorContext.meeting.courseCode, editorContext.meeting.section, editorContext.resolved.meetingId);
+      profile = resetSectionDefaults(profile, editorContext.meeting.courseCode, editorContext.meeting.section);
+    } else if (!editorContext.hasPair) {
+      profile = resetSectionCustomization(baseProfile, editorContext.meeting.courseCode, editorContext.meeting.section);
+    } else {
+      profile = resetMeetingCustomization(baseProfile, editorContext.meeting.courseCode, editorContext.meeting.section, editorContext.resolved.meetingId);
+    }
+    validateEffectiveProfile(profile);
+    persistStore({
+      ...profileStore,
+      profiles: profileStore.profiles.map((entry) => entry.id === profileStore.activeProfileId ? { ...entry, profile } : entry),
+    }, syncPair ? 'Shared pair details reset.' : editorContext.hasPair ? 'This class is synced with its pair again.' : 'Class details reset.');
+    closeCustomizationDialog();
+  } catch (error) {
+    const message = formatCustomizationError(error);
+    setCustomizationValidation(message);
+    setProfileStatus(message, 'error');
+  }
 }
 
 function initCustomizationDialog() {
   els.customizationForm.addEventListener('submit', saveCustomizationDraft);
+  const detailFieldNames = new Map([
+    ['customization-course-code', 'courseCode'],
+    ['customization-section', 'section'],
+    ['customization-title', 'title'],
+    ['customization-day', 'time'],
+    ['customization-start-time', 'time'],
+    ['customization-end-time', 'time'],
+    ['customization-room', 'room'],
+    ['customization-professor', 'professor'],
+  ]);
+  const markSyncEditDirty = (event) => {
+    if (!editorContext) return;
+    if (event.target.name === 'customization-scope') return;
+    const isModeEvent = event.target.name === 'customization-mode';
+    const selectsAutomatic = isModeEvent && event.target.value === 'inherit';
+    if (editorContext.automaticReset && (!isModeEvent || !selectsAutomatic)) {
+      editorContext.automaticReset = false;
+      editorContext.changedFields.clear();
+    }
+    const fieldName = isModeEvent
+      ? 'mode'
+      : detailFieldNames.get(event.target.id);
+    if (fieldName) editorContext.changedFields.add(fieldName);
+  };
+  els.customizationForm.addEventListener('input', markSyncEditDirty);
+  els.customizationForm.addEventListener('change', (event) => {
+    markSyncEditDirty(event);
+    if (event.target.name === 'customization-mode') {
+      if (event.target.value === 'inherit') restoreEditorFromEaf();
+      updateEditorModePresentation();
+    }
+  });
   els.cancelCustomizationBtn.addEventListener('click', closeCustomizationDialog);
   els.resetSectionBtn.addEventListener('click', resetEditorSection);
+  els.customizationScopeMeeting.addEventListener('change', () => handleEditorScopeChange('meeting'));
+  els.customizationScopePair.addEventListener('change', () => handleEditorScopeChange('pair'));
   els.customizationColor.addEventListener('input', () => setEditorDraftColor(els.customizationColor.value.toLowerCase()));
   els.customizationHex.addEventListener('input', () => {
     const value = normalizeHexColor(els.customizationHex.value);
@@ -1076,6 +1822,15 @@ function initCustomizationDialog() {
   els.customizationDialog.addEventListener('cancel', (event) => {
     event.preventDefault();
     closeCustomizationDialog();
+  });
+  els.customizationConflictForm.addEventListener('submit', (event) => event.preventDefault());
+  els.customizationConflictForm.addEventListener('click', (event) => {
+    const action = event.target.closest?.('[data-sync-choice]');
+    if (action) handleSyncConflictChoice(action.dataset.syncChoice);
+  });
+  els.customizationConflictDialog.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    cancelSyncConflict();
   });
 }
 

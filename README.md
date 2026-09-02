@@ -37,10 +37,11 @@ These screenshots are captured from the current site and focus on the product it
 
 - Client-side PDF parsing with vendored PDF.js
 - Automatic term detection and course schedule extraction
-- Campus building code expansions for physical classrooms (including Velasco Hall, LS Hall, Miguel Hall, etc.)
+- Campus building code expansions for physical classrooms, including the Laguna mappings `MM`, `MRR`, `UH`, `EKR`, `RL`, and `LC1`/`LC2`
 - Customizable course colors with pastel presets, monochrome plain mode, direct `#HEX` code input, and one-click randomize
 - Named customization profiles with local persistence and portable JSON import/export
-- Section-level F2F/Online overrides and optional professor labels
+- Section-level course, title, room, time, F2F/Online, and professor overrides with Automatic restoring every editable detail from the EAF
+- Async/no-fixed-time rows remain visible for one manual time slot; paired meetings share changes by default, while This meeting lets one meeting keep its own details
 - AMOLED dark mode with dedicated header theme toggle
 - Support for non-standard meeting intervals and split room allocations
 - Toggle controls for full course titles
@@ -71,11 +72,17 @@ Open `http://localhost:8000` in your web browser to use the application.
 1. Open AnimoSort in your browser.
 2. Select or drag your official Archershub EAF PDF into the upload area.
 3. Review your timetable across Monday to Saturday.
-4. Click a timetable card or color dot to set a course color, delivery mode, and optional professor.
+4. Click a timetable card or color dot to edit its course code, section, title, time, room or platform, delivery mode, color, and professor. For a pair, choose This meeting for an independent edit or Paired meetings to apply changed fields to both. Normal EAF differences such as Monday/Thursday times remain automatic. If the meeting already has its own changes, AnimoSort asks whether to use the pair settings or use this meeting for both.
 5. Use the profile panel to create, rename, reset, download, or import a customization profile. Profiles are browser-local; the JSON file contains customization values only.
 6. Toggle full course titles, choose the PNG theme, or download a PNG image of your schedule.
 
 See [How to use AnimoSort](how-to-use.html) for the complete walkthrough.
+
+### Paired meetings and Automatic
+
+The editor uses an Apply changes to choice instead of a Sync on/off switch. Paired meetings is the safe default for a normal EAF pair: only fields you actually change are shared, so each meeting keeps its own EAF day, time, room, or delivery when those values were not changed. Choose This meeting when one class needs a different schedule, room, mode, title, course code, section, or professor.
+
+If a meeting already has independent changes and you choose Paired meetings, a short review shows only the fields that would conflict. Use pair settings to discard this meeting's independent details, Use this meeting for both to share the listed fields and clear the corresponding peer overrides, or Cancel to keep the draft and continue editing. Automatic restores every editable detail from the EAF for the selected scope and never changes the course color. A resulting overlap is rejected as one atomic change, so the previous saved profile stays intact.
 
 ## Project Structure
 
@@ -115,10 +122,11 @@ See [How to use AnimoSort](how-to-use.html) for the complete walkthrough.
 
 The project is structured into vanilla JavaScript modules.
 
-- `assets/js/eaf-parser.js` handles PDF text extraction, schedule row identification, zero-credit course support, and campus room translations.
-- `assets/js/customization.js` validates the versioned profile format, migrates legacy colors, stores named profiles locally, and resolves course/section presentation values.
-- `assets/js/export.js` generates vector SVG representations and exports high-resolution timetable images.
-- `assets/js/app.js` manages DOM event bindings, drag-and-drop file ingestion, timetable rendering, and client-side view toggles.
+- `assets/js/eaf-parser.js` handles PDF text extraction, schedule row identification, zero-credit course support, campus room translations, and explicit async rows.
+- `assets/js/customization.js` validates the versioned profile format, migrates legacy colors, stores named profiles locally, and resolves synchronized or per-meeting course details.
+- `assets/js/export.js` generates vector SVG representations and exports high-resolution timetable images from the effective schedule.
+- `assets/js/calendar.js` creates recurring `.ics` events from effective timed meetings and skips unresolved async rows.
+- `assets/js/app.js` manages DOM event bindings, drag-and-drop file ingestion, effective timetable rendering, manual-details editing, and client-side view toggles.
 - `assets/js/site.js` provides the shared theme toggle, navigation state, smooth scrolling, and reveal behavior used by both pages.
 
 ### Interactive pipeline diagram
@@ -138,11 +146,22 @@ Download one active profile as JSON and import it later or on another device. A 
   "name": "Classroom setup",
   "defaults": { "color": "plain", "mode": "infer" },
   "courses": { "STSP002": { "color": "#d946ef" } },
-  "sections": { "STSP002::S30A": { "mode": "f2f", "professor": "Prof. Santos" } }
+  "sections": {
+    "STSP002::S30A": {
+      "mode": "f2f",
+      "professor": "Prof. Santos",
+      "meetings": {
+        "STSP002::S30A::1": {
+          "synced": false,
+          "time": { "day": "TUE", "startMinutes": 840, "endMinutes": 900 }
+        }
+      }
+    }
+  }
 }
 ```
 
-The file does not contain the EAF, schedule, rooms, student identity, or session data. Clearing browser site data removes local profiles, so keep a downloaded backup when portability matters.
+The file contains only manual presentation/detail patches. A meeting with `automatic: true` stays independent while reading its class details from the source EAF row. Course colors remain course-wide. The file does not contain the EAF, raw schedule records, student identity, or session data; manually entered room values can be included. Clearing browser site data removes local profiles, so keep a downloaded backup when portability matters.
 
 ## Contributing
 

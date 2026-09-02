@@ -213,6 +213,16 @@
             <span>Show full course names</span>
           </label>
         </div>
+        <section class="manual-details-panel" id="manual-details-panel" aria-labelledby="manual-details-heading" hidden>
+          <div class="manual-details-heading">
+            <div>
+              <p class="import-kicker">Needs your input</p>
+              <h3 id="manual-details-heading">Manual class details</h3>
+            </div>
+            <span class="manual-details-count">Async classes stay off the grid until scheduled.</span>
+          </div>
+          <div id="manual-details-list" class="manual-details-list"></div>
+        </section>
         <div class="course-legend" id="course-legend" aria-label="Course colors">
           <button type="button" id="course-legend-toggle" class="course-legend-toggle" aria-expanded="false" aria-controls="course-legend-content">
             <span class="legend-toggle-copy">
@@ -242,28 +252,119 @@
 
     <dialog id="customization-dialog" class="customization-dialog" aria-labelledby="customization-dialog-title">
       <form method="dialog" id="customization-form">
-        <h2 id="customization-dialog-title">Customize section</h2>
+        <div class="customization-dialog-header">
+          <div class="customization-dialog-toolbar">
+            <button type="button" id="cancel-customization-btn" class="customization-dialog-action">Cancel</button>
+            <span class="customization-dialog-task">Class details</span>
+            <button type="submit" id="save-customization-btn" class="customization-dialog-action customization-dialog-action--done">Done</button>
+          </div>
+          <h2 id="customization-dialog-title">Edit class</h2>
+        </div>
         <p id="customization-context" class="customization-context"></p>
-        <fieldset>
-          <legend>Course color</legend>
-          <div id="customization-palette-options" class="customization-palette-options" aria-label="Preset course colors"></div>
-          <div class="customization-color-row">
-            <input id="customization-color" type="color" aria-label="Choose a custom course color" value="#94a3b8">
-            <input id="customization-hex" type="text" inputmode="text" maxlength="7" placeholder="#HEX" aria-label="Course color hex code">
+        <fieldset id="customization-scope-group" class="customization-group customization-scope-group">
+          <legend>Apply changes to</legend>
+          <div id="customization-scope-options" class="customization-scope-options" role="radiogroup" aria-label="Apply changes to">
+            <label class="customization-scope-option">
+              <input id="customization-scope-meeting" type="radio" name="customization-scope" value="meeting" checked aria-describedby="customization-scope-help">
+              <span>This meeting</span>
+            </label>
+            <label class="customization-scope-option">
+              <input id="customization-scope-pair" type="radio" name="customization-scope" value="pair" aria-describedby="customization-scope-help">
+              <span>Paired meetings</span>
+            </label>
+          </div>
+          <p id="customization-scope-help" class="customization-group-help">Only this meeting changes.</p>
+        </fieldset>
+        <p id="customization-validation" class="customization-validation" role="alert" hidden></p>
+        <p id="customization-pair-status" class="customization-pair-status" role="status" hidden></p>
+        <fieldset class="customization-group customization-delivery-group">
+          <legend>Delivery</legend>
+          <div class="customization-mode-options" role="radiogroup" aria-label="Delivery mode">
+            <label class="customization-mode-option"><input type="radio" name="customization-mode" value="inherit"><span>Automatic</span></label>
+            <label class="customization-mode-option"><input type="radio" name="customization-mode" value="f2f"><span>F2F</span></label>
+            <label class="customization-mode-option"><input type="radio" name="customization-mode" value="online"><span>Online</span></label>
+          </div>
+          <p id="customization-mode-help" class="customization-group-help">Uses the EAF value for this meeting.</p>
+        </fieldset>
+        <fieldset class="customization-group">
+          <legend>Identity</legend>
+          <div class="customization-field-grid">
+            <label for="customization-course-code">Course Code</label>
+            <input id="customization-course-code" type="text" maxlength="24" autocomplete="off" placeholder="e.g. NSTP1">
+            <label for="customization-section">Section</label>
+            <input id="customization-section" type="text" maxlength="64" autocomplete="off" placeholder="e.g. S01">
+            <label for="customization-title">Title</label>
+            <input id="customization-title" class="customization-field-wide" type="text" maxlength="160" autocomplete="off" placeholder="Course title">
           </div>
         </fieldset>
-        <fieldset>
-          <legend>Delivery mode</legend>
-          <label><input type="radio" name="customization-mode" value="inherit"> Use EAF value</label>
-          <label><input type="radio" name="customization-mode" value="f2f"> F2F</label>
-          <label><input type="radio" name="customization-mode" value="online"> Online</label>
+        <fieldset class="customization-group">
+          <legend>Schedule</legend>
+          <p id="customization-time-help" class="customization-group-help">One manual time slot is supported. Leave all three fields blank to use the EAF value. Enter times as 7:30 AM or 9:00 PM.</p>
+          <div class="customization-field-grid">
+            <label for="customization-day">Day</label>
+            <select id="customization-day">
+              <option value="">Choose a day</option>
+              <option value="MON">Monday</option>
+              <option value="TUE">Tuesday</option>
+              <option value="WED">Wednesday</option>
+              <option value="THU">Thursday</option>
+              <option value="FRI">Friday</option>
+              <option value="SAT">Saturday</option>
+            </select>
+            <label for="customization-start-time">Start</label>
+            <input id="customization-start-time" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="e.g. 7:30 AM" aria-describedby="customization-time-help">
+            <label for="customization-end-time">End</label>
+            <input id="customization-end-time" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="e.g. 9:00 AM" aria-describedby="customization-time-help">
+          </div>
         </fieldset>
-        <label for="customization-professor">Professor (optional)</label>
-        <input id="customization-professor" type="text" maxlength="100" autocomplete="off" placeholder="Add a professor name">
-        <div class="customization-dialog-actions">
-          <button type="button" id="reset-section-btn" class="button btn-ghost">Reset this section</button>
-          <button type="button" id="cancel-customization-btn" class="button btn-ghost">Cancel</button>
-          <button type="submit" id="save-customization-btn" class="button btn-primary">Save</button>
+        <fieldset class="customization-group">
+          <legend>Location</legend>
+          <div class="customization-field-grid">
+            <label id="customization-room-label" for="customization-room">Room</label>
+            <input id="customization-room" class="customization-field-wide" type="text" maxlength="120" autocomplete="off" placeholder="e.g. G404B, Zoom, or a URL">
+          </div>
+          <p id="customization-room-help" class="customization-group-help">Optional if the EAF does not include a room.</p>
+        </fieldset>
+        <details id="customization-more-details" class="customization-more">
+          <summary>
+            <span class="customization-more-summary-copy">
+              <span>More details</span>
+              <small>Professor, appearance, reset</small>
+            </span>
+            <span class="customization-more-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="customization-more-content">
+            <fieldset class="customization-group">
+              <legend>Professor</legend>
+              <div class="customization-field-grid">
+                <label for="customization-professor">Name</label>
+                <input id="customization-professor" class="customization-field-wide" type="text" maxlength="100" autocomplete="off" placeholder="Optional">
+              </div>
+            </fieldset>
+            <fieldset class="customization-group customization-appearance-group">
+              <legend>Appearance</legend>
+              <div id="customization-palette-options" class="customization-palette-options" aria-label="Preset course colors"></div>
+              <div class="customization-color-row">
+                <input id="customization-color" type="color" aria-label="Choose a custom course color" value="#94a3b8">
+                <input id="customization-hex" type="text" inputmode="text" maxlength="7" placeholder="#HEX" aria-label="Course color hex code">
+              </div>
+            </fieldset>
+            <button type="button" id="reset-section-btn" class="customization-reset-button">Reset this pair</button>
+          </div>
+        </details>
+      </form>
+    </dialog>
+
+    <dialog id="customization-sync-conflict" class="customization-choice-dialog" aria-labelledby="customization-sync-conflict-title" aria-describedby="customization-sync-conflict-copy">
+      <form method="dialog" id="customization-sync-conflict-form">
+        <p class="customization-dialog-task">Paired meetings</p>
+        <h2 id="customization-sync-conflict-title">Join paired meetings?</h2>
+        <p id="customization-sync-conflict-copy" class="customization-choice-copy">This meeting has its own changes. Choose which details to keep.</p>
+        <div id="customization-sync-diff" class="customization-sync-diff" role="region" aria-label="Differences between this meeting and pair settings"></div>
+        <div class="customization-choice-actions" role="group" aria-label="Pair conflict choices">
+          <button type="button" class="customization-choice-action customization-choice-action--primary" data-sync-choice="use-pair">Use pair settings</button>
+          <button type="button" class="customization-choice-action" data-sync-choice="use-current-for-pair">Use this meeting for both</button>
+          <button type="button" class="customization-choice-action customization-choice-action--cancel" data-sync-choice="cancel">Cancel</button>
         </div>
       </form>
     </dialog>

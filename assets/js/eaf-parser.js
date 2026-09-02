@@ -16,6 +16,18 @@ export const STANDARD_PERIODS = [
   [1185, 1275],
 ];
 
+export const ASYNC_SCHEDULE_MARKERS = Object.freeze([
+  'ASYNC',
+  'ASYNCHRONOUS',
+  'ASYNC ONLY',
+  'JUST ASYNC',
+  'NO FIXED TIME',
+  'NO SCHEDULE',
+  'NO TIME NO VENUE JUST ASYNC',
+  'NO TIME NO ROOM JUST ASYNC',
+]);
+const ASYNC_MARKER_SET = new Set(ASYNC_SCHEDULE_MARKERS);
+
 export const BUILDING_NAMES = Object.freeze({
   L: 'Saint La Salle Hall',
   LS: 'Saint La Salle Hall',
@@ -36,6 +48,11 @@ export const BUILDING_NAMES = Object.freeze({
   ST: 'Science & Technology Research Center',
   STRC: 'Science & Technology Research Center',
   MM: 'St. Mutien Marie Hall',
+  MRR: 'Milagros R. del Rosario Building',
+  UH: 'University Hall',
+  EKR: 'Enrique K. Razon Jr. Hall',
+  RL: 'Richard L. Lee Engineering Technology Block',
+  LC: 'Integrated School Learning Centers',
   WH: 'William Hall',
   W: 'William Hall',
   H: 'William Hall',
@@ -140,7 +157,16 @@ export function expandLocation(location) {
   return buildingName ? `${normalized} · ${buildingName}` : normalized;
 }
 
-export function normalizeMeeting(rawMeeting, course) {
+function isExplicitAsyncSchedule(text) {
+  const normalized = String(text || '')
+    .trim()
+    .replace(/[|:;,/-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .toUpperCase();
+  return !normalized || ASYNC_MARKER_SET.has(normalized);
+}
+
+export function normalizeMeeting(rawMeeting, course, meetingOrdinal = 0) {
   if (!rawMeeting || typeof rawMeeting !== 'object') {
     throw new EafParseError('MEETING_UNREADABLE', 'A schedule entry could not be read.', { courseCode: course?.code ?? null });
   }
@@ -170,7 +196,8 @@ export function normalizeMeeting(rawMeeting, course) {
   const buildingCode = getBuildingCode(location);
   const buildingName = getBuildingName(location);
   return {
-    id: `${course.code}-${day}-${range.startMinutes}-${range.endMinutes}`,
+    id: `${course.code}::${course.section}::${meetingOrdinal}`,
+    meetingOrdinal,
     courseCode: course.code,
     title: course.title,
     section: course.section,
@@ -185,12 +212,36 @@ export function normalizeMeeting(rawMeeting, course) {
     buildingCode,
     buildingName,
     modality: /^online$/i.test(location) ? 'online' : 'room',
+    scheduled: true,
+  };
+}
+
+export function normalizeUnplacedMeeting(course, meetingOrdinal = 0) {
+  return {
+    id: `${course.code}::${course.section}::${meetingOrdinal}`,
+    meetingOrdinal,
+    courseCode: course.code,
+    title: course.title,
+    section: course.section,
+    credits: course.credits,
+    day: null,
+    startMinutes: null,
+    endMinutes: null,
+    startLabel: null,
+    endLabel: null,
+    location: null,
+    expandedLocation: null,
+    buildingCode: null,
+    buildingName: null,
+    modality: 'async',
+    scheduled: false,
   };
 }
 
 export function validateNoOverlaps(meetings) {
   const byDay = new Map();
   for (const meeting of meetings) {
+    if (meeting?.scheduled === false || !DAY_SET.has(meeting?.day) || !Number.isFinite(meeting?.startMinutes) || !Number.isFinite(meeting?.endMinutes)) continue;
     if (!byDay.has(meeting.day)) byDay.set(meeting.day, []);
     byDay.get(meeting.day).push(meeting);
   }
@@ -202,6 +253,13 @@ export function validateNoOverlaps(meetings) {
         if (a.startMinutes < b.endMinutes && b.startMinutes < a.endMinutes) {
           throw new EafParseError('MEETING_OVERLAP', 'The imported EAF contains overlapping meetings. No schedule was replaced because the timetable could not be validated.', {
             courseCodes: [a.courseCode, b.courseCode],
+            meetings: [a, b].map((item) => ({
+              id: item.id,
+              courseCode: item.courseCode,
+              section: item.section,
+              startMinutes: item.startMinutes,
+              endMinutes: item.endMinutes,
+            })),
             day,
           });
         }
@@ -214,13 +272,16 @@ export function sanitizeSchedule(session, rows) {
   const meetings = [];
   for (const row of rows) {
     for (const meeting of row.meetings) {
-      const valid =
+      const sourceIsScheduled = meeting?.scheduled !== false;
+      const validIdentity =
         meeting &&
         typeof meeting.courseCode === 'string' &&
         typeof meeting.title === 'string' &&
         typeof meeting.section === 'string' &&
         Number.isFinite(meeting.credits) &&
-        meeting.credits >= 0 &&
+        meeting.credits >= 0;
+      const validScheduled =
+        sourceIsScheduled &&
         DAY_SET.has(meeting.day) &&
         Number.isFinite(meeting.startMinutes) &&
         Number.isFinite(meeting.endMinutes) &&
@@ -229,6 +290,19 @@ export function sanitizeSchedule(session, rows) {
         typeof meeting.expandedLocation === 'string' &&
         (meeting.buildingCode === null || typeof meeting.buildingCode === 'string') &&
         (meeting.buildingName === null || typeof meeting.buildingName === 'string');
+      const validUnplaced =
+        !sourceIsScheduled &&
+        meeting.day === null &&
+        meeting.startMinutes === null &&
+        meeting.endMinutes === null &&
+        meeting.startLabel === null &&
+        meeting.endLabel === null &&
+        meeting.location === null &&
+        meeting.expandedLocation === null &&
+        meeting.buildingCode === null &&
+        meeting.buildingName === null &&
+        meeting.modality === 'async';
+      const valid = validIdentity && (validScheduled || validUnplaced);
       if (!valid) {
         throw new EafParseError('SCHEDULE_SANITIZATION_FAILED', 'A schedule row could not be reduced to the allowed fields.');
       }
@@ -315,7 +389,7 @@ function joinColumnWords(words) {
 }
 
 function parseCourseIdentity(courseText) {
-  const codeMatch = /^([A-Z]{2,12}\d{0,4}(?:\s*-\s*[A-Z]{1,12}\d{1,4})?)\s*-?\s*/.exec(courseText);
+  const codeMatch = /^((?:[A-Z]{2,12}\s*\d{0,4})(?:\s*-\s*(?:[A-Z]{1,12}\s*)?\d{1,4})?)\s*-?\s*/.exec(courseText);
   if (!codeMatch) return { code: null, title: '' };
   return {
     code: codeMatch[1].replace(/[\s-]/g, ''),
@@ -336,11 +410,14 @@ function parseCourseRow(row, headerInfo) {
   }
   const scheduleText = joinColumnWords(cols.schedule);
   const segments = splitMeetingSegments(scheduleText);
+  const courseInfo = { code, title, section, credits, row: no };
   if (!segments || !segments.length) {
+    if (isExplicitAsyncSchedule(scheduleText)) {
+      return { no, code, title, section, credits, meetings: [normalizeUnplacedMeeting(courseInfo)] };
+    }
     throw new EafParseError('ROW_UNREADABLE', 'The Archershub EAF was recognized, but one or more schedule entries could not be read reliably. No schedule was replaced. Upload the original PDF again or verify the document format.', { row: no });
   }
-  const courseInfo = { code, title, section, credits, row: no };
-  const meetings = segments.map((raw) => normalizeMeeting(raw, courseInfo));
+  const meetings = segments.map((raw, index) => normalizeMeeting(raw, courseInfo, index));
   return { no, code, title, section, credits, meetings };
 }
 

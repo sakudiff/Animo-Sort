@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { parseScheduleRows, parseTimeRange } from '../assets/js/eaf-parser.js';
+import {
+  expandLocation,
+  getBuildingCode,
+  getBuildingName,
+  parseScheduleRows,
+  parseTimeRange,
+  validateNoOverlaps,
+} from '../assets/js/eaf-parser.js';
 
 const SESSION = 'AY 2026-2027 Term 1';
 
-function createPage(courseItems) {
+function createPage(courseItems, scheduleText = 'MON | 07:00 PM-08:00 PM | Room not specified') {
   const headerY = 500;
   const rowY = 480;
   const courseWords = (Array.isArray(courseItems) ? courseItems : [courseItems]).map((str, index) => ({
@@ -23,13 +30,18 @@ function createPage(courseItems) {
     { str: 'Lecture', x: 230, y: rowY },
     { str: 'S05', x: 310, y: rowY },
     { str: '3.00', x: 380, y: rowY },
-    { str: 'MON | 07:00 PM-08:00 PM | Room not specified', x: 450, y: rowY },
+    { str: scheduleText, x: 450, y: rowY },
   ];
 }
 
 function parseCourse(courseItems) {
   const [row] = parseScheduleRows([createPage(courseItems)], SESSION);
   return { code: row.code, title: row.title };
+}
+
+function parseMeetings(courseItems, scheduleText) {
+  const [row] = parseScheduleRows([createPage(courseItems, scheduleText)], SESSION);
+  return row.meetings;
 }
 
 test('normalizes a hyphenated course code from compact PDF text', () => {
@@ -48,6 +60,26 @@ test('normalizes a hyphenated course code when PDF.js separates text items', () 
     parseCourse(['THS', '-', 'ST2', '-', 'THESIS', 'IN', 'SOFTWARE', 'TECHNOLOGY', '2']),
     { code: 'THSST2', title: 'THESIS IN SOFTWARE TECHNOLOGY 2' },
   );
+});
+
+test('keeps separate NSTP code digits distinct when PDF text inserts a space', () => {
+  assert.deepEqual(
+    parseCourse('NSTP 1-NATIONAL SERVICE TRAINING 1'),
+    { code: 'NSTP1', title: 'NATIONAL SERVICE TRAINING 1' },
+  );
+  assert.deepEqual(
+    parseCourse('NSTP 2-NATIONAL SERVICE TRAINING 2'),
+    { code: 'NSTP2', title: 'NATIONAL SERVICE TRAINING 2' },
+  );
+});
+
+test('keeps CWTS, LTS, and ROTC NSTP part codes distinct', () => {
+  for (const code of ['NSTPCW1', 'NSTPCW2', 'NSTPLT1', 'NSTPLT2', 'NSTPRO1', 'NSTPRO2']) {
+    assert.deepEqual(parseCourse(`${code}-NATIONAL SERVICE TRAINING`), {
+      code,
+      title: 'NATIONAL SERVICE TRAINING',
+    });
+  }
 });
 
 test('accepts late and non-standard meeting intervals', () => {
@@ -84,4 +116,50 @@ test('preserves standard DLSU course codes and title hyphens', () => {
     code: 'ABC123',
     title: 'THESIS-BASED PROJECT',
   });
+});
+
+test('expands DLSU Laguna campus room codes', () => {
+  const cases = [
+    ['MM101', 'MM', 'St. Mutien Marie Hall'],
+    ['MM-BLACKBOX', 'MM', 'St. Mutien Marie Hall'],
+    ['MRR101', 'MRR', 'Milagros R. del Rosario Building'],
+    ['UH208', 'UH', 'University Hall'],
+    ['EKR101', 'EKR', 'Enrique K. Razon Jr. Hall'],
+    ['RL101', 'RL', 'Richard L. Lee Engineering Technology Block'],
+    ['LC1', 'LC', 'Integrated School Learning Centers'],
+    ['LC2', 'LC', 'Integrated School Learning Centers'],
+  ];
+
+  for (const [room, code, name] of cases) {
+    assert.equal(getBuildingCode(room), code, room);
+    assert.equal(getBuildingName(room), name, room);
+    assert.equal(expandLocation(room), `${room} · ${name}`, room);
+  }
+});
+
+test('keeps an explicit async course as one unplaced meeting', () => {
+  const [meeting] = parseMeetings('NSTP1-NATIONAL SERVICE TRAINING', 'ASYNC');
+
+  assert.equal(meeting.id, 'NSTP1::S05::0');
+  assert.equal(meeting.meetingOrdinal, 0);
+  assert.equal(meeting.scheduled, false);
+  assert.equal(meeting.modality, 'async');
+  assert.equal(meeting.day, null);
+  assert.equal(meeting.startMinutes, null);
+  assert.equal(meeting.location, null);
+});
+
+test('accepts an empty async schedule cell but still rejects arbitrary missing schedule text', () => {
+  const [meeting] = parseMeetings('NSTP2-NATIONAL SERVICE TRAINING', '');
+  assert.equal(meeting.scheduled, false);
+
+  assert.throws(
+    () => parseMeetings('NSTP3-NATIONAL SERVICE TRAINING', 'TBA'),
+    (error) => error.code === 'ROW_UNREADABLE',
+  );
+});
+
+test('ignores unplaced meetings during overlap validation', () => {
+  const [meeting] = parseMeetings('NSTP4-NATIONAL SERVICE TRAINING', 'NO TIME, NO VENUE, JUST ASYNC');
+  assert.doesNotThrow(() => validateNoOverlaps([meeting]));
 });
