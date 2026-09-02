@@ -473,7 +473,7 @@ export function validateArchershubEaf(pages) {
   );
   const fullText = pageTexts.join(' ').replace(/\s+/g, ' ');
   if (!/ENROLLMENT\s+ASSESSMENT\s+FORM/i.test(fullText)) {
-    throw new EafParseError('NOT_ARCHERSHUB_EAF', 'This does not look like an official Archershub EAF. Upload the official DLSU Archershub EAF PDF.');
+    throw new EafParseError('NOT_ARCHERSHUB_EAF', 'This does not look like an official Archershub EAF. Upload the official De La Salle University Archershub EAF PDF.');
   }
   const sessionMatch = /ACADEMIC\s+SESSION\s*:?\s*(AY\s+\d{4}-\d{4}\s+Term\s+\d+)/i.exec(fullText);
   if (!sessionMatch) {
@@ -524,17 +524,17 @@ export async function extractPdfTextItems(file, onProgress = () => {}) {
     return pages;
   } catch (err) {
     if (err instanceof EafParseError) throw err;
-    throw new EafParseError('PDF_READ_FAILED', 'The selected PDF could not be read. Upload the official DLSU Archershub EAF PDF.');
+    throw new EafParseError('PDF_READ_FAILED', 'The selected PDF could not be read. Upload the official De La Salle University Archershub EAF PDF.');
   }
 }
 
 export async function parseEafFile(file, onProgress = () => {}) {
   const isPdf = (file && file.type === 'application/pdf') || /\.pdf$/i.test((file && file.name) || '');
   if (!isPdf) {
-    throw new EafParseError('NOT_A_PDF', 'This does not look like an official Archershub EAF. Upload the official DLSU Archershub EAF PDF.');
+    throw new EafParseError('NOT_A_PDF', 'This does not look like an official Archershub EAF. Upload the official De La Salle University Archershub EAF PDF.');
   }
   if (!file || file.size === 0) {
-    throw new EafParseError('EMPTY_FILE', 'The selected file is empty. Upload the official DLSU Archershub EAF PDF.');
+    throw new EafParseError('EMPTY_FILE', 'The selected file is empty. Upload the official De La Salle University Archershub EAF PDF.');
   }
   reportImportProgress(onProgress, 'reading', 5, 'Preparing the EAF locally…');
   const pages = await extractPdfTextItems(file, onProgress);

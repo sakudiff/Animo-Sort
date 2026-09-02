@@ -11,8 +11,20 @@ No changes yet.
 ## v0.4.4 - 2026-09-02
 
 This release makes schedule customization more precise, carries safe online
-meeting links into calendar files, expands Laguna room-code support, and
-refreshes the user guide and verification fixtures.
+meeting links into calendar files, expands Laguna room-code support, refreshes
+the user guide and verification fixtures, and delivers a copy hotfix that clarifies
+the Enrollment Assessment Form (EAF) and De La Salle University context for external
+visitors and employers.
+
+### Copy and institutional context hotfix
+
+- Refined the landing page hero subtext to introduce the official Enrollment
+  Assessment Form from De La Salle University while preserving the core headline.
+- Clarified the Enrollment Assessment Form definition in the About page story
+  section and How to Use guide as the official proof of enrollment generated
+  through Archershub.
+- Expanded user-facing DLSU references across the landing page, guides, error
+  messages, and documentation to De La Salle University.
 
 ### Effective schedule customization
 
