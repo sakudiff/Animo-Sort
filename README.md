@@ -23,15 +23,21 @@ Read the [How to use guide](how-to-use.html) for profile, PNG, and calendar work
 
 ## Screenshots
 
-These screenshots are captured from the current site and focus on the product itself: importing locally, seeing the generated timetable, saving presentation choices, and inspecting the code path. For step-by-step profile and calendar instructions, use the [How to use guide](how-to-use.html#customization-profiles) and its [Google Calendar section](how-to-use.html#google-calendar).
+These screenshots are captured from the current site and focus on the product itself: reviewing the generated timetable, editing effective class details, choosing course colors, and handing the schedule to a calendar app. For step-by-step profile and calendar instructions, use the [How to use guide](how-to-use.html#customization-profiles) and its [Google Calendar section](how-to-use.html#google-calendar).
 
-| Import locally | Timetable output |
+| Timetable export | Profile and calendar controls |
 | --- | --- |
-| ![AnimoSort import panel with local-processing explanation](assets/images/animosort-import-panel.png) | ![Generated AnimoSort timetable output](assets/images/animosort-timetable-output.png) |
+| ![High-resolution AnimoSort timetable export](assets/images/animosort-schedule-export.png) | ![AnimoSort profile controls and calendar handoff](assets/images/animosort-calendar-handoff.png) |
 
-| Customization profiles | Interactive architecture pipeline |
+| Class details editor | Course color picker |
 | --- | --- |
-| ![AnimoSort customization profiles panel](assets/images/animosort-customization-panel.png) | ![AnimoSort Archify EAF-to-week pipeline](assets/images/animosort-about-pipeline.png) |
+| ![AnimoSort class details customization editor](assets/images/animosort-customization-editor.png) | ![AnimoSort course color picker](assets/images/animosort-customization-color-picker.png) |
+
+| Profile and course colors |
+| --- |
+| ![AnimoSort profile controls and course color choices](assets/images/animosort-profile-controls.png) |
+
+The [About page](about.html#pipeline) also includes the local import flow and an interactive architecture pipeline.
 
 ## Core Features
 
@@ -46,6 +52,7 @@ These screenshots are captured from the current site and focus on the product it
 - Support for non-standard meeting intervals and split room allocations
 - Toggle controls for full course titles
 - High-resolution theme-aware PNG timetable export
+- Recurring `.ics` calendar export; a full `http://` or `https://` Online link is written to the standard calendar `URL` field and a description fallback, while a label such as `Zoom` remains descriptive text
 - Zero telemetry and zero external server dependencies
 
 ## Compatibility
@@ -74,7 +81,7 @@ Open `http://localhost:8000` in your web browser to use the application.
 3. Review your timetable across Monday to Saturday.
 4. Click a timetable card or color dot to edit its course code, section, title, time, room or platform, delivery mode, color, and professor. For a pair, choose This meeting for an independent edit or Paired meetings to apply changed fields to both. Normal EAF differences such as Monday/Thursday times remain automatic. If the meeting already has its own changes, AnimoSort asks whether to use the pair settings or use this meeting for both.
 5. Use the profile panel to create, rename, reset, download, or import a customization profile. Profiles are browser-local; the JSON file contains customization values only.
-6. Toggle full course titles, choose the PNG theme, or download a PNG image of your schedule.
+6. Toggle full course titles, choose the PNG theme, download a PNG image, or export recurring `.ics` events. For Online rows, paste the full meeting URL if you want it carried into the calendar file; a label such as `Zoom` remains descriptive text.
 
 See [How to use AnimoSort](how-to-use.html) for the complete walkthrough.
 
@@ -99,7 +106,12 @@ If a meeting already has independent changes and you choose Paired meetings, a s
 │   │   ├── animosort-import-panel.png          # README screenshot
 │   │   ├── animosort-timetable-output.png       # README screenshot
 │   │   ├── animosort-customization-panel.png    # README screenshot
-│   │   └── animosort-about-pipeline.png        # README screenshot
+│   │   ├── animosort-about-pipeline.png         # About pipeline screenshot
+│   │   ├── animosort-schedule-export.png        # README screenshot
+│   │   ├── animosort-calendar-handoff.png       # README screenshot
+│   │   ├── animosort-customization-editor.png   # README screenshot
+│   │   ├── animosort-customization-color-picker.png # README screenshot
+│   │   └── animosort-profile-controls.png       # README screenshot
 │   └── js/
 │       ├── app.js           # Application controller and UI interactions
 │       ├── customization.js # Profile schema, persistence, resolver, and resets
@@ -125,7 +137,7 @@ The project is structured into vanilla JavaScript modules.
 - `assets/js/eaf-parser.js` handles PDF text extraction, schedule row identification, zero-credit course support, campus room translations, and explicit async rows.
 - `assets/js/customization.js` validates the versioned profile format, migrates legacy colors, stores named profiles locally, and resolves synchronized or per-meeting course details.
 - `assets/js/export.js` generates vector SVG representations and exports high-resolution timetable images from the effective schedule.
-- `assets/js/calendar.js` creates recurring `.ics` events from effective timed meetings and skips unresolved async rows.
+- `assets/js/calendar.js` creates recurring `.ics` events from effective timed meetings, carries safe HTTP(S) meeting links into the standard `URL` field, and skips unresolved async rows.
 - `assets/js/app.js` manages DOM event bindings, drag-and-drop file ingestion, effective timetable rendering, manual-details editing, and client-side view toggles.
 - `assets/js/site.js` provides the shared theme toggle, navigation state, smooth scrolling, and reveal behavior used by both pages.
 

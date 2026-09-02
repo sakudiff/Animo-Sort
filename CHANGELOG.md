@@ -8,6 +8,48 @@ All notable changes to AnimoSort are documented here.
 
 No changes yet.
 
+## v0.4.4 - 2026-09-02
+
+This release makes schedule customization more precise, carries safe online
+meeting links into calendar files, expands Laguna room-code support, and
+refreshes the user guide and verification fixtures.
+
+### Effective schedule customization
+
+- Added section-level editing for course code, section, title, room, time,
+  delivery mode, color, and professor details.
+- Added `Automatic`, `Paired meetings`, and `This meeting` scopes so paired
+  meetings can share intentional changes without erasing normal EAF
+  differences such as day, time, room, or delivery mode.
+- Added manual time entry for asynchronous or no-fixed-time rows while keeping
+  those rows visible in the timetable and excluding unresolved rows from
+  calendar export.
+- Added conflict review and atomic validation for paired edits, including
+  overlap protection and scoped restoration from the source EAF.
+- Kept profile JSON portable and presentation/detail-only: source EAF data,
+  identity data, session data, and meeting records are not exported.
+
+### Calendar links and room labels
+
+- Added recurring `.ics` export for effective timed meetings.
+- When an Online platform field contains a full `http://` or `https://` URL,
+  the exporter writes it to the standard calendar `URL` field and includes a
+  description fallback. Text labels such as `Zoom` remain descriptive text,
+  and unsafe URL schemes are not serialized.
+- Added building-code expansions for St. Mutien Marie Hall (`MM`) and the
+  DLSU Laguna mappings `MRR`, `UH`, `EKR`, `RL`, and `LC1`/`LC2`.
+
+### Guide, screenshots, and verification
+
+- Reworked the How to Use page around task-based guidance for importing,
+  effective details, profiles, PNG export, and calendar handoff, including the
+  supported building-code reference and the calendar-link disclosure.
+- Added a comprehensive EAF fixture, controller tests, and browser acceptance
+  coverage for imports, paired edits, conflict choices, responsive layouts,
+  reduced motion, PNG export, and calendar export.
+- Refreshed the README product screenshots with current timetable,
+  customization, profile, color-picker, and calendar-handoff views.
+
 ## v0.4.3 - 2026-09-01
 
 This release stabilizes mobile viewport layouts, resolves WebKit dropdown
