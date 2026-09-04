@@ -137,6 +137,23 @@ test('expands DLSU Laguna campus room codes', () => {
   }
 });
 
+test('maps both Saint Joseph room prefixes to St. Joseph Hall', () => {
+  const cases = [
+    ['SJ', 'SJ'],
+    ['SJ101', 'SJ'],
+    ['S', 'S'],
+    ['S101', 'S'],
+  ];
+
+  for (const [room, code] of cases) {
+    assert.equal(getBuildingCode(room), code, room);
+    assert.equal(getBuildingName(room), 'St. Joseph Hall', room);
+    assert.equal(expandLocation(room), `${room} · St. Joseph Hall`, room);
+  }
+
+  assert.equal(getBuildingName('J101'), 'John Gokongwei, Jr. Innovation Center');
+});
+
 test('keeps an explicit async course as one unplaced meeting', () => {
   const [meeting] = parseMeetings('NSTP1-NATIONAL SERVICE TRAINING', 'ASYNC');
 

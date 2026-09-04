@@ -41,7 +41,7 @@ The [How to use guide](how-to-use.html#make-timetable) contains the new workflow
 
 - Client-side PDF parsing with vendored PDF.js
 - Automatic term detection and course schedule extraction
-- Campus building code expansions for physical classrooms, including the Laguna mappings `MM`, `MRR`, `UH`, `EKR`, `RL`, and `LC1`/`LC2`
+- Campus-specific building code expansions for physical classrooms across the Manila and Laguna mappings, including `MM`, `MRR`, `UH`, `EKR`, `RL`, and `LC1`/`LC2`
 - Customizable course colors with pastel presets, monochrome plain mode, direct `#HEX` code input, and one-click randomize
 - Named customization profiles with local persistence and portable JSON import/export
 - Section-level course, title, room, time, F2F/Online, and professor overrides with Automatic restoring every editable detail from the EAF

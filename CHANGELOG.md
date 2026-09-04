@@ -8,6 +8,17 @@ All notable changes to AnimoSort are documented here.
 
 No changes yet.
 
+## v0.4.5 - 2026-09-04
+
+This patch release corrects the Manila St. Joseph Hall room-code aliases
+without changing the separate Manila and Laguna building mappings.
+
+### Room labels
+
+- Maps both `SJ` and `S` room prefixes to St. Joseph Hall.
+- Keeps `J` mapped to the John Gokongwei, Jr. Innovation Center and preserves
+  the distinct Laguna room-code families.
+
 ## v0.4.4 - 2026-09-02
 
 This release makes schedule customization more precise, carries safe online

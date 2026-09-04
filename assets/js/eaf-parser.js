@@ -43,6 +43,7 @@ export const BUILDING_NAMES = Object.freeze({
   ER: 'Enrique Razon Sports Center',
   RC: 'Enrique Razon Sports Center',
   SJ: 'St. Joseph Hall',
+  S: 'St. Joseph Hall',
   G: 'Gokongwei Hall',
   GK: 'Gokongwei Hall',
   ST: 'Science & Technology Research Center',
