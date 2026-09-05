@@ -44,6 +44,7 @@ export const BUILDING_NAMES = Object.freeze({
   RC: 'Enrique Razon Sports Center',
   SJ: 'St. Joseph Hall',
   S: 'St. Joseph Hall',
+  J: 'St. Joseph Hall',
   G: 'Gokongwei Hall',
   GK: 'Gokongwei Hall',
   ST: 'Science & Technology Research Center',
@@ -57,7 +58,6 @@ export const BUILDING_NAMES = Object.freeze({
   WH: 'William Hall',
   W: 'William Hall',
   H: 'William Hall',
-  J: 'John Gokongwei, Jr. Innovation Center',
   B: 'Bloemen Hall',
   C: 'Connon Hall',
 });
