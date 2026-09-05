@@ -137,12 +137,14 @@ test('expands DLSU Laguna campus room codes', () => {
   }
 });
 
-test('maps both Saint Joseph room prefixes to St. Joseph Hall', () => {
+test('maps Saint Joseph room prefixes to St. Joseph Hall', () => {
   const cases = [
     ['SJ', 'SJ'],
     ['SJ101', 'SJ'],
     ['S', 'S'],
     ['S101', 'S'],
+    ['J', 'J'],
+    ['J101', 'J'],
   ];
 
   for (const [room, code] of cases) {
@@ -151,7 +153,36 @@ test('maps both Saint Joseph room prefixes to St. Joseph Hall', () => {
     assert.equal(expandLocation(room), `${room} · St. Joseph Hall`, room);
   }
 
-  assert.equal(getBuildingName('J101'), 'John Gokongwei, Jr. Innovation Center');
+});
+
+test('maps J schedule rooms to St. Joseph Hall', () => {
+  const meetings = parseMeetings(
+    'COBIBFM-INTERNATIONAL BUSINESS AGREEMENTS',
+    'MON | 04:15 PM-05:45 PM | J111, THU | 04:15 PM-05:45 PM | J107',
+  );
+
+  assert.deepEqual(
+    meetings.map(({ location, buildingCode, buildingName, expandedLocation }) => ({
+      location,
+      buildingCode,
+      buildingName,
+      expandedLocation,
+    })),
+    [
+      {
+        location: 'J111',
+        buildingCode: 'J',
+        buildingName: 'St. Joseph Hall',
+        expandedLocation: 'J111 · St. Joseph Hall',
+      },
+      {
+        location: 'J107',
+        buildingCode: 'J',
+        buildingName: 'St. Joseph Hall',
+        expandedLocation: 'J107 · St. Joseph Hall',
+      },
+    ],
+  );
 });
 
 test('keeps an explicit async course as one unplaced meeting', () => {
