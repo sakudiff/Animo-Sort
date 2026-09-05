@@ -8,6 +8,17 @@ All notable changes to AnimoSort are documented here.
 
 No changes yet.
 
+## v0.4.6 - 2026-09-05
+
+This patch release corrects the `J` room-code alias used for St. Joseph Hall
+without changing the existing `S`, `SJ`, or Gokongwei mappings.
+
+### Room labels
+
+- Maps rooms such as `J111` and `J107` to St. Joseph Hall.
+- Adds regression coverage for the reported COBIBFM schedule line and keeps
+  the supported room-code guide aligned with the parser.
+
 ## v0.4.5 - 2026-09-04
 
 This patch release corrects the Manila St. Joseph Hall room-code aliases
