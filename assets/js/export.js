@@ -155,8 +155,11 @@ export function createScheduleSvg(schedule, options = {}) {
   const footerBrandText = isDark ? '#9ca3af' : '#666666';
   const footerBrandStrong = isDark ? '#f9fafb' : '#111111';
 
+  const scale = Number(options?.scale) > 0 ? Number(options.scale) : 1;
   const { canvasStart, minutesInSpan, gridHeight, gridBottom, svgHeight } = getTimelineLayout(schedule, showCourseTitles, profile);
-  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${SVG_WIDTH}" height="${svgHeight}" viewBox="0 0 ${SVG_WIDTH} ${svgHeight}" role="img" aria-label="Weekly schedule from AnimoSort">`);
+  const renderWidth = (SVG_WIDTH * scale).toFixed(1).replace(/\.0$/, '');
+  const renderHeight = (svgHeight * scale).toFixed(1).replace(/\.0$/, '');
+  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${renderWidth}" height="${renderHeight}" viewBox="0 0 ${SVG_WIDTH} ${svgHeight}" role="img" aria-label="Weekly schedule from AnimoSort">`);
   parts.push(`<rect width="${SVG_WIDTH}" height="${svgHeight}" fill="${canvasBg}"/>`);
 
   const titleSize = 32;
@@ -279,9 +282,11 @@ export async function downloadSchedulePng(schedule, options = {}) {
   if (!schedule || !Array.isArray(schedule.meetings)) {
     throw new Error('A valid schedule is required for PNG export');
   }
+  const scale = Number(options?.scale) > 0 ? Number(options.scale) : 2;
   const showCourseTitles = options?.showCourseTitles !== false;
   const profile = options?.profile || createDefaultProfile();
-  const svgString = createScheduleSvg(schedule, { ...options, profile, showCourseTitles });
+  const isDark = options?.theme === 'dark';
+  const svgString = createScheduleSvg(schedule, { ...options, profile, showCourseTitles, scale });
   const { svgHeight } = getTimelineLayout(schedule, showCourseTitles, profile);
   const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -293,12 +298,11 @@ export async function downloadSchedulePng(schedule, options = {}) {
       img.onerror = () => reject(new Error('SVG image could not be loaded'));
       img.src = url;
     });
-    const scale = 2;
     const canvas = document.createElement('canvas');
-    canvas.width = SVG_WIDTH * scale;
-    canvas.height = svgHeight * scale;
+    canvas.width = Math.round(SVG_WIDTH * scale);
+    canvas.height = Math.round(svgHeight * scale);
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = isDark ? '#000000' : '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 

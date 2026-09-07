@@ -17,7 +17,7 @@ The privacy boundary is deliberately small:
 - The PDF is processed entirely in the browser and is never uploaded.
 - No account, parsing backend, telemetry, or AI service receives enrollment data.
 - Student ID and tuition information are not displayed.
-- The tool is independent and is not affiliated with, endorsed by, or part of DLSU or Archershub.
+- The tool is independent and is not affiliated with, endorsed by, or part of De La Salle University or Archershub.
 
 Read the [How to use guide](how-to-use.html) for profile, PNG, and calendar workflows. The implementation path is documented in the [interactive Archify pipeline](about.html#pipeline).
 
@@ -41,7 +41,7 @@ The [How to use guide](how-to-use.html#make-timetable) contains the new workflow
 
 - Client-side PDF parsing with vendored PDF.js
 - Automatic term detection and course schedule extraction
-- Campus building code expansions for physical classrooms, including the Laguna mappings `MM`, `MRR`, `UH`, `EKR`, `RL`, and `LC1`/`LC2`
+- Campus-specific building code expansions for physical classrooms across the Manila and Laguna mappings, including `MM`, `MRR`, `UH`, `EKR`, `RL`, and `LC1`/`LC2`
 - Customizable course colors with pastel presets, monochrome plain mode, direct `#HEX` code input, and one-click randomize
 - Named customization profiles with local persistence and portable JSON import/export
 - Section-level course, title, room, time, F2F/Online, and professor overrides with Automatic restoring every editable detail from the EAF
@@ -55,7 +55,7 @@ The [How to use guide](how-to-use.html#make-timetable) contains the new workflow
 
 ## Compatibility
 
-AnimoSort supports official DLSU Enrollment Assessment Forms generated from [Archershub](https://archershub.dlsu.edu.ph/) starting from AY 2025-2026 Term 3. Legacy documents from Animo.sys are unsupported.
+AnimoSort supports official De La Salle University Enrollment Assessment Forms generated from [Archershub](https://archershub.dlsu.edu.ph/) starting from AY 2025-2026 Term 3. Legacy documents from Animo.sys are unsupported.
 
 ## Quickstart
 
@@ -175,7 +175,7 @@ The file contains only manual presentation/detail patches. A meeting with `autom
 
 ## Contributing
 
-Contributions from the DLSU community and open-source contributors are welcome.
+Contributions from the De La Salle University community and open-source contributors are welcome.
 
 Follow these steps to submit a contribution.
 

@@ -196,3 +196,18 @@ test('blocks an export when every effective meeting remains unplaced', () => {
     /No scheduled meetings are available for export/,
   );
 });
+
+test('scales SVG root width and height while keeping internal viewBox coordinates', () => {
+  const schedule = {
+    session: 'AY 2026-2027 Term 1',
+    meetings: [meeting('STSP002', 'SPECIAL TOPICS', 555, 645, 'G404B')],
+  };
+  const scaledSvg = createScheduleSvg(schedule, { scale: 2 });
+  const rootMatch = /<svg[^>]*width="([0-9.]+)"[^>]*height="([0-9.]+)"[^>]*viewBox="([0-9 ]+)"/.exec(scaledSvg);
+
+  assert.ok(rootMatch);
+  assert.equal(rootMatch[1], '2800');
+  assert.equal(rootMatch[3], '0 0 1400 1000');
+  assert.equal(Number(rootMatch[2]), 2000);
+});
+

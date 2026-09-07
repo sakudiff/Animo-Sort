@@ -8,11 +8,70 @@ All notable changes to AnimoSort are documented here.
 
 No changes yet.
 
+## v0.4.7 - 2026-09-07
+
+This release restores full high-resolution sharpness to PNG timetable exports,
+adds mobile safe-area support with viewport-fit cover, and refines modal dialog
+behavior on mobile devices.
+
+### Export fidelity
+
+- Scales SVG root dimensions to match the canvas rasterization multiplier,
+  allowing browsers to render vector shapes and small typography directly at
+  native 2800-pixel density without intermediate 1x bitmap upscaling.
+- Synchronizes canvas background fill with the active export theme to eliminate
+  edge artifacts in dark mode.
+- Adds automated test coverage verifying scaled SVG root dimensions and viewBox
+  coordinate preservation.
+
+### Mobile and interface
+
+- Adds `viewport-fit=cover` across all pages for edge-to-edge layout on mobile
+  screens with notches and display cutouts.
+- Adds safe-area insets and full surface backgrounds to customization headers on
+  viewports up to 768px wide.
+- Hides the main navigation bar while modal dialogs are open to prevent overlapping
+  interactions on mobile browsers.
+
+## v0.4.6 - 2026-09-05
+
+This patch release corrects the `J` room-code alias used for St. Joseph Hall
+without changing the existing `S`, `SJ`, or Gokongwei mappings.
+
+### Room labels
+
+- Maps rooms such as `J111` and `J107` to St. Joseph Hall.
+- Adds regression coverage for the reported COBIBFM schedule line and keeps
+  the supported room-code guide aligned with the parser.
+
+## v0.4.5 - 2026-09-04
+
+This patch release corrects the Manila St. Joseph Hall room-code aliases
+without changing the separate Manila and Laguna building mappings.
+
+### Room labels
+
+- Maps both `SJ` and `S` room prefixes to St. Joseph Hall.
+- Keeps `J` mapped to the John Gokongwei, Jr. Innovation Center and preserves
+  the distinct Laguna room-code families.
+
 ## v0.4.4 - 2026-09-02
 
 This release makes schedule customization more precise, carries safe online
-meeting links into calendar files, expands Laguna room-code support, and
-refreshes the user guide and verification fixtures.
+meeting links into calendar files, expands Laguna room-code support, refreshes
+the user guide and verification fixtures, and delivers a copy hotfix that clarifies
+the Enrollment Assessment Form (EAF) and De La Salle University context for external
+visitors and employers.
+
+### Copy and institutional context hotfix
+
+- Refined the landing page hero subtext to introduce the official Enrollment
+  Assessment Form from De La Salle University while preserving the core headline.
+- Clarified the Enrollment Assessment Form definition in the About page story
+  section and How to Use guide as the official proof of enrollment generated
+  through Archershub.
+- Expanded user-facing DLSU references across the landing page, guides, error
+  messages, and documentation to De La Salle University.
 
 ### Effective schedule customization
 

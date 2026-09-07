@@ -36,4 +36,4 @@ Follow these steps to propose code changes.
 
 ## Adding Campus Building Codes
 
-To add or update building code mappings, edit the building lookup table in `assets/js/eaf-parser.js`. Ensure the acronym matches official DLSU campus building designations before opening a pull request.
+To add or update building code mappings, edit the building lookup table in `assets/js/eaf-parser.js`. Ensure the acronym matches official De La Salle University campus building designations before opening a pull request.

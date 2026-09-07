@@ -57,7 +57,7 @@ def schedule(*meetings: dict[str, object]) -> dict[str, object]:
 def load_schedule(page: Page, source: dict[str, object]) -> None:
     page.evaluate(
         """async (value) => {
-            const app = await import('./assets/js/app.js?v=0.4.7');
+            const app = await import('./assets/js/app.js?v=0.4.8');
             app.replaceSchedule(value);
         }""",
         source,
