@@ -8,6 +8,31 @@ All notable changes to AnimoSort are documented here.
 
 No changes yet.
 
+## v0.4.7 - 2026-09-07
+
+This release restores full high-resolution sharpness to PNG timetable exports,
+adds mobile safe-area support with viewport-fit cover, and refines modal dialog
+behavior on mobile devices.
+
+### Export fidelity
+
+- Scales SVG root dimensions to match the canvas rasterization multiplier,
+  allowing browsers to render vector shapes and small typography directly at
+  native 2800-pixel density without intermediate 1x bitmap upscaling.
+- Synchronizes canvas background fill with the active export theme to eliminate
+  edge artifacts in dark mode.
+- Adds automated test coverage verifying scaled SVG root dimensions and viewBox
+  coordinate preservation.
+
+### Mobile and interface
+
+- Adds `viewport-fit=cover` across all pages for edge-to-edge layout on mobile
+  screens with notches and display cutouts.
+- Adds safe-area insets and full surface backgrounds to customization headers on
+  viewports up to 768px wide.
+- Hides the main navigation bar while modal dialogs are open to prevent overlapping
+  interactions on mobile browsers.
+
 ## v0.4.6 - 2026-09-05
 
 This patch release corrects the `J` room-code alias used for St. Joseph Hall
