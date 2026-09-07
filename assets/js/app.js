@@ -388,6 +388,7 @@ function closeCalendarExportDialog() {
   } else {
     els.calendarExportDialog.hidden = true;
   }
+  document.body.classList.remove('dialog-open');
   const trigger = calendarDialogTrigger;
   calendarDialogTrigger = null;
   if (trigger && typeof trigger.focus === 'function') trigger.focus();
@@ -399,6 +400,7 @@ function openCalendarExportDialog() {
   calendarDialogTrigger = els.downloadCalendarBtn;
   els.calendarExportDialog.hidden = false;
   if (typeof els.calendarExportDialog.showModal === 'function') els.calendarExportDialog.showModal();
+  document.body.classList.add('dialog-open');
   els.cancelCalendarExportBtn.focus();
 }
 
@@ -1139,6 +1141,7 @@ export function closeCustomizationDialog() {
   closeSyncConflictSheet(false);
   if (typeof els.customizationDialog.close === 'function' && els.customizationDialog.open) els.customizationDialog.close();
   else els.customizationDialog.hidden = true;
+  document.body.classList.remove('dialog-open');
   editorContext = null;
   if (trigger && typeof trigger.focus === 'function') trigger.focus();
 }
@@ -1409,8 +1412,11 @@ export function openCustomizationDialog(meeting, trigger = null) {
   setEditorDraftColor(editorContext.draftColor, false);
   if (typeof els.customizationDialog.showModal === 'function') els.customizationDialog.showModal();
   else els.customizationDialog.hidden = false;
+  document.body.classList.add('dialog-open');
   const initialFocus = els.customizationCourseCode || els.cancelCustomizationBtn;
-  initialFocus.focus();
+  if (initialFocus && typeof initialFocus.focus === 'function') {
+    initialFocus.focus({ preventScroll: true });
+  }
 }
 
 function formatInputTime(minutes) {
